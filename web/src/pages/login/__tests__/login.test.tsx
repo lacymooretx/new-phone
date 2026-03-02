@@ -27,7 +27,7 @@ describe("LoginPage", () => {
 
   it("renders the app name heading", () => {
     renderWithProviders(<LoginPage />)
-    expect(screen.getByText("New Phone")).toBeInTheDocument()
+    expect(screen.getByText("Connect")).toBeInTheDocument()
   })
 
   it("renders the sign-in subtitle", () => {

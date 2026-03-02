@@ -88,7 +88,7 @@
     "followMe": "Suivez-Moi",
     "failedToLoad": "Échec du chargement des données : {{message}}",
     "unknownError": "Erreur inconnue",
-    "appName": "New Phone"
+    "appName": "Connect"
   },
   "validation": {
     "required": "Obligatoire",

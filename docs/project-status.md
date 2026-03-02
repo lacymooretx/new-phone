@@ -1,4 +1,4 @@
-# New Phone Platform — Project Status
+# Aspendora Connect Platform — Project Status
 
 > Last updated: 2026-02-27
 

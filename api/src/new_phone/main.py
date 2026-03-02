@@ -150,8 +150,8 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="New Phone API",
-        description="Multi-tenant PBX platform API",
+        title="Aspendora Connect API",
+        description="Multi-tenant unified communications platform API",
         version="0.1.0",
         docs_url="/api/docs",
         redoc_url="/api/redoc",

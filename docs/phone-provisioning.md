@@ -2,7 +2,7 @@
 
 ## Overview
 
-The New Phone platform supports HTTP auto-provisioning for Yealink desk phones. When a phone boots, it pulls its configuration from the platform automatically, including SIP credentials, display settings, and BLF/line key assignments.
+The Aspendora Connect platform supports HTTP auto-provisioning for Yealink desk phones. When a phone boots, it pulls its configuration from the platform automatically, including SIP credentials, display settings, and BLF/line key assignments.
 
 ## How It Works
 

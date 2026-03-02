@@ -88,7 +88,7 @@
     "followMe": "Follow-Me",
     "failedToLoad": "Failed to load data: {{message}}",
     "unknownError": "Unknown error",
-    "appName": "New Phone"
+    "appName": "Connect"
   },
   "validation": {
     "required": "Required",

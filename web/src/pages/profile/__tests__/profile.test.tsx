@@ -44,7 +44,7 @@ function setupProfileHandlers() {
 
     http.post(`/api/v1/auth/mfa/setup`, () => {
       return HttpResponse.json({
-        totp_uri: "otpauth://totp/NewPhone:admin@test.com?secret=TESTSECRET&issuer=NewPhone",
+        totp_uri: "otpauth://totp/AspendoraConnect:admin@test.com?secret=TESTSECRET&issuer=AspendoraConnect",
         backup_codes: ["12345678", "87654321", "11111111", "22222222"],
       })
     }),

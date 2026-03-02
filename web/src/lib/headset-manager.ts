@@ -38,7 +38,7 @@ class HeadsetManager {
     try {
       this.service = HeadsetService.getInstance({
         logger: console,
-        appName: "NewPhone",
+        appName: "AspendoraConnect",
       })
     } catch (err) {
       console.warn("[HeadsetManager] Failed to initialize headset SDK:", err)

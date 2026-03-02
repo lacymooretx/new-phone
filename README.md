@@ -1,6 +1,6 @@
-# New Phone
+# Aspendora Connect
 
-Multi-tenant, API-first PBX platform for Managed Service Providers.
+Multi-tenant, API-first unified communications platform for Managed Service Providers.
 
 Built to replace FreePBX/Asterisk with a modern, secure, multi-tenant architecture designed for MSPs managing ~50+ tenant phone systems from a single platform.
 

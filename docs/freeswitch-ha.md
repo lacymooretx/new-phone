@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the high-availability (HA) architecture for FreeSWITCH in the New Phone platform. The design uses an active/standby pair behind the Rust SIP proxy service, with shared PostgreSQL for configuration and Redis for state coordination.
+This document describes the high-availability (HA) architecture for FreeSWITCH in the Aspendora Connect platform. The design uses an active/standby pair behind the Rust SIP proxy service, with shared PostgreSQL for configuration and Redis for state coordination.
 
 ## Architecture
 

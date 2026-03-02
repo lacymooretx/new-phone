@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Phone } from "lucide-react"
+import { ConnectLogo } from "@/components/connect-logo"
 import { useForgotPassword } from "@/api/auth"
 import { useAuthStore } from "@/stores/auth-store"
 
@@ -38,8 +38,8 @@ export function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/50 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <Phone className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto mb-2">
+            <ConnectLogo className="h-12 w-12" />
           </div>
           <CardTitle className="text-2xl">{t('common.appName')}</CardTitle>
           <CardDescription>{t('auth.forgotPasswordTitle')}</CardDescription>

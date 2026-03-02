@@ -1,10 +1,10 @@
 # Architecture
 
-This document describes the system architecture of New Phone, a multi-tenant PBX platform built for Managed Service Providers.
+This document describes the system architecture of Aspendora Connect, a multi-tenant PBX platform built for Managed Service Providers.
 
 ## System Overview
 
-New Phone is an API-first platform where all functionality is exposed through a RESTful API. Client applications (web, desktop, mobile, browser extension) are thin consumers of this API. The media engine (FreeSWITCH) handles all real-time voice traffic and is controlled by the API via the Event Socket Layer (ESL) protocol.
+Aspendora Connect is an API-first platform where all functionality is exposed through a RESTful API. Client applications (web, desktop, mobile, browser extension) are thin consumers of this API. The media engine (FreeSWITCH) handles all real-time voice traffic and is controlled by the API via the Event Socket Layer (ESL) protocol.
 
 Tenant isolation is enforced at the database level using PostgreSQL Row-Level Security (RLS), meaning a compromised or buggy API endpoint cannot leak data across tenant boundaries.
 

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "New Phone Click-to-Call",
+  "name": "Aspendora Connect Click-to-Call",
   "version": "1.0.0",
-  "description": "Click any phone number to call via New Phone",
+  "description": "Click any phone number to call via Aspendora Connect",
   "permissions": ["storage", "contextMenus", "activeTab", "notifications"],
   "host_permissions": ["<all_urls>"],
   "background": {

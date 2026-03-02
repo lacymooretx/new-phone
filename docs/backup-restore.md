@@ -1,6 +1,6 @@
 # Backup and Restore Procedures
 
-This document covers backup strategies, automated backup scripts, restore procedures, and disaster recovery planning for the New Phone PBX platform.
+This document covers backup strategies, automated backup scripts, restore procedures, and disaster recovery planning for the Aspendora Connect PBX platform.
 
 ---
 

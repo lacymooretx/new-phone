@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-This document covers deploying the New Phone PBX platform to a production server. It assumes a single-server deployment with Docker Compose. For multi-server or Kubernetes deployments, adapt accordingly.
+This document covers deploying the Aspendora Connect PBX platform to a production server. It assumes a single-server deployment with Docker Compose. For multi-server or Kubernetes deployments, adapt accordingly.
 
 ---
 

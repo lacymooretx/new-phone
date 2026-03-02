@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils"
 import { useAuthStore } from "@/stores/auth-store"
 import { hasPermission, isMspRole } from "@/lib/constants"
 import { NAV_GROUPS } from "@/lib/nav-items"
-import { Phone, X } from "lucide-react"
+import { X } from "lucide-react"
+import { ConnectLogo } from "@/components/connect-logo"
 import { Button } from "@/components/ui/button"
 
 interface SidebarProps {
@@ -37,8 +38,8 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
       >
         <div className="flex h-14 items-center justify-between border-b px-4">
           <Link to="/" className="flex items-center gap-2 font-semibold">
-            <Phone className="h-5 w-5" />
-            <span>New Phone</span>
+            <ConnectLogo className="h-6 w-6" />
+            <span>Connect</span>
           </Link>
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={onToggle}>
             <X className="h-4 w-4" />
