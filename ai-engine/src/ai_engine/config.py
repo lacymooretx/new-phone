@@ -4,9 +4,9 @@ from pydantic_settings import BaseSettings
 class AIEngineSettings(BaseSettings):
     model_config = {"env_prefix": "NP_AI_"}
 
-    ws_host: str = "0.0.0.0"
+    ws_host: str = "0.0.0.0"  # nosec B104 — container bind, overridden by env
     ws_port: int = 8090
-    api_host: str = "0.0.0.0"
+    api_host: str = "0.0.0.0"  # nosec B104 — container bind, overridden by env
     api_port: int = 8091
     db_host: str = "postgres"
     db_port: int = 5432

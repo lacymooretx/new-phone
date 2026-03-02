@@ -82,5 +82,5 @@ class DeepgramSTT(STTComponent):
         if self._ws:
             try:
                 await self._ws.close()
-            except Exception:
-                pass
+            except Exception:  # nosec B110 — best-effort cleanup on teardown
+                logger.debug("deepgram_ws_close_ignored")

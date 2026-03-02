@@ -2,8 +2,8 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-# System deps
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# System deps + security patches
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     gcc libpq-dev curl \
     && rm -rf /var/lib/apt/lists/*
 
