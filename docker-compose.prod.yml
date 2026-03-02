@@ -196,6 +196,7 @@ services:
         max-file: "5"
     networks:
       - backend
+      - frontend  # Needed for nginx reverse proxy access
 
   # ─── Rust Services ──────────────────────────────────────────────────
 
