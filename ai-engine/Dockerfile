@@ -4,7 +4,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     && rm -rf /var/lib/apt/lists/*
 COPY pyproject.toml .
 COPY src/ src/
-RUN pip install --no-cache-dir . && pip install --no-cache-dir setuptools
+RUN pip install --no-cache-dir . && pip install --no-cache-dir "setuptools<71"
 
 # Run as non-root user
 RUN adduser --disabled-password --gecos "" --uid 1000 appuser
