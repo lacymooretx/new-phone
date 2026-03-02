@@ -34,6 +34,13 @@ class TwilioProvider(TelephonyProvider):
         self.account_sid = account_sid
         self.auth_token = auth_token
 
+    def _check_configured(self) -> None:
+        if not self.account_sid or not self.auth_token:
+            raise ValueError(
+                "Twilio provider is not configured. "
+                "Set NP_TWILIO_ACCOUNT_SID and NP_TWILIO_AUTH_TOKEN environment variables."
+            )
+
     def _basic_auth(self) -> str:
         cred = b64encode(f"{self.account_sid}:{self.auth_token}".encode()).decode()
         return f"Basic {cred}"
@@ -54,6 +61,7 @@ class TwilioProvider(TelephonyProvider):
         state: str | None,
         quantity: int,
     ) -> list[DIDSearchResult]:
+        self._check_configured()
         url = f"{_API_BASE}/Accounts/{self.account_sid}/AvailablePhoneNumbers/US/Local.json"
         params: dict[str, str | int] = {"PageSize": min(quantity, 30)}
         if area_code:
@@ -96,6 +104,7 @@ class TwilioProvider(TelephonyProvider):
         return results
 
     async def purchase_did(self, number: str) -> DIDPurchaseResult:
+        self._check_configured()
         url = f"{_API_BASE}/Accounts/{self.account_sid}/IncomingPhoneNumbers.json"
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
@@ -129,6 +138,7 @@ class TwilioProvider(TelephonyProvider):
         )
 
     async def release_did(self, provider_sid: str) -> bool:
+        self._check_configured()
         url = (
             f"{_API_BASE}/Accounts/{self.account_sid}"
             f"/IncomingPhoneNumbers/{provider_sid}.json"
@@ -155,6 +165,7 @@ class TwilioProvider(TelephonyProvider):
                 return False
 
     async def configure_did(self, provider_sid: str, config: dict) -> bool:
+        self._check_configured()
         url = (
             f"{_API_BASE}/Accounts/{self.account_sid}"
             f"/IncomingPhoneNumbers/{provider_sid}.json"
@@ -195,6 +206,7 @@ class TwilioProvider(TelephonyProvider):
     # ------------------------------------------------------------------
 
     async def create_trunk(self, config: TrunkProvisionRequest) -> TrunkProvisionResult:
+        self._check_configured()
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             # 1. Create the trunk resource
             try:
@@ -292,6 +304,7 @@ class TwilioProvider(TelephonyProvider):
         )
 
     async def delete_trunk(self, provider_trunk_id: str) -> bool:
+        self._check_configured()
         url = f"{_TRUNKING_BASE}/Trunks/{provider_trunk_id}"
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
@@ -315,6 +328,7 @@ class TwilioProvider(TelephonyProvider):
                 return False
 
     async def get_trunk_status(self, provider_trunk_id: str) -> str:
+        self._check_configured()
         url = f"{_TRUNKING_BASE}/Trunks/{provider_trunk_id}"
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
@@ -344,6 +358,7 @@ class TwilioProvider(TelephonyProvider):
 
     async def test_trunk(self, provider_trunk_id: str) -> TrunkTestResult:
         """Test trunk connectivity by fetching its status from Twilio."""
+        self._check_configured()
         start = time.monotonic()
         url = f"{_TRUNKING_BASE}/Trunks/{provider_trunk_id}"
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:

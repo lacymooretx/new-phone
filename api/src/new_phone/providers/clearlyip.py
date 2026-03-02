@@ -30,6 +30,13 @@ class ClearlyIPProvider(TelephonyProvider):
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
 
+    def _check_configured(self) -> None:
+        if not self.base_url or not self.api_key:
+            raise ValueError(
+                "ClearlyIP provider is not configured. "
+                "Set NP_CLEARLYIP_API_URL and NP_CLEARLYIP_API_KEY environment variables."
+            )
+
     def _headers(self) -> dict[str, str]:
         return {
             "X-API-Key": self.api_key,
@@ -47,6 +54,7 @@ class ClearlyIPProvider(TelephonyProvider):
         state: str | None,
         quantity: int,
     ) -> list[DIDSearchResult]:
+        self._check_configured()
         params: dict[str, str | int] = {"limit": quantity}
         if area_code:
             params["area_code"] = area_code
@@ -92,6 +100,7 @@ class ClearlyIPProvider(TelephonyProvider):
         return results
 
     async def purchase_did(self, number: str) -> DIDPurchaseResult:
+        self._check_configured()
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
                 resp = await client.post(
@@ -124,6 +133,7 @@ class ClearlyIPProvider(TelephonyProvider):
         )
 
     async def release_did(self, provider_sid: str) -> bool:
+        self._check_configured()
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
                 resp = await client.delete(
@@ -149,6 +159,7 @@ class ClearlyIPProvider(TelephonyProvider):
                 return False
 
     async def configure_did(self, provider_sid: str, config: dict) -> bool:
+        self._check_configured()
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
                 resp = await client.put(
@@ -179,6 +190,7 @@ class ClearlyIPProvider(TelephonyProvider):
     # ------------------------------------------------------------------
 
     async def create_trunk(self, config: TrunkProvisionRequest) -> TrunkProvisionResult:
+        self._check_configured()
         payload = {
             "name": config.name,
             "region": config.region,
@@ -215,6 +227,7 @@ class ClearlyIPProvider(TelephonyProvider):
         )
 
     async def delete_trunk(self, provider_trunk_id: str) -> bool:
+        self._check_configured()
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
                 resp = await client.delete(
@@ -240,6 +253,7 @@ class ClearlyIPProvider(TelephonyProvider):
                 return False
 
     async def get_trunk_status(self, provider_trunk_id: str) -> str:
+        self._check_configured()
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
                 resp = await client.get(
@@ -265,6 +279,7 @@ class ClearlyIPProvider(TelephonyProvider):
                 return "unreachable"
 
     async def test_trunk(self, provider_trunk_id: str) -> TrunkTestResult:
+        self._check_configured()
         start = time.monotonic()
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
