@@ -1,5 +1,43 @@
 # App Build Progress
 
+## Production Deployment to docker.aspendora.com
+
+**Status**: COMPLETE
+**Date**: 2026-03-02
+
+### Infrastructure
+- **Server**: docker.aspendora.com (149.28.251.164)
+- **Plan**: Vultr vc2-6c-16gb (6 vCPU, 16 GB RAM, 320 GB disk, $80/mo)
+- **Web UI**: https://ucc.aspendora.com (Cloudflare-proxied)
+- **SIP TLS**: sip.aspendora.com:5061 (DNS-only, not proxied)
+
+### Services Running (13 containers)
+| Service | Status | Notes |
+|---------|--------|-------|
+| PostgreSQL | Healthy | 60 migrations applied, RLS enabled |
+| Redis | Healthy | 512 MB max memory |
+| MinIO | Healthy | recordings + recordings-archive buckets |
+| FreeSWITCH | Healthy | ESL connected, mod_sofia needs SIP config |
+| API (FastAPI) | Healthy | All core endpoints operational |
+| Web (React) | Healthy | SPA loads at ucc.aspendora.com |
+| AI Engine | Healthy | Needs provider API keys for full functionality |
+| Prometheus | Healthy | 30d retention |
+| Grafana | Healthy | Admin password in .env |
+| Alertmanager | Healthy | |
+| Node Exporter | Running | |
+| Redis Exporter | Running | |
+| Postgres Exporter | Running | |
+
+### Post-Deployment Tasks
+- [ ] Configure FreeSWITCH mod_sofia SIP profiles
+- [ ] Configure SMS provider credentials
+- [ ] Configure AI engine provider API keys
+- [ ] Seed initial MSP admin user
+- [ ] Configure SMTP for voicemail-to-email
+- [ ] Test SIP registration and calling
+
+---
+
 ## Phase 1: Foundation Stack
 
 **Status**: COMPLETE

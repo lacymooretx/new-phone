@@ -1,5 +1,78 @@
 # Claude Runlog — New Phone Platform
 
+## 2026-03-02 — Deploy New Phone PBX to docker.aspendora.com
+
+### Goal
+Deploy the platform to the Aspendora Docker server (149.28.251.164).
+
+### Execution
+
+#### Phase 1: VPS Upgrade (DONE)
+- Upgraded Vultr instance `5ad92ffe-5a47-4cbb-bd7a-97d5c455ae42` from `vc2-4c-8gb` to `vc2-6c-16gb`
+- Now: 6 vCPU, 16 GB RAM, 320 GB disk, $80/mo
+- Resize took ~20 min (disk doubled from 160→320 GB)
+
+#### Phase 2: DNS Records (DONE)
+- Created `ucc.aspendora.com` A record (Cloudflare proxied) → 149.28.251.164
+- Deleted old `sip.aspendora.com` CNAME (was pointing to sipdir.online.lync.com)
+- Created `sip.aspendora.com` A record (DNS-only) → 149.28.251.164
+- Created `_sips._tcp.aspendora.com` SRV record → sip.aspendora.com:5061
+
+#### Phase 3: Server Preparation (DONE)
+- Inventoried existing services (~70 containers, no PBX port conflicts in Docker networks)
+- Port conflicts on host: 3000 (defiant-mgmt), 8000 (alert-server), 8090 (sftpgo), 3001 (file-share-blazor)
+- Created `/etc/sysctl.d/99-newphone.conf` — kernel tuning for VoIP
+- Opened firewall ports: 5061/tcp (SIP TLS), 7443/tcp (WSS), 10000-20000/udp (RTP)
+- NTP (systemd-timesyncd) confirmed running
+
+#### Phase 4: SSL Certificate (DONE)
+- Obtained Let's Encrypt cert for ucc.aspendora.com + sip.aspendora.com via DNS-Cloudflare challenge
+- Cert at `/etc/letsencrypt/live/ucc.aspendora.com/`
+- Created deploy hook at `/etc/letsencrypt/renewal-hooks/deploy/newphone-freeswitch.sh`
+- Copied initial certs to `/opt/new-phone/freeswitch/tls/`
+
+#### Phase 5: Clone & Configure (DONE)
+- Cloned repo to `/opt/new-phone/`
+- Generated production `.env` with strong random secrets (chmod 600)
+- Fixed prod compose: removed host port mappings for api/web/minio/ai-engine/monitoring (nginx proxies via Docker network)
+- Added RTP port range (10000-20000/udp) to FreeSWITCH prod config
+- Committed and pushed: `dccc00c`
+
+#### Phase 6: Build & Start (DONE)
+- Built Docker images for api, web, freeswitch, ai-engine on server
+- Fixed port conflicts: removed host port mappings for api/web/minio/ai-engine/monitoring (existing services use 3000, 8000, 8090, 3001)
+- Used `!reset` YAML tag for Docker Compose port override (v2.24+ feature)
+- Fixed ai-engine: pinned `setuptools<71` (v82 removed pkg_resources needed by webrtcvad)
+- Fixed web healthcheck: use `127.0.0.1` instead of `localhost` (Alpine resolves to IPv6)
+- All 13 services started and healthy
+
+#### Phase 7: Database Migrations (DONE)
+- Created merge migration `0060` to resolve 3 divergent heads (0057, 0058, 0059)
+- Ran `alembic upgrade head` — all 60 migrations applied successfully
+- Updated `new_phone_app` user password to match production .env
+- Granted table-level permissions on existing tables
+
+#### Phase 8: Nginx Reverse Proxy (DONE)
+- Created `/opt/docker/nginx/conf.d/ucc.aspendora.com.conf` with Docker DNS resolver
+- Added `new_phone_frontend` external network to nginx service
+- Used variable-based upstreams (`set $api_upstream ...`) for graceful failure
+- Also fixed pre-existing `user-management.conf` upstream resolution issue
+
+#### Phase 9: Verification (DONE)
+- `https://ucc.aspendora.com/api/v1/health` → 200, core services healthy
+- `https://ucc.aspendora.com/` → 200, React SPA loads
+- SIP TLS (5061) — FreeSWITCH mod_sofia not loaded yet (needs SIP profile configuration, post-deployment)
+- All 13 Docker containers healthy
+
+### Known Post-Deployment Tasks
+- Configure FreeSWITCH mod_sofia SIP profiles with real TLS certs
+- Configure SMS provider credentials
+- Configure AI engine provider API keys
+- Seed initial MSP admin user
+- Configure SMTP for voicemail-to-email
+
+---
+
 ## 2026-03-02 — Finish Scaffolded Modules: Build Out All Stubs
 
 ### Goal
