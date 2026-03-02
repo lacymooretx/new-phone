@@ -87,6 +87,7 @@ export interface TrunkProvisionRequest {
   name: string
   region: string
   channels?: number
+  config?: Record<string, unknown>
 }
 
 export interface TrunkTestResult {

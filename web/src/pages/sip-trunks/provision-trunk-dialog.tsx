@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useTranslation } from "react-i18next"
@@ -8,11 +8,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -32,6 +34,7 @@ import { toast } from "sonner"
 
 const schema = z.object({
   provider: z.enum(["clearlyip", "twilio"]),
+  product_type: z.string().min(1, "Product type is required"),
   name: z.string().min(1, "Name is required"),
   region: z.string().min(1, "Region is required"),
   channels: z.coerce.number().int().min(1).max(1000).optional(),
@@ -59,11 +62,14 @@ export function ProvisionTrunkDialog({ open, onOpenChange }: Props) {
     resolver: zodResolver(schema) as any,
     defaultValues: {
       provider: "clearlyip",
+      product_type: "metered",
       name: "",
       region: "us-east",
       channels: 30,
     },
   })
+
+  const selectedProvider = useWatch({ control: form.control, name: "provider" })
 
   const onSubmit = (data: FormValues) => {
     const payload: TrunkProvisionRequest = {
@@ -71,6 +77,7 @@ export function ProvisionTrunkDialog({ open, onOpenChange }: Props) {
       name: data.name,
       region: data.region,
       channels: data.channels,
+      config: { product_type: data.product_type },
     }
     provisionMutation.mutate(payload, {
       onSuccess: () => {
@@ -87,6 +94,7 @@ export function ProvisionTrunkDialog({ open, onOpenChange }: Props) {
       <DialogContent className="max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{t("sipTrunks.provisionTitle")}</DialogTitle>
+          <DialogDescription>{t("sipTrunks.provisionDescription")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -96,7 +104,14 @@ export function ProvisionTrunkDialog({ open, onOpenChange }: Props) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("sipTrunks.provisionProvider")}</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={(val) => {
+                      field.onChange(val)
+                      // Reset product type when provider changes
+                      form.setValue("product_type", val === "clearlyip" ? "metered" : "elastic")
+                    }}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />
@@ -107,6 +122,47 @@ export function ProvisionTrunkDialog({ open, onOpenChange }: Props) {
                       <SelectItem value="twilio">Twilio</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="product_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("sipTrunks.provisionProductType")}</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {selectedProvider === "clearlyip" ? (
+                        <>
+                          <SelectItem value="metered">
+                            {t("sipTrunks.productMetered")}
+                          </SelectItem>
+                          <SelectItem value="unmetered">
+                            {t("sipTrunks.productUnmetered")}
+                          </SelectItem>
+                        </>
+                      ) : (
+                        <SelectItem value="elastic">
+                          {t("sipTrunks.productElastic")}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    {selectedProvider === "clearlyip"
+                      ? field.value === "metered"
+                        ? t("sipTrunks.productMeteredHelp")
+                        : t("sipTrunks.productUnmeteredHelp")
+                      : t("sipTrunks.productElasticHelp")}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
