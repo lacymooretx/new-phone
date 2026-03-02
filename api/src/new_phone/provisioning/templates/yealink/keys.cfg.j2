@@ -1,0 +1,34 @@
+###
+### Line Keys (DSS Keys)
+###
+{% for key in line_keys %}
+{% set type_code = key_type_map.get(key.key_type, 0) %}
+linekey.{{ key.key_index }}.type = {{ type_code }}
+{% if key.value %}
+linekey.{{ key.key_index }}.value = {{ key.value }}
+{% endif %}
+{% if key.label %}
+linekey.{{ key.key_index }}.label = {{ key.label }}
+{% endif %}
+linekey.{{ key.key_index }}.line = {{ key.line }}
+{% if key.key_type == 'blf' and extension %}
+linekey.{{ key.key_index }}.extension = {{ key.value }}
+linekey.{{ key.key_index }}.pickup_value = *8{{ key.value }}
+{% endif %}
+{% endfor %}
+
+###
+### Expansion Module Keys
+###
+{% for key in expansion_keys %}
+{% set module_num = key.key_section.replace('expansion_', '') %}
+{% set type_code = key_type_map.get(key.key_type, 0) %}
+expansion_module.{{ module_num }}.key.{{ key.key_index }}.type = {{ type_code }}
+{% if key.value %}
+expansion_module.{{ module_num }}.key.{{ key.key_index }}.value = {{ key.value }}
+{% endif %}
+{% if key.label %}
+expansion_module.{{ module_num }}.key.{{ key.key_index }}.label = {{ key.label }}
+{% endif %}
+expansion_module.{{ module_num }}.key.{{ key.key_index }}.line = {{ key.line }}
+{% endfor %}

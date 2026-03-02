@@ -1,0 +1,19 @@
+[project]
+name = "new-phone"
+version = "0.1.0"
+description = "Multi-tenant API-first PBX platform"
+requires-python = ">=3.12"
+
+[tool.uv.workspace]
+members = ["api"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["new_phone"]

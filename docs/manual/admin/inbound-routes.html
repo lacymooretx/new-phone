@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inbound Routes &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html" class="active">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="sip-trunks.html">Connectivity</a>
+        <span class="sep">/</span>
+        <span>Inbound Routes</span>
+      </div>
+
+      <h1>Inbound Routes</h1>
+      <p class="page-subtitle">Control how incoming calls reach their destination by mapping DIDs to extensions, queues, IVR menus, and other endpoints.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        An inbound route is the bridge between a phone number (DID) arriving on a SIP trunk and
+        the internal destination that should handle the call. When an external caller dials one of
+        your numbers, the platform looks up the matching inbound route, applies any caller ID
+        modifications, evaluates time conditions, and delivers the call to the configured
+        destination.
+      </p>
+      <p>
+        Without an inbound route, incoming calls on a DID have nowhere to go and will be rejected.
+        Every DID that should accept calls needs at least one inbound route pointing it to a
+        destination.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Route Per DID</div>
+        Each DID can be associated with one inbound route. If you need different behavior at
+        different times of day, use a single route that points to a Time Condition, which then
+        branches to multiple destinations based on schedule.
+      </div>
+
+      <!-- ── Call Flow Diagram ─────────────────────────────────────────── -->
+      <h2 id="call-flow">Call Flow Diagram</h2>
+      <p>The following diagram illustrates the path an inbound call takes through the routing engine.</p>
+
+      <div class="diagram">PSTN Caller
+  &#9474;
+  &#9660;
+SIP Trunk (receives call for DID +15551234567)
+  &#9474;
+  &#9660;
+Inbound Route Lookup (match by DID)
+  &#9474;
+  &#9500;&#9472; CID name prefix applied (e.g. "Main: ")
+  &#9474;
+  &#9500;&#9472; Time conditions evaluated?
+  &#9474;   &#9500;&#9472; Yes &#8594; Route to time-based destination
+  &#9474;   &#9492;&#9472; No  &#8594; Continue to default destination
+  &#9474;
+  &#9660;
+Destination
+  &#9500;&#9472; Extension (desk phone / softphone)
+  &#9500;&#9472; Ring Group (multiple phones ring)
+  &#9500;&#9472; Queue (ACD distribution to agents)
+  &#9500;&#9472; IVR Menu ("Press 1 for sales...")
+  &#9500;&#9472; Conference Room
+  &#9500;&#9472; Voicemail Box
+  &#9492;&#9472; Time Condition (schedule-based branching)</div>
+
+      <!-- ── Creating Routes ───────────────────────────────────────────── -->
+      <h2 id="creating-routes">Creating an Inbound Route</h2>
+      <p>
+        To create a new inbound route, submit a <code>POST</code> request to the inbound routes
+        endpoint with the fields described below. At minimum, you must provide a name and a
+        destination type. Linking a DID is optional at creation time but required for the route
+        to actually receive calls.
+      </p>
+
+      <h3 id="create-example">Example: Route Main Number to IVR</h3>
+      <pre><code>POST /api/v1/inbound-routes
+
+{
+  "name": "Main Office Line",
+  "did_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "destination_type": "IVR",
+  "destination_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "cid_name_prefix": "Main: ",
+  "enabled": true
+}</code></pre>
+
+      <h3 id="create-example-direct">Example: Route Direct Line to Extension</h3>
+      <pre><code>POST /api/v1/inbound-routes
+
+{
+  "name": "John Smith Direct",
+  "did_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "destination_type": "EXTENSION",
+  "destination_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  "enabled": true
+}</code></pre>
+
+      <!-- ── Field Reference ───────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="create-fields">InboundRouteCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Descriptive name for the route (1&ndash;255 characters)</td>
+            </tr>
+            <tr>
+              <td><code>did_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Links this route to a specific DID number. The route will only receive calls arriving on this DID.</td>
+            </tr>
+            <tr>
+              <td><code>destination_type</code></td>
+              <td><code>enum</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>The type of destination. One of: <code>EXTENSION</code>, <code>RING_GROUP</code>, <code>QUEUE</code>, <code>IVR</code>, <code>CONFERENCE</code>, <code>VOICEMAIL</code>, <code>TIME_CONDITION</code>.</td>
+            </tr>
+            <tr>
+              <td><code>destination_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>The UUID of the destination object (e.g., the extension ID, queue ID, or IVR ID). Required for all destination types except when routing to a catch-all.</td>
+            </tr>
+            <tr>
+              <td><code>cid_name_prefix</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Text prepended to the caller ID name (max 50 characters). Example: <code>"Sales: "</code> causes callers to display as <code>"Sales: John Doe"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>time_conditions</code></td>
+              <td><code>dict</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>JSON object defining time-based routing rules. When set, the route evaluates these conditions before delivering to the default destination.</td>
+            </tr>
+            <tr>
+              <td><code>enabled</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>Whether the route is active. Disabled routes are skipped during call processing.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="response-fields">Response Fields</h3>
+      <p>The API returns all create fields plus the following system-managed fields.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the inbound route</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>The tenant that owns this route (set automatically from auth context)</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Computed field reflecting whether the route is both enabled and has a valid destination</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the route was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Destination Types ─────────────────────────────────────────── -->
+      <h2 id="destination-types">Destination Types</h2>
+      <p>
+        Each inbound route must specify a destination type that determines where the call is
+        delivered. Choose the type that matches your use case.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Description</th>
+              <th>When to Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>EXTENSION</code></td>
+              <td>Routes the call directly to a single extension (desk phone, softphone, or mobile app).</td>
+              <td>Direct dial numbers assigned to individual users. Example: an executive's private line.</td>
+            </tr>
+            <tr>
+              <td><code>RING_GROUP</code></td>
+              <td>Rings a group of extensions simultaneously or sequentially.</td>
+              <td>Small teams where any member can answer. Example: a front desk with three phones that all ring.</td>
+            </tr>
+            <tr>
+              <td><code>QUEUE</code></td>
+              <td>Places the caller in an ACD queue with hold music and announcements while waiting for the next available agent.</td>
+              <td>Call centers and support lines with formal agent distribution. Example: a technical support hotline.</td>
+            </tr>
+            <tr>
+              <td><code>IVR</code></td>
+              <td>Plays an auto-attendant menu and routes based on caller key presses.</td>
+              <td>Main company numbers that need to offer choices. Example: "Press 1 for sales, 2 for support."</td>
+            </tr>
+            <tr>
+              <td><code>CONFERENCE</code></td>
+              <td>Sends the caller directly into a conference bridge.</td>
+              <td>Dedicated conference dial-in numbers. Example: a recurring meeting bridge.</td>
+            </tr>
+            <tr>
+              <td><code>VOICEMAIL</code></td>
+              <td>Routes the call directly to a voicemail box without ringing any phone.</td>
+              <td>After-hours numbers or informational lines. Example: a fax-back line that goes straight to voicemail.</td>
+            </tr>
+            <tr>
+              <td><code>TIME_CONDITION</code></td>
+              <td>Evaluates a time-of-day/day-of-week schedule and branches to different destinations.</td>
+              <td>Numbers that need different behavior based on business hours. Example: IVR during the day, voicemail at night.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── CID Name Prefix ──────────────────────────────────────────── -->
+      <h2 id="cid-name-prefix">Caller ID Name Prefix</h2>
+      <p>
+        The <code>cid_name_prefix</code> field lets you prepend a short label to the caller's
+        name as it appears on the phone display. This is especially useful when a user receives
+        calls on multiple DIDs and needs to know which number the caller dialed.
+      </p>
+
+      <h3 id="cid-prefix-examples">Common Prefix Patterns</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Prefix</th>
+              <th>Caller Display</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>"Sales: "</code></td>
+              <td><code>Sales: Jane Smith</code></td>
+              <td>Identify calls arriving on the sales DID</td>
+            </tr>
+            <tr>
+              <td><code>"Main: "</code></td>
+              <td><code>Main: Jane Smith</code></td>
+              <td>Distinguish main line calls from direct dial</td>
+            </tr>
+            <tr>
+              <td><code>"After Hrs: "</code></td>
+              <td><code>After Hrs: Jane Smith</code></td>
+              <td>Flag calls arriving on the after-hours number</td>
+            </tr>
+            <tr>
+              <td><code>"800: "</code></td>
+              <td><code>800: Jane Smith</code></td>
+              <td>Indicate the call came in on a toll-free number</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Prefix Length</div>
+        Keep prefixes short. The caller ID name field on most phones is limited to about 15
+        characters total. A long prefix will truncate the actual caller name.
+      </div>
+
+      <!-- ── Time Conditions ──────────────────────────────────────────── -->
+      <h2 id="time-conditions">Time Conditions Integration</h2>
+      <p>
+        Time conditions allow a single inbound route to deliver calls to different destinations
+        based on the time of day, day of week, or specific dates. There are two ways to apply
+        time-based routing:
+      </p>
+
+      <h3 id="tc-destination">Option 1: Route to a Time Condition Destination</h3>
+      <p>
+        Set <code>destination_type</code> to <code>TIME_CONDITION</code> and
+        <code>destination_id</code> to the UUID of a pre-configured time condition object. The
+        time condition itself defines the schedule and the branching destinations. This is the
+        recommended approach because the time condition can be reused across multiple routes and
+        managed independently.
+      </p>
+
+      <h3 id="tc-inline">Option 2: Inline Time Conditions</h3>
+      <p>
+        Set the <code>time_conditions</code> field on the route itself with a JSON object
+        defining schedule rules. This approach is simpler for one-off configurations but does
+        not allow reuse. The inline conditions are evaluated before the default destination.
+      </p>
+      <pre><code>{
+  "time_conditions": {
+    "business_hours": {
+      "days": ["mon", "tue", "wed", "thu", "fri"],
+      "start_time": "08:00",
+      "end_time": "17:00",
+      "destination_type": "IVR",
+      "destination_id": "aaaabbbb-cccc-dddd-eeee-ffffffffffff"
+    },
+    "after_hours": {
+      "destination_type": "VOICEMAIL",
+      "destination_id": "11112222-3333-4444-5555-666677778888"
+    }
+  }
+}</code></pre>
+
+      <div class="callout warning">
+        <div class="callout-title">Time Zone Awareness</div>
+        Time conditions use the tenant's configured time zone. Make sure the tenant time zone
+        is set correctly under Tenant settings, or schedule-based routing will evaluate against
+        the wrong clock.
+      </div>
+
+      <!-- ── Route Priority ───────────────────────────────────────────── -->
+      <h2 id="route-priority">Route Priority and Matching</h2>
+      <p>
+        When an inbound call arrives, the routing engine matches it to a route using the
+        following logic:
+      </p>
+      <ol>
+        <li><strong>DID match</strong> &mdash; The engine looks for a route whose <code>did_id</code> matches the called number. This is the primary matching criterion.</li>
+        <li><strong>Enabled check</strong> &mdash; Only routes with <code>enabled: true</code> are considered. Disabled routes are skipped.</li>
+        <li><strong>First match wins</strong> &mdash; If multiple routes match the same DID (which should not happen in normal configuration), the first match by creation date is used.</li>
+        <li><strong>No match</strong> &mdash; If no enabled route matches the DID, the call is rejected with a 404 (number not in service) response to the carrier.</li>
+      </ol>
+
+      <div class="callout">
+        <div class="callout-title">One Route Per DID</div>
+        The system enforces a unique constraint: each DID can be linked to only one inbound
+        route at a time. Attempting to create a second route for the same DID will return a
+        validation error.
+      </div>
+
+      <!-- ── Examples ─────────────────────────────────────────────────── -->
+      <h2 id="examples">Configuration Examples</h2>
+
+      <h3 id="example-main-ivr">Main Office Number to IVR with Business Hours</h3>
+      <p>
+        Route the company's main number to an IVR during business hours and to a voicemail box
+        after hours. Uses a Time Condition destination to handle the branching.
+      </p>
+      <pre><code>{
+  "name": "Main Office Number",
+  "did_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "destination_type": "TIME_CONDITION",
+  "destination_id": "d4e5f6a7-b8c9-0123-defg-456789012345",
+  "cid_name_prefix": "Main: ",
+  "enabled": true
+}</code></pre>
+
+      <h3 id="example-direct-ext">Direct Line to Extension</h3>
+      <p>
+        A direct inward dial (DID) number assigned to a specific user. Calls go straight to
+        their extension with no menu or queue in between.
+      </p>
+      <pre><code>{
+  "name": "Sarah Johnson Direct",
+  "did_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "destination_type": "EXTENSION",
+  "destination_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  "enabled": true
+}</code></pre>
+
+      <h3 id="example-support-queue">Support Number to Queue</h3>
+      <p>
+        Route the support hotline to an ACD queue where callers wait for the next available
+        agent. The CID prefix helps agents know the call came from the support line.
+      </p>
+      <pre><code>{
+  "name": "Support Hotline",
+  "did_id": "e5f6a7b8-c9d0-1234-efab-567890123456",
+  "destination_type": "QUEUE",
+  "destination_id": "f6a7b8c9-d0e1-2345-fabc-678901234567",
+  "cid_name_prefix": "Support: ",
+  "enabled": true
+}</code></pre>
+
+      <h3 id="example-conf">Conference Bridge Dial-In</h3>
+      <p>
+        A dedicated number that sends callers directly into a conference room.
+      </p>
+      <pre><code>{
+  "name": "Weekly Standup Bridge",
+  "did_id": "f6a7b8c9-d0e1-2345-fabc-678901234567",
+  "destination_type": "CONFERENCE",
+  "destination_id": "a7b8c9d0-e1f2-3456-abcd-789012345678",
+  "enabled": true
+}</code></pre>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="dids.html">DIDs</a> &mdash; Manage the phone numbers available for inbound routing</li>
+          <li><a href="outbound-routes.html">Outbound Routes</a> &mdash; Configure how outgoing calls select trunks</li>
+          <li><a href="time-conditions.html">Time Conditions</a> &mdash; Create schedule-based routing rules</li>
+          <li><a href="ivr-menus.html">IVR Menus</a> &mdash; Build auto-attendant menus for callers</li>
+          <li><a href="queues.html">Queues</a> &mdash; Set up ACD queues for call center routing</li>
+          <li><a href="ring-groups.html">Ring Groups</a> &mdash; Ring multiple extensions for incoming calls</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="dids.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">DIDs</span>
+        </a>
+        <a href="outbound-routes.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Outbound Routes</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#call-flow">Call Flow Diagram</a></li>
+      <li><a href="#creating-routes">Creating an Inbound Route</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#destination-types">Destination Types</a></li>
+      <li><a href="#cid-name-prefix">Caller ID Name Prefix</a></li>
+      <li><a href="#time-conditions">Time Conditions</a></li>
+      <li><a href="#route-priority">Route Priority &amp; Matching</a></li>
+      <li><a href="#examples">Configuration Examples</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

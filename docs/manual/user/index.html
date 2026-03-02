@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — New Phone User Guide</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="" width="28" height="28">
+      <div>
+        <span class="logo-text">New Phone</span>
+        <span class="logo-sub">User Guide</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html" class="active">Getting Started</a>
+          <a href="login.html">Logging In</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Your Phone</div>
+        <div class="sidebar-group-items">
+          <a href="your-extension.html">Your Extension</a>
+          <a href="voicemail.html">Voicemail</a>
+          <a href="call-history.html">Call History</a>
+          <a href="softphone.html">Web Softphone</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Application</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="profile.html">Your Profile</a>
+          <a href="keyboard-shortcuts.html">Shortcuts</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="../index.html" style="font-size:13px;color:var(--text-muted)">Manual Home</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">&#127763;</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="../index.html">Manual</a>
+        <span class="sep">/</span>
+        <a href="index.html">User Guide</a>
+        <span class="sep">/</span>
+        <span>Getting Started</span>
+      </div>
+
+      <h1>Getting Started</h1>
+      <p class="page-subtitle">Welcome to New Phone. This guide covers everything you need to know as an everyday user of the phone system.</p>
+
+      <!-- Welcome -->
+      <h2 id="welcome">Welcome to New Phone</h2>
+      <p>
+        New Phone is your company's business phone system. It connects your desk phone, your computer,
+        and your mobile device so you can make and receive calls from anywhere. Your administrator has
+        already set up the system for you &mdash; this guide will help you get the most out of it.
+      </p>
+      <p>
+        Whether you are sitting at your desk, working from home, or traveling, New Phone keeps you
+        connected with your team and your customers through a single phone number and a unified
+        experience across all your devices.
+      </p>
+
+      <!-- What you can do -->
+      <h2 id="what-you-can-do">What You Can Do</h2>
+      <p>As a New Phone user, you have access to the following features from the web interface:</p>
+      <ul>
+        <li><strong>Make and receive calls</strong> &mdash; Use the built-in web softphone directly from your browser, or pick up your desk phone as usual.</li>
+        <li><strong>Check voicemail</strong> &mdash; Listen to messages, manage folders, and get email notifications when new voicemails arrive.</li>
+        <li><strong>View call history</strong> &mdash; See a complete log of your incoming, outgoing, and missed calls with times and durations.</li>
+        <li><strong>Use the web softphone</strong> &mdash; Make calls straight from your computer without needing a physical phone.</li>
+        <li><strong>Manage your settings</strong> &mdash; Toggle Do Not Disturb, set up call forwarding, and update your voicemail greeting.</li>
+        <li><strong>See your dashboard</strong> &mdash; Get a quick overview of missed calls, new voicemails, and your recent activity.</li>
+      </ul>
+
+      <!-- Quick Start -->
+      <h2 id="quick-start">Quick Start</h2>
+      <p>Follow these four steps to get up and running right away:</p>
+
+      <div class="callout">
+        <div class="callout-title">Step 1 &mdash; Log In</div>
+        Open the web address your administrator gave you and sign in with your email and password.
+        If your organization uses multi-factor authentication (MFA), you will also enter a code from
+        your authenticator app. See <a href="login.html">Logging In</a> for detailed instructions.
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Step 2 &mdash; Check Your Extension</div>
+        After logging in, visit <a href="your-extension.html">Your Extension</a> to see your
+        extension number and confirm your settings. This is the number your coworkers dial to
+        reach you internally.
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Step 3 &mdash; Set Up Voicemail</div>
+        Go to <a href="voicemail.html">Voicemail</a> to set your PIN and record a personal greeting.
+        Callers who reach your voicemail will hear this greeting before leaving a message.
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Step 4 &mdash; Make a Test Call</div>
+        Try calling a coworker to make sure everything works. You can use your desk phone or the
+        <a href="softphone.html">Web Softphone</a> built into the web app. Dial their extension
+        number to place an internal call.
+      </div>
+
+      <!-- Main Pages -->
+      <h2 id="explore">Explore the User Guide</h2>
+      <p>Dive deeper into each area of New Phone:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Page</th>
+              <th>What It Covers</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="login.html">Logging In</a></td>
+              <td>How to sign in, set up MFA, reset your password, and troubleshoot login problems.</td>
+            </tr>
+            <tr>
+              <td><a href="your-extension.html">Your Extension</a></td>
+              <td>Your extension number, Do Not Disturb, call forwarding, call waiting, and caller ID.</td>
+            </tr>
+            <tr>
+              <td><a href="voicemail.html">Voicemail</a></td>
+              <td>Listening to messages, managing folders, setting greetings, and changing your PIN.</td>
+            </tr>
+            <tr>
+              <td><a href="call-history.html">Call History</a></td>
+              <td>Viewing your call log, understanding call types, filtering, and playing recordings.</td>
+            </tr>
+            <tr>
+              <td><a href="softphone.html">Web Softphone</a></td>
+              <td>Making and receiving calls directly from your web browser.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Your Role -->
+      <h2 id="your-role">Your Role vs. Your Admin's Role</h2>
+      <p>
+        New Phone has two types of users: <strong>administrators</strong> and <strong>regular users</strong>.
+        As a regular user, you control your own day-to-day settings like Do Not Disturb, call forwarding,
+        and voicemail. Your administrator handles the system-level configuration that keeps everything
+        running smoothly.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>You Control</th>
+              <th>Your Admin Controls</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Do Not Disturb on/off</td>
+              <td>Extension numbers and assignments</td>
+            </tr>
+            <tr>
+              <td>Call forwarding destinations</td>
+              <td>Caller ID and outbound routing</td>
+            </tr>
+            <tr>
+              <td>Voicemail greeting and PIN</td>
+              <td>Call recording policies</td>
+            </tr>
+            <tr>
+              <td>Call waiting on/off</td>
+              <td>Ring groups and call queues</td>
+            </tr>
+            <tr>
+              <td>Personal profile settings</td>
+              <td>Phone provisioning and E911 locations</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        If you need a change that only an administrator can make &mdash; such as a new extension number
+        or updated caller ID &mdash; contact your admin using the information below.
+      </p>
+
+      <!-- Getting Help -->
+      <h2 id="getting-help">Getting Help</h2>
+      <p>
+        If you run into a problem or have a question that this guide does not answer, reach out to
+        your company's phone system administrator. They can help with:
+      </p>
+      <ul>
+        <li>Account lockouts and password resets</li>
+        <li>Extension changes or new phone setup</li>
+        <li>Permission changes (e.g., international calling)</li>
+        <li>Troubleshooting call quality or connectivity issues</li>
+        <li>Any feature requests or questions about what the system can do</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Tip</div>
+        Your admin may have provided a support email, a help desk ticket system, or a chat channel
+        for phone system requests. Check your company's internal documentation or ask your manager
+        for the best way to get help.
+      </div>
+
+      <!-- Prev / Next -->
+      <div class="page-nav">
+        <span></span>
+        <a href="login.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Logging In</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Page TOC -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#welcome">Welcome</a></li>
+      <li><a href="#what-you-can-do">What You Can Do</a></li>
+      <li><a href="#quick-start">Quick Start</a></li>
+      <li><a href="#explore">Explore the Guide</a></li>
+      <li><a href="#your-role">Your Role vs. Admin</a></li>
+      <li><a href="#getting-help">Getting Help</a></li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI Guide — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html" class="active">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="dashboard.html">Interface</a>
+        <span class="sep">/</span>
+        <span>UI Guide</span>
+      </div>
+
+      <h1>UI Guide</h1>
+      <p class="page-subtitle">Tips and patterns for navigating the web application, using dark mode, keyboard shortcuts, and common UI interactions.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        The New Phone Platform web application is built with React and TypeScript, providing
+        a modern, responsive interface for managing your phone system. This guide covers the
+        common UI patterns, navigation structure, keyboard shortcuts, and tips to help you
+        work efficiently.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Consistent Patterns</div>
+        The application uses consistent UI patterns across all pages. Once you learn how to
+        create, edit, and delete items on one page (e.g., Extensions), the same patterns
+        apply to every other resource type (Ring Groups, Queues, IVR Menus, etc.).
+      </div>
+
+      <!-- ── Navigation ───────────────────────────────────────────────── -->
+      <h2 id="navigation">Navigation</h2>
+      <p>
+        The application uses a sidebar-based navigation layout with breadcrumbs for
+        context.
+      </p>
+
+      <h3 id="sidebar-nav">Sidebar</h3>
+      <p>
+        The left sidebar contains all primary navigation links organized into groups:
+        Telephony, Connectivity, Reports, System, Security, MSP, and Interface. The sidebar
+        is collapsible on desktop by clicking the hamburger icon, and slides in as an overlay
+        on mobile devices.
+      </p>
+      <ul>
+        <li>Click a group label to expand or collapse that section</li>
+        <li>The currently active page is highlighted in the sidebar</li>
+        <li>The sidebar remembers which groups are expanded across page navigation</li>
+        <li>On mobile, the sidebar opens from the left edge and can be dismissed by tapping the overlay</li>
+      </ul>
+
+      <h3 id="breadcrumbs">Breadcrumbs</h3>
+      <p>
+        Breadcrumbs appear at the top of every page, showing the current location in the
+        navigation hierarchy. Each breadcrumb segment is a clickable link. The format is:
+      </p>
+      <pre><code>Admin Manual / Section / Current Page</code></pre>
+      <p>
+        On detail pages (e.g., editing a specific extension), the breadcrumb includes the
+        list page as a parent:
+      </p>
+      <pre><code>Admin Manual / Telephony / Extensions / Extension 1001</code></pre>
+
+      <!-- ── Dark Mode ────────────────────────────────────────────────── -->
+      <h2 id="dark-mode">Dark Mode</h2>
+      <p>
+        The application supports both light and dark themes. The theme preference is stored
+        in the browser and persists across sessions.
+      </p>
+
+      <h3 id="dark-mode-toggle">Theme Toggle</h3>
+      <p>
+        Click the moon/sun icon in the bottom of the sidebar (or in the top navigation bar
+        on mobile) to switch between light and dark mode. The change applies immediately
+        across all pages.
+      </p>
+
+      <h3 id="dark-mode-system">System Preference</h3>
+      <p>
+        On first visit, the application respects your operating system's theme preference
+        (<code>prefers-color-scheme</code> media query). If your OS is set to dark mode,
+        the application will default to dark mode. Once you manually toggle the theme,
+        your explicit preference overrides the system setting.
+      </p>
+
+      <!-- ── Command Palette ──────────────────────────────────────────── -->
+      <h2 id="command-palette">Command Palette / Quick Search <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        A future release will add a command palette accessible via <kbd>Cmd+K</kbd> (macOS)
+        or <kbd>Ctrl+K</kbd> (Windows/Linux). The command palette will allow you to:
+      </p>
+      <ul>
+        <li>Search across all pages and resources by name or number</li>
+        <li>Jump to any page in the application instantly</li>
+        <li>Search extensions, users, DIDs, and queues by name or number</li>
+        <li>Execute quick actions (create extension, view dashboard, etc.)</li>
+        <li>Access recently visited pages</li>
+      </ul>
+
+      <!-- ── Keyboard Shortcuts ───────────────────────────────────────── -->
+      <h2 id="keyboard-shortcuts">Keyboard Shortcuts</h2>
+      <p>
+        The following keyboard shortcuts are available throughout the application to speed
+        up common operations.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Shortcut</th>
+              <th>Action</th>
+              <th>Context</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>Cmd/Ctrl + K</kbd></td>
+              <td>Open command palette</td>
+              <td>Global (Coming Soon)</td>
+            </tr>
+            <tr>
+              <td><kbd>Escape</kbd></td>
+              <td>Close modal or dialog</td>
+              <td>When a modal is open</td>
+            </tr>
+            <tr>
+              <td><kbd>Cmd/Ctrl + S</kbd></td>
+              <td>Save current form</td>
+              <td>When editing a resource</td>
+            </tr>
+            <tr>
+              <td><kbd>N</kbd></td>
+              <td>Create new resource</td>
+              <td>On list pages (when no input is focused)</td>
+            </tr>
+            <tr>
+              <td><kbd>/</kbd></td>
+              <td>Focus search/filter input</td>
+              <td>On list pages (when no input is focused)</td>
+            </tr>
+            <tr>
+              <td><kbd>J</kbd> / <kbd>K</kbd></td>
+              <td>Move down / up in list</td>
+              <td>On list pages (when no input is focused)</td>
+            </tr>
+            <tr>
+              <td><kbd>Enter</kbd></td>
+              <td>Open selected item</td>
+              <td>When an item is highlighted in a list</td>
+            </tr>
+            <tr>
+              <td><kbd>?</kbd></td>
+              <td>Show keyboard shortcut help</td>
+              <td>Global (when no input is focused)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Shortcut Safety</div>
+        Keyboard shortcuts that trigger destructive actions (delete, bulk operations) always
+        require confirmation via a dialog. Single-key shortcuts (<kbd>N</kbd>, <kbd>/</kbd>,
+        <kbd>J</kbd>, <kbd>K</kbd>) are disabled when a text input, textarea, or select
+        element is focused.
+      </div>
+
+      <!-- ── Table Interactions ───────────────────────────────────────── -->
+      <h2 id="tables">Table Interactions</h2>
+      <p>
+        Resource list pages (Extensions, Users, CDRs, etc.) use data tables with consistent
+        interactive features.
+      </p>
+
+      <h3 id="table-sorting">Sorting</h3>
+      <p>
+        Click any column header to sort the table by that column. Click again to toggle
+        between ascending and descending order. An arrow icon indicates the current sort
+        direction. The default sort varies by page (e.g., Extensions sort by extension
+        number, CDRs sort by date descending).
+      </p>
+
+      <h3 id="table-filtering">Filtering</h3>
+      <p>
+        Most list pages include a search/filter bar at the top. Type to filter results in
+        real time. Some pages offer advanced filter dropdowns for specific fields (e.g.,
+        filter CDRs by direction, filter extensions by status). Active filters are shown
+        as removable chips below the search bar.
+      </p>
+
+      <h3 id="table-pagination">Pagination</h3>
+      <p>
+        Large result sets are paginated with controls at the bottom of the table. You can
+        adjust the number of rows per page (10, 25, 50, 100) and navigate between pages.
+        The current page and total count are always displayed.
+      </p>
+
+      <h3 id="table-selection">Row Selection</h3>
+      <p>
+        Tables that support bulk operations have checkboxes in the first column. Select
+        individual rows by clicking their checkbox, or use the header checkbox to select
+        all visible rows. Bulk actions (delete, export) appear in a toolbar above the table
+        when rows are selected.
+      </p>
+
+      <!-- ── Form Patterns ────────────────────────────────────────────── -->
+      <h2 id="forms">Form Patterns</h2>
+      <p>
+        All create and edit forms follow consistent patterns across the application.
+      </p>
+
+      <h3 id="form-create">Creating a Resource</h3>
+      <ol>
+        <li>Navigate to the resource list page (e.g., Extensions)</li>
+        <li>Click the <strong>Create</strong> button (or press <kbd>N</kbd>)</li>
+        <li>Fill in the required fields (marked with an asterisk)</li>
+        <li>Click <strong>Save</strong> (or press <kbd>Cmd/Ctrl + S</kbd>)</li>
+        <li>A success notification appears and you are redirected to the list or detail page</li>
+      </ol>
+
+      <h3 id="form-edit">Editing a Resource</h3>
+      <ol>
+        <li>Click the resource name in the list to open the detail view</li>
+        <li>Click <strong>Edit</strong> to enter edit mode</li>
+        <li>Modify the desired fields</li>
+        <li>Click <strong>Save</strong> to apply changes, or <strong>Cancel</strong> to discard</li>
+        <li>A success notification confirms the update</li>
+      </ol>
+
+      <h3 id="form-delete">Deleting a Resource</h3>
+      <ol>
+        <li>Click the delete icon (trash) on the list page, or the <strong>Delete</strong> button on the detail page</li>
+        <li>A confirmation dialog appears showing what will be deleted</li>
+        <li>Type the resource name or click <strong>Confirm</strong> to proceed</li>
+        <li>The resource is deleted and you are redirected to the list page</li>
+      </ol>
+
+      <div class="callout warning">
+        <div class="callout-title">Deletion is Permanent</div>
+        Deleting a resource is irreversible. The confirmation dialog shows any dependent
+        resources that will also be affected (e.g., deleting an extension removes its
+        voicemail box, queue memberships, and ring group memberships).
+      </div>
+
+      <!-- ── Responsive Design ────────────────────────────────────────── -->
+      <h2 id="responsive">Responsive Design</h2>
+      <p>
+        The application adapts to different screen sizes with three primary breakpoints.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Breakpoint</th>
+              <th>Width</th>
+              <th>Layout Changes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Desktop</strong></td>
+              <td>&ge; 1024px</td>
+              <td>Full sidebar visible, three-column layout (sidebar + content + page TOC)</td>
+            </tr>
+            <tr>
+              <td><strong>Tablet</strong></td>
+              <td>768px &ndash; 1023px</td>
+              <td>Sidebar collapses to icons, page TOC hidden, two-column layout</td>
+            </tr>
+            <tr>
+              <td><strong>Mobile</strong></td>
+              <td>&lt; 768px</td>
+              <td>Sidebar becomes slide-out overlay, single-column layout, tables scroll horizontally</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        On smaller screens, data tables become horizontally scrollable to prevent content
+        truncation. The softphone panel resizes to fit mobile viewports. All interactive
+        elements maintain minimum touch target sizes of 44x44 pixels.
+      </p>
+
+      <!-- ── Notifications ────────────────────────────────────────────── -->
+      <h2 id="notifications">Notifications and Toasts</h2>
+      <p>
+        The application uses toast notifications to provide feedback on user actions. Toasts
+        appear in the top-right corner and automatically dismiss after a few seconds.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Color</th>
+              <th>Duration</th>
+              <th>Usage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Success</strong></td>
+              <td>Green</td>
+              <td>3 seconds</td>
+              <td>Resource created, updated, or deleted successfully</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td>Red</td>
+              <td>Persistent (manual dismiss)</td>
+              <td>API errors, validation failures, network issues</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td>Amber</td>
+              <td>5 seconds</td>
+              <td>Partial success, non-critical issues, deprecation notices</td>
+            </tr>
+            <tr>
+              <td><strong>Info</strong></td>
+              <td>Blue</td>
+              <td>4 seconds</td>
+              <td>Informational messages, status updates, tips</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Error toasts remain visible until manually dismissed to ensure you do not miss
+        important error messages. All other toast types can be dismissed early by clicking
+        the close button.
+      </p>
+
+      <!-- ── Loading States ───────────────────────────────────────────── -->
+      <h2 id="loading-states">Loading States</h2>
+      <p>
+        The application provides visual feedback during data loading to keep you informed
+        of what is happening.
+      </p>
+
+      <h3 id="loading-types">Loading Indicators</h3>
+      <ul>
+        <li><strong>Page skeleton</strong> &mdash; On initial page load, a skeleton placeholder mimics the page layout until data arrives. This prevents layout shifts and gives immediate visual structure.</li>
+        <li><strong>Spinner</strong> &mdash; Small inline spinners appear next to buttons after clicking to indicate the action is in progress (e.g., saving a form).</li>
+        <li><strong>Progress bar</strong> &mdash; A thin progress bar at the top of the page indicates page-level loading or navigation transitions.</li>
+        <li><strong>Table loading</strong> &mdash; When table data is refreshing (sort change, filter, pagination), a subtle overlay dims the table content to indicate loading while preserving the current view.</li>
+        <li><strong>Disabled buttons</strong> &mdash; Submit and action buttons are disabled while their operation is in progress to prevent duplicate submissions.</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Optimistic Updates</div>
+        Some operations use optimistic updates, where the UI updates immediately before the
+        API confirms the change. If the API call fails, the UI reverts to the previous state
+        and an error toast is shown. This approach provides a snappier user experience for
+        common operations.
+      </div>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="dashboard.html">Dashboard</a> &mdash; Real-time system overview</li>
+          <li><a href="webrtc-softphone.html">WebRTC Softphone</a> &mdash; Browser-based calling</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Example of list/detail/edit patterns</li>
+          <li><a href="coming-soon.html">Coming Soon</a> &mdash; Planned UI enhancements</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="webrtc-softphone.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">WebRTC Softphone</span>
+        </a>
+        <a href="coming-soon.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Coming Soon</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#navigation">Navigation</a></li>
+      <li><a href="#dark-mode">Dark Mode</a></li>
+      <li><a href="#command-palette">Command Palette</a></li>
+      <li><a href="#keyboard-shortcuts">Keyboard Shortcuts</a></li>
+      <li><a href="#tables">Table Interactions</a></li>
+      <li><a href="#forms">Form Patterns</a></li>
+      <li><a href="#responsive">Responsive Design</a></li>
+      <li><a href="#notifications">Notifications</a></li>
+      <li><a href="#loading-states">Loading States</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

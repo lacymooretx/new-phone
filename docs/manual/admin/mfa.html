@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MFA Setup — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html" class="active">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="auth.html">Security</a>
+        <span class="sep">/</span>
+        <span>MFA Setup</span>
+      </div>
+
+      <h1>Multi-Factor Authentication (MFA)</h1>
+      <p class="page-subtitle">Add a second layer of security to user accounts with time-based one-time passwords.</p>
+
+      <!-- ── What is MFA ───────────────────────────────────────────────── -->
+      <h2 id="what-is-mfa">What is MFA?</h2>
+      <p>
+        Multi-Factor Authentication (MFA) adds a second verification step to the login process.
+        After entering their email and password, users must also provide a one-time code from a
+        separate device. This ensures that even if a password is compromised, an attacker cannot
+        access the account without the second factor.
+      </p>
+      <p>
+        MFA significantly reduces the risk of account takeover from phishing, credential stuffing,
+        and password reuse attacks. It is strongly recommended for all users and especially critical
+        for administrator accounts.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Best Practice</div>
+        MSP and tenant administrators should enable MFA on their own accounts before requiring it
+        for other users. This ensures familiarity with the setup process and provides a fallback
+        in case users need assistance.
+      </div>
+
+      <!-- ── Supported Methods ─────────────────────────────────────────── -->
+      <h2 id="supported-methods">Supported Methods</h2>
+
+      <h3 id="totp">TOTP (Authenticator Apps) &mdash; Available Now</h3>
+      <p>
+        Time-Based One-Time Password (TOTP) is the currently implemented MFA method. It works with
+        any standard authenticator app that supports the TOTP algorithm (RFC 6238).
+      </p>
+      <p>Compatible authenticator apps include:</p>
+      <ul>
+        <li>Google Authenticator (iOS, Android)</li>
+        <li>Microsoft Authenticator (iOS, Android)</li>
+        <li>Authy (iOS, Android, Desktop)</li>
+        <li>1Password, Bitwarden, and other password managers with TOTP support</li>
+      </ul>
+      <p>
+        TOTP generates a new 6-digit code every 30 seconds. The code is derived from a shared
+        secret between the server and the authenticator app, combined with the current time.
+      </p>
+
+      <h3 id="webauthn">WebAuthn (Security Keys) <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        WebAuthn support will allow users to authenticate with hardware security keys (YubiKey,
+        Titan Key) or platform authenticators (Touch ID, Windows Hello, Face ID). This provides
+        phishing-resistant authentication that does not rely on shared secrets.
+      </p>
+
+      <h3 id="sms-mfa">SMS Verification <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        SMS-based verification will be available as a fallback option. While less secure than TOTP
+        or WebAuthn, it provides a familiar method for users who may not be comfortable with
+        authenticator apps.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">SMS Security Note</div>
+        SMS-based MFA is vulnerable to SIM-swapping attacks and should only be used as a fallback.
+        TOTP or WebAuthn are strongly preferred for all accounts.
+      </div>
+
+      <!-- ── Setup Flow ────────────────────────────────────────────────── -->
+      <h2 id="setup-flow">Setup Flow</h2>
+      <p>
+        MFA setup is a two-step process: the server generates a secret and provides it to the user
+        (via QR code or manual entry), and then the user verifies they have correctly configured
+        their authenticator by submitting a valid code.
+      </p>
+
+      <h3 id="setup-diagram">Setup Sequence</h3>
+      <div class="diagram">User &#8594; Request MFA Setup &#8594; API
+  &#8592; MFASetupResponse (secret, qr_code, provisioning_uri)
+
+User &#8594; Scan QR code with authenticator app
+  &#8594; Authenticator generates TOTP codes
+
+User &#8594; MFAVerifyRequest (code) &#8594; API
+  &#8592; Success: MFA is now enabled
+  &#8592; Failure: Invalid code, try again</div>
+
+      <h3 id="mfa-setup-response">MFASetupResponse Schema</h3>
+      <p>Returned when a user initiates MFA setup. Contains everything needed to configure an authenticator app.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>secret</code></td>
+              <td><code>string</code></td>
+              <td>Base32-encoded shared secret for manual entry into authenticator apps</td>
+            </tr>
+            <tr>
+              <td><code>qr_code</code></td>
+              <td><code>string</code></td>
+              <td>Base64-encoded PNG image of the QR code for scanning</td>
+            </tr>
+            <tr>
+              <td><code>provisioning_uri</code></td>
+              <td><code>string</code></td>
+              <td>
+                <code>otpauth://</code> URI that encodes the secret, issuer, and account name.
+                Can be used directly by authenticator apps.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="mfa-verify-request">MFAVerifyRequest Schema</h3>
+      <p>Submit a TOTP code to confirm the authenticator is correctly configured.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>code</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>6-digit TOTP code from the authenticator app</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Step-by-Step Setup ────────────────────────────────────────── -->
+      <h2 id="setup-procedure">Step-by-Step Setup Procedure</h2>
+      <p>Follow these steps to enable MFA on a user account.</p>
+
+      <ol class="steps">
+        <li>
+          <strong>Navigate to Security Settings</strong><br>
+          Open the user profile or, as an admin, navigate to the user's account in the
+          <a href="users.html">Users</a> management page. Locate the MFA section.
+        </li>
+        <li>
+          <strong>Initiate MFA Setup</strong><br>
+          Click the <strong>Enable MFA</strong> button. The API generates a new TOTP secret and
+          returns the <code>MFASetupResponse</code> containing the QR code, secret, and
+          provisioning URI.
+        </li>
+        <li>
+          <strong>Open Your Authenticator App</strong><br>
+          Launch Google Authenticator, Microsoft Authenticator, Authy, or any compatible TOTP
+          app on your mobile device.
+        </li>
+        <li>
+          <strong>Scan the QR Code</strong><br>
+          Use the authenticator app's "Scan QR Code" or "Add Account" feature to scan the
+          displayed QR code. If scanning is not possible, manually enter the Base32 secret
+          shown on screen.
+        </li>
+        <li>
+          <strong>Verify the Setup</strong><br>
+          The authenticator app will immediately begin generating 6-digit codes that refresh
+          every 30 seconds. Enter the current code into the verification field and click
+          <strong>Verify</strong>.
+        </li>
+        <li>
+          <strong>Save Recovery Information</strong><br>
+          Store the Base32 secret in a secure location (such as a password manager) as a
+          recovery backup. If you lose access to your authenticator device, this secret can be
+          used to re-register with a new app.
+        </li>
+        <li>
+          <strong>Confirmation</strong><br>
+          If the code is valid, MFA is now active on the account. All future logins will require
+          both the password and a TOTP code. The user interface will update to show MFA as enabled.
+        </li>
+      </ol>
+
+      <div class="callout success">
+        <div class="callout-title">Setup Complete</div>
+        Once MFA is verified and active, the user will be prompted for a TOTP code at every login.
+        The MFA challenge is inserted between password verification and token issuance, as
+        described in the <a href="auth.html#mfa-challenge">Authentication &amp; Login</a> page.
+      </div>
+
+      <!-- ── Disabling MFA ─────────────────────────────────────────────── -->
+      <h2 id="disabling-mfa">Disabling MFA</h2>
+      <p>
+        MFA can be disabled under specific circumstances. This is an administrative action that
+        should be performed carefully.
+      </p>
+
+      <h3 id="self-disable">Self-Disable (Users)</h3>
+      <p>
+        Users can disable their own MFA from their profile security settings. They must first
+        authenticate with their current TOTP code to confirm the action. This prevents an attacker
+        who has obtained only the password from disabling MFA.
+      </p>
+
+      <h3 id="admin-disable">Admin Disable</h3>
+      <p>
+        Tenant administrators and MSP administrators can disable MFA for any user within their
+        scope. This is typically used when a user has lost access to their authenticator device
+        and cannot log in. The action is recorded in the <a href="audit-logs.html">Audit Log</a>.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Security Consideration</div>
+        After an admin disables MFA for a user, the user should re-enable MFA as soon as possible.
+        Consider also resetting the user's password to ensure full credential rotation if the
+        disable was triggered by a suspected compromise.
+      </div>
+
+      <!-- ── Recovery Options ──────────────────────────────────────────── -->
+      <h2 id="recovery">Recovery Options</h2>
+      <p>
+        If a user loses access to their authenticator device, the following recovery methods
+        are available:
+      </p>
+
+      <h3 id="recovery-secret">Re-register with Saved Secret</h3>
+      <p>
+        If the user saved the Base32 secret during initial setup, they can add it to a new
+        authenticator app and resume generating codes immediately. No changes are needed on the
+        server side.
+      </p>
+
+      <h3 id="recovery-admin">Admin-Assisted Recovery</h3>
+      <p>
+        An administrator can disable MFA on the user's account, allowing the user to log in with
+        only their password. After logging in, the user should immediately set up MFA again with
+        a new secret.
+      </p>
+
+      <h3 id="recovery-backup-codes">Backup Codes <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A future release will include one-time backup codes generated during MFA setup. Each code
+        can be used once as an alternative to the TOTP code, providing a self-service recovery
+        path without administrator involvement.
+      </p>
+
+      <!-- ── Troubleshooting ───────────────────────────────────────────── -->
+      <h2 id="troubleshooting">Troubleshooting</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Problem</th>
+              <th>Likely Cause</th>
+              <th>Solution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Code is always rejected</td>
+              <td>Device clock is out of sync</td>
+              <td>Ensure the device's time is set to automatic. TOTP depends on accurate time.</td>
+            </tr>
+            <tr>
+              <td>QR code does not scan</td>
+              <td>Camera issue or low screen brightness</td>
+              <td>Increase screen brightness or manually enter the Base32 secret.</td>
+            </tr>
+            <tr>
+              <td>Lost authenticator device</td>
+              <td>Device lost, stolen, or reset</td>
+              <td>Use the saved Base32 secret on a new device, or request admin-assisted recovery.</td>
+            </tr>
+            <tr>
+              <td>MFA prompt not appearing at login</td>
+              <td>MFA may not be enabled on the account</td>
+              <td>Check the user's security settings to confirm MFA is active.</td>
+            </tr>
+            <tr>
+              <td>Code works once then fails</td>
+              <td>TOTP codes are time-limited (30s window)</td>
+              <td>Wait for a fresh code to appear before entering it. Do not reuse a code.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="auth.html">Authentication &amp; Login</a> &mdash; Login flow and MFA challenge details</li>
+          <li><a href="rbac.html">Roles &amp; Permissions</a> &mdash; Who can enable/disable MFA for others</li>
+          <li><a href="users.html">Users</a> &mdash; Manage user accounts and MFA status</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; Track MFA enable/disable events</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="auth.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Authentication &amp; Login</span>
+        </a>
+        <a href="rbac.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Roles &amp; Permissions</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#what-is-mfa">What is MFA?</a></li>
+      <li><a href="#supported-methods">Supported Methods</a></li>
+      <li><a href="#setup-flow">Setup Flow</a></li>
+      <li><a href="#setup-procedure">Step-by-Step Setup</a></li>
+      <li><a href="#disabling-mfa">Disabling MFA</a></li>
+      <li><a href="#recovery">Recovery Options</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

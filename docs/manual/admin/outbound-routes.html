@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outbound Routes &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html" class="active">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="sip-trunks.html">Connectivity</a>
+        <span class="sep">/</span>
+        <span>Outbound Routes</span>
+      </div>
+
+      <h1>Outbound Routes</h1>
+      <p class="page-subtitle">Define dial patterns, digit manipulation, caller ID policy, and trunk selection for outgoing calls.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        An outbound route controls how calls placed by users reach the outside world. When a
+        user dials a number, the platform evaluates the dialed digits against all configured
+        outbound routes, selects the best match based on dial pattern and priority, manipulates
+        the digits as needed, sets the outbound caller ID, and sends the call out through the
+        assigned SIP trunk. If the primary trunk is unavailable, the call automatically fails
+        over to the next trunk in the ordered list.
+      </p>
+      <p>
+        Without outbound routes, users cannot make external calls. You need at least one route
+        with a pattern that matches the numbers your users need to dial.
+      </p>
+
+      <!-- ── Matching Flow Diagram ─────────────────────────────────────── -->
+      <h2 id="matching-flow">Dial Pattern Matching Flow</h2>
+      <p>The following diagram shows how the outbound routing engine processes a dialed number.</p>
+
+      <div class="diagram">User dials: 15551234567
+  &#9474;
+  &#9660;
+Evaluate all enabled outbound routes (sorted by priority ASC)
+  &#9474;
+  &#9500;&#9472; Route "Emergency" (priority 1)
+  &#9474;     pattern: ^911$  &#8594; NO MATCH &#8594; skip
+  &#9474;
+  &#9500;&#9472; Route "Long Distance" (priority 50)
+  &#9474;     pattern: ^1[0-9]{10}$  &#8594; MATCH!
+  &#9474;     &#9500;&#9472; Strip 0 digits: 15551234567
+  &#9474;     &#9500;&#9472; Prepend nothing: 15551234567
+  &#9474;     &#9500;&#9472; CID mode: EXTENSION &#8594; use ext CID
+  &#9474;     &#9492;&#9472; Send via trunk_ids[0]
+  &#9474;         &#9500;&#9472; Trunk 1 available? &#8594; Yes &#8594; Call placed
+  &#9474;         &#9492;&#9472; Trunk 1 down? &#8594; Try trunk_ids[1] &#8594; ...
+  &#9474;
+  &#9500;&#9472; Route "International" (priority 100)
+  &#9474;     pattern: ^011  &#8594; not evaluated (already matched)
+  &#9474;
+  &#9492;&#9472; No match &#8594; Call rejected ("no route to destination")</div>
+
+      <!-- ── Creating Routes ───────────────────────────────────────────── -->
+      <h2 id="creating-routes">Creating an Outbound Route</h2>
+      <p>
+        Submit a <code>POST</code> request to the outbound routes endpoint. You must provide a
+        name, a dial pattern (regex), and at least one trunk ID. All other fields have sensible
+        defaults.
+      </p>
+
+      <pre><code>POST /api/v1/outbound-routes
+
+{
+  "name": "US Long Distance",
+  "dial_pattern": "^1[0-9]{10}$",
+  "prepend_digits": "",
+  "strip_digits": 0,
+  "cid_mode": "EXTENSION",
+  "priority": 50,
+  "enabled": true,
+  "trunk_ids": [
+    "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
+    "11112222-3333-4444-5555-666677778888"
+  ]
+}</code></pre>
+
+      <!-- ── Field Reference ───────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="create-fields">OutboundRouteCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Descriptive name for the route (1&ndash;255 characters)</td>
+            </tr>
+            <tr>
+              <td><code>dial_pattern</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Regular expression matched against the dialed number (1&ndash;100 characters). See <a href="#dial-patterns">Dial Pattern Syntax</a>.</td>
+            </tr>
+            <tr>
+              <td><code>prepend_digits</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>""</code></td>
+              <td>Digits added to the front of the number after stripping (max 20 characters). Used to add country codes or trunk prefixes.</td>
+            </tr>
+            <tr>
+              <td><code>strip_digits</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>0</code></td>
+              <td>Number of digits to remove from the front of the dialed number before prepending (0&ndash;20).</td>
+            </tr>
+            <tr>
+              <td><code>cid_mode</code></td>
+              <td><code>enum</code></td>
+              <td>No</td>
+              <td><code>EXTENSION</code></td>
+              <td>How outbound caller ID is determined. One of: <code>EXTENSION</code>, <code>CUSTOM</code>, <code>DID</code>. See <a href="#cid-modes">CID Modes</a>.</td>
+            </tr>
+            <tr>
+              <td><code>custom_cid</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>E.164 phone number used as caller ID when <code>cid_mode</code> is <code>CUSTOM</code> (max 40 characters). Example: <code>"+15551234567"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>priority</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>100</code></td>
+              <td>Route evaluation order. Lower numbers are evaluated first (0&ndash;9999). Routes with the same priority are evaluated in creation order.</td>
+            </tr>
+            <tr>
+              <td><code>enabled</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>Whether the route is active. Disabled routes are skipped during dial plan evaluation.</td>
+            </tr>
+            <tr>
+              <td><code>trunk_ids</code></td>
+              <td><code>list[UUID]</code></td>
+              <td>No</td>
+              <td><code>[]</code></td>
+              <td>Ordered list of SIP trunk IDs. The first trunk is the primary; subsequent trunks are failover in order. At least one trunk should be assigned for the route to work.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="response-fields">Response Fields</h3>
+      <p>The API returns all create fields plus the following system-managed fields.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the outbound route</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>The tenant that owns this route</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Computed field reflecting whether the route is enabled and has at least one trunk assigned</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the route was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Dial Pattern Syntax ───────────────────────────────────────── -->
+      <h2 id="dial-patterns">Dial Pattern Syntax</h2>
+      <p>
+        Dial patterns use standard regular expression syntax. The pattern is matched against
+        the complete dialed string. Use anchors (<code>^</code> and <code>$</code>) to ensure
+        exact matching, or omit <code>$</code> to allow prefix matching.
+      </p>
+
+      <h3 id="regex-reference">Quick Regex Reference</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Meaning</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>^</code></td>
+              <td>Start of string</td>
+              <td><code>^1</code> &mdash; must start with 1</td>
+            </tr>
+            <tr>
+              <td><code>$</code></td>
+              <td>End of string</td>
+              <td><code>567$</code> &mdash; must end with 567</td>
+            </tr>
+            <tr>
+              <td><code>[0-9]</code></td>
+              <td>Any single digit</td>
+              <td><code>[0-9]{3}</code> &mdash; exactly 3 digits</td>
+            </tr>
+            <tr>
+              <td><code>{n}</code></td>
+              <td>Exactly n repetitions</td>
+              <td><code>[0-9]{10}</code> &mdash; exactly 10 digits</td>
+            </tr>
+            <tr>
+              <td><code>{n,m}</code></td>
+              <td>Between n and m repetitions</td>
+              <td><code>[0-9]{7,11}</code> &mdash; 7 to 11 digits</td>
+            </tr>
+            <tr>
+              <td><code>?</code></td>
+              <td>Zero or one of preceding</td>
+              <td><code>1?</code> &mdash; optional leading 1</td>
+            </tr>
+            <tr>
+              <td><code>.</code></td>
+              <td>Any single character</td>
+              <td><code>.*</code> &mdash; anything</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="common-patterns">Common Dial Patterns</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Pattern</th>
+              <th>Matches</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Emergency</td>
+              <td><code>^911$</code></td>
+              <td>911</td>
+              <td>Priority 1. Must always be the highest priority route.</td>
+            </tr>
+            <tr>
+              <td>Local (7-digit)</td>
+              <td><code>^[0-9]{7}$</code></td>
+              <td>5551234</td>
+              <td>Some regions still use 7-digit local dialing.</td>
+            </tr>
+            <tr>
+              <td>Local (10-digit)</td>
+              <td><code>^[0-9]{10}$</code></td>
+              <td>5551234567</td>
+              <td>10-digit dialing without leading 1.</td>
+            </tr>
+            <tr>
+              <td>Long Distance (11-digit)</td>
+              <td><code>^1[0-9]{10}$</code></td>
+              <td>15551234567</td>
+              <td>US/Canada long distance with leading 1.</td>
+            </tr>
+            <tr>
+              <td>Flexible US/Canada</td>
+              <td><code>^1?[0-9]{10}$</code></td>
+              <td>5551234567 or 15551234567</td>
+              <td>Matches with or without leading 1.</td>
+            </tr>
+            <tr>
+              <td>International</td>
+              <td><code>^011</code></td>
+              <td>01144207946xxxx</td>
+              <td>International dialing prefix (011). No <code>$</code> anchor allows variable length.</td>
+            </tr>
+            <tr>
+              <td>Toll-free</td>
+              <td><code>^1?(800|888|877|866|855|844|833)[0-9]{7}$</code></td>
+              <td>18005551234</td>
+              <td>US toll-free numbers.</td>
+            </tr>
+            <tr>
+              <td>N11 codes</td>
+              <td><code>^[2-9]11$</code></td>
+              <td>411, 511, 811</td>
+              <td>Information and service codes (not 911, which has its own route).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Always Create an Emergency Route</div>
+        Every tenant must have an emergency route for <code>^911$</code> (and optionally
+        <code>^933$</code> for E911 testing) at priority 1. This ensures emergency calls are
+        never blocked by misconfigured dial plans.
+      </div>
+
+      <!-- ── Digit Manipulation ────────────────────────────────────────── -->
+      <h2 id="digit-manipulation">Digit Manipulation</h2>
+      <p>
+        After a dialed number matches a route, the platform can modify the digits before sending
+        them to the trunk. This is done in two steps, applied in order:
+      </p>
+      <ol>
+        <li><strong>Strip</strong> &mdash; Remove <code>strip_digits</code> characters from the front of the dialed number.</li>
+        <li><strong>Prepend</strong> &mdash; Add <code>prepend_digits</code> to the front of the remaining number.</li>
+      </ol>
+
+      <h3 id="manipulation-examples">Digit Manipulation Examples</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dialed</th>
+              <th>Strip</th>
+              <th>Prepend</th>
+              <th>Sent to Trunk</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>95551234567</td>
+              <td>1</td>
+              <td><code>1</code></td>
+              <td>15551234567</td>
+              <td>Users dial 9 for outside line; strip the 9, prepend country code 1</td>
+            </tr>
+            <tr>
+              <td>15551234567</td>
+              <td>1</td>
+              <td>&mdash;</td>
+              <td>5551234567</td>
+              <td>Trunk expects 10 digits; strip leading 1</td>
+            </tr>
+            <tr>
+              <td>5551234</td>
+              <td>0</td>
+              <td><code>1555</code></td>
+              <td>15555551234</td>
+              <td>7-digit local dialing; prepend country code + area code</td>
+            </tr>
+            <tr>
+              <td>01144207946</td>
+              <td>3</td>
+              <td><code>+</code></td>
+              <td>+44207946</td>
+              <td>Strip international prefix 011, prepend + for E.164</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── CID Modes ─────────────────────────────────────────────────── -->
+      <h2 id="cid-modes">Caller ID Modes</h2>
+      <p>
+        The <code>cid_mode</code> field determines what phone number is shown to the party
+        being called. Carriers may override this based on their own policies, but the platform
+        sends the configured value.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Behavior</th>
+              <th>When to Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>EXTENSION</code></td>
+              <td>Uses the outbound caller ID configured on the originating extension. Each user can have their own CID.</td>
+              <td>Default choice. Users who have their own DID and want their direct number displayed.</td>
+            </tr>
+            <tr>
+              <td><code>CUSTOM</code></td>
+              <td>Uses the E.164 number specified in <code>custom_cid</code> for all calls on this route.</td>
+              <td>When all calls on a route must display the same number. Example: a company main number on all outbound calls.</td>
+            </tr>
+            <tr>
+              <td><code>DID</code></td>
+              <td>Uses the DID assigned to the extension. Falls back to extension CID if no DID is assigned.</td>
+              <td>When DID assignment drives caller ID rather than manual extension configuration.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Carrier CID Enforcement</div>
+        Some SIP trunk providers enforce STIR/SHAKEN attestation and will only allow caller ID
+        numbers that you own on that trunk. Sending an unauthorized CID may result in the call
+        being rejected or displayed as "Spam Likely." Verify your CID configuration with your
+        trunk provider.
+      </div>
+
+      <!-- ── Priority and Matching Order ───────────────────────────────── -->
+      <h2 id="priority">Priority and Route Matching Order</h2>
+      <p>
+        When a user dials a number, the routing engine evaluates all enabled outbound routes
+        in the following order:
+      </p>
+      <ol>
+        <li><strong>Sort by priority</strong> &mdash; Routes are sorted by <code>priority</code> ascending. Lower numbers are evaluated first.</li>
+        <li><strong>Pattern match</strong> &mdash; The dialed number is tested against each route's <code>dial_pattern</code> regex.</li>
+        <li><strong>First match wins</strong> &mdash; The first route whose pattern matches the dialed number is selected.</li>
+        <li><strong>No match</strong> &mdash; If no route matches, the call is rejected with a "no route to destination" error.</li>
+      </ol>
+
+      <h3 id="priority-guidelines">Recommended Priority Ranges</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Priority</th>
+              <th>Route Type</th>
+              <th>Rationale</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Emergency (911)</td>
+              <td>Must always match first; never blocked by other patterns</td>
+            </tr>
+            <tr>
+              <td>10&ndash;20</td>
+              <td>N11 service codes</td>
+              <td>Short codes like 411, 511 should match before general patterns</td>
+            </tr>
+            <tr>
+              <td>50</td>
+              <td>Long distance / domestic</td>
+              <td>Standard outbound calls</td>
+            </tr>
+            <tr>
+              <td>100</td>
+              <td>Local dialing</td>
+              <td>Default priority; evaluated after specific patterns</td>
+            </tr>
+            <tr>
+              <td>200+</td>
+              <td>International</td>
+              <td>Broad prefix patterns; evaluated last to avoid false matches</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Trunk Failover ────────────────────────────────────────────── -->
+      <h2 id="trunk-failover">Trunk Failover</h2>
+      <p>
+        The <code>trunk_ids</code> field is an ordered list. The first trunk in the list is the
+        primary. If the primary trunk cannot complete the call (trunk down, capacity exceeded,
+        or the carrier returns an error), the platform automatically tries the next trunk in the
+        list, and so on until the call is placed or all trunks are exhausted.
+      </p>
+
+      <div class="diagram">Call matched to route
+  &#9474;
+  &#9660;
+Try trunk_ids[0] (Primary)
+  &#9500;&#9472; Success &#8594; Call connected
+  &#9492;&#9472; Failure &#8594; Try trunk_ids[1] (Failover 1)
+       &#9500;&#9472; Success &#8594; Call connected
+       &#9492;&#9472; Failure &#8594; Try trunk_ids[2] (Failover 2)
+            &#9500;&#9472; Success &#8594; Call connected
+            &#9492;&#9472; Failure &#8594; All trunks exhausted
+                 &#8594; Call fails ("all circuits busy")</div>
+
+      <p>
+        Failover happens automatically and is transparent to the caller (they hear ringing, not
+        an error). The failover attempt adds a few seconds of delay per trunk, so keep the list
+        to 2&ndash;3 trunks for optimal user experience.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Trunk Health Monitoring</div>
+        The platform monitors trunk health via SIP OPTIONS pings. Known-down trunks are skipped
+        immediately during failover, reducing delay. See <a href="sip-trunks.html">SIP Trunks</a>
+        for monitoring configuration.
+      </div>
+
+      <!-- ── Configuration Examples ────────────────────────────────────── -->
+      <h2 id="examples">Configuration Examples</h2>
+
+      <h3 id="example-emergency">Emergency Route (Required)</h3>
+      <pre><code>{
+  "name": "Emergency 911",
+  "dial_pattern": "^911$",
+  "strip_digits": 0,
+  "cid_mode": "EXTENSION",
+  "priority": 1,
+  "enabled": true,
+  "trunk_ids": ["aaaabbbb-cccc-dddd-eeee-ffffffffffff"]
+}</code></pre>
+
+      <h3 id="example-domestic">US/Canada Domestic</h3>
+      <pre><code>{
+  "name": "US Canada Domestic",
+  "dial_pattern": "^1?[0-9]{10}$",
+  "prepend_digits": "1",
+  "strip_digits": 0,
+  "cid_mode": "EXTENSION",
+  "priority": 50,
+  "enabled": true,
+  "trunk_ids": [
+    "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
+    "11112222-3333-4444-5555-666677778888"
+  ]
+}</code></pre>
+
+      <h3 id="example-international">International Dialing</h3>
+      <pre><code>{
+  "name": "International",
+  "dial_pattern": "^011[0-9]+$",
+  "strip_digits": 3,
+  "prepend_digits": "+",
+  "cid_mode": "CUSTOM",
+  "custom_cid": "+15551234567",
+  "priority": 200,
+  "enabled": true,
+  "trunk_ids": ["33334444-5555-6666-7777-888899990000"]
+}</code></pre>
+
+      <h3 id="example-company-cid">Company-Wide Caller ID</h3>
+      <pre><code>{
+  "name": "All Outbound - Company CID",
+  "dial_pattern": "^1?[0-9]{10}$",
+  "cid_mode": "CUSTOM",
+  "custom_cid": "+15559876543",
+  "priority": 50,
+  "enabled": true,
+  "trunk_ids": ["aaaabbbb-cccc-dddd-eeee-ffffffffffff"]
+}</code></pre>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="sip-trunks.html">SIP Trunks</a> &mdash; Configure the trunks that carry outbound calls</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Route incoming calls to internal destinations</li>
+          <li><a href="dids.html">DIDs</a> &mdash; Manage phone numbers for inbound and outbound CID</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Configure per-extension outbound caller ID</li>
+          <li><a href="caller-id-rules.html">Caller ID Rules</a> &mdash; Advanced caller ID manipulation rules</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="inbound-routes.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Inbound Routes</span>
+        </a>
+        <a href="cdrs.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Call History</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#matching-flow">Dial Pattern Matching Flow</a></li>
+      <li><a href="#creating-routes">Creating an Outbound Route</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#dial-patterns">Dial Pattern Syntax</a></li>
+      <li><a href="#digit-manipulation">Digit Manipulation</a></li>
+      <li><a href="#cid-modes">Caller ID Modes</a></li>
+      <li><a href="#priority">Priority &amp; Matching Order</a></li>
+      <li><a href="#trunk-failover">Trunk Failover</a></li>
+      <li><a href="#examples">Configuration Examples</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

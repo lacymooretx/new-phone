@@ -1,0 +1,41 @@
+appId: com.newphone.desktop
+productName: New Phone
+directories:
+  buildResources: resources
+  output: dist
+files:
+  - out/**/*
+extraResources:
+  - from: ../web/dist
+    to: web
+    filter:
+      - "**/*"
+mac:
+  category: public.app-category.business
+  target:
+    - dmg
+    - zip
+  icon: resources/icon.png
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  hardenedRuntime: true
+  gatekeeperAssess: false
+win:
+  target: nsis
+  icon: resources/icon.png
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Network
+  icon: resources/icon.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+publish:
+  provider: generic
+  url: https://releases.newphone.app
+protocols:
+  - name: New Phone
+    schemes:
+      - newphone

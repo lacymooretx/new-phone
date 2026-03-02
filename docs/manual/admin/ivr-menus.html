@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IVR / Auto Attendant &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html" class="active">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="extensions.html">Telephony</a>
+        <span class="sep">/</span>
+        <span>IVR Menus</span>
+      </div>
+
+      <h1>IVR / Auto Attendant</h1>
+      <p class="page-subtitle">Build interactive voice response menus that route callers through DTMF digit selections, with support for multi-level nesting, prompt management, and timeout handling.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        An IVR (Interactive Voice Response) menu &mdash; also called an auto attendant &mdash; greets
+        callers with a recorded prompt and waits for them to press a key on their phone. Each key
+        maps to an action: transfer to an extension, enter a queue, jump to another IVR submenu,
+        reach a voicemail box, or any other destination in the system.
+      </p>
+      <p>
+        IVR menus are the primary tool for building self-service call routing trees. A single
+        top-level IVR can branch into multiple submenus, creating a multi-level navigation
+        structure that handles complex organizations without human intervention.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Common Auto Attendant Pattern</div>
+        Most businesses use a single top-level IVR as the main company greeting, connected to an
+        inbound route. Callers hear "Press 1 for Sales, 2 for Support, 3 for Billing" and are
+        routed accordingly. Each department can have its own sub-IVR for further routing.
+      </div>
+
+      <!-- ── Creating an IVR ─────────────────────────────────────────── -->
+      <h2 id="creating">Creating an IVR Menu</h2>
+      <p>
+        To create an IVR menu, submit a <code>POST</code> request to the IVR endpoint with the
+        menu configuration and its list of digit-to-action mappings. At minimum you need a name,
+        but a useful IVR also requires at least one greeting prompt and one or more options.
+      </p>
+
+      <pre><code>POST /api/v1/ivr-menus
+
+{
+  "name": "Main Auto Attendant",
+  "description": "Company main greeting and top-level routing",
+  "greet_long_prompt_id": "aaa-bbb-ccc-111",
+  "greet_short_prompt_id": "aaa-bbb-ccc-222",
+  "invalid_sound_prompt_id": "aaa-bbb-ccc-333",
+  "exit_sound_prompt_id": "aaa-bbb-ccc-444",
+  "timeout": 10,
+  "max_failures": 3,
+  "max_timeouts": 3,
+  "inter_digit_timeout": 2,
+  "digit_len": 1,
+  "enabled": true,
+  "options": [
+    { "digits": "1", "action_type": "queue", "action_target_id": "queue-uuid-sales", "label": "Sales" },
+    { "digits": "2", "action_type": "queue", "action_target_id": "queue-uuid-support", "label": "Support" },
+    { "digits": "3", "action_type": "goto", "action_target_id": "ivr-uuid-billing", "label": "Billing Menu" },
+    { "digits": "0", "action_type": "extension", "action_target_id": "ext-uuid-operator", "label": "Operator" }
+  ]
+}</code></pre>
+
+      <!-- ── Field Reference ─────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="ivr-create-fields">IVRMenuCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Display name for the IVR menu (1&ndash;255 characters)</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Optional description of the menu's purpose</td>
+            </tr>
+            <tr>
+              <td><code>greet_long_prompt_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Audio prompt played when a caller first enters the IVR</td>
+            </tr>
+            <tr>
+              <td><code>greet_short_prompt_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Shorter prompt replayed on timeout or return from a submenu</td>
+            </tr>
+            <tr>
+              <td><code>invalid_sound_prompt_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Audio played when the caller presses an unrecognized key</td>
+            </tr>
+            <tr>
+              <td><code>exit_sound_prompt_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Audio played when the caller exits the IVR (max failures/timeouts reached)</td>
+            </tr>
+            <tr>
+              <td><code>timeout</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>10</code></td>
+              <td>Seconds to wait for caller input after the prompt finishes (1&ndash;300)</td>
+            </tr>
+            <tr>
+              <td><code>max_failures</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>3</code></td>
+              <td>Maximum invalid key presses before the IVR exits (1&ndash;10)</td>
+            </tr>
+            <tr>
+              <td><code>max_timeouts</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>3</code></td>
+              <td>Maximum times the caller can time out before the IVR exits (1&ndash;10)</td>
+            </tr>
+            <tr>
+              <td><code>inter_digit_timeout</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>2</code></td>
+              <td>Seconds to wait between digits for multi-digit input (1&ndash;30)</td>
+            </tr>
+            <tr>
+              <td><code>digit_len</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>1</code></td>
+              <td>Expected number of digits per selection (1&ndash;10)</td>
+            </tr>
+            <tr>
+              <td><code>exit_destination_type</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Where to route the caller on exit (e.g., <code>"extension"</code>, <code>"voicemail"</code>)</td>
+            </tr>
+            <tr>
+              <td><code>exit_destination_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>UUID of the exit destination resource</td>
+            </tr>
+            <tr>
+              <td><code>enabled</code></td>
+              <td><code>bool</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>Whether the IVR menu is active and can receive calls</td>
+            </tr>
+            <tr>
+              <td><code>options</code></td>
+              <td><code>list</code></td>
+              <td>No</td>
+              <td><code>[]</code></td>
+              <td>List of <code>IVRMenuOptionCreate</code> objects defining digit mappings</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="response-fields">Response Fields</h3>
+      <p>The API response includes all create fields plus the following system-managed fields:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for this IVR menu</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Owning tenant (set automatically from auth context)</td>
+            </tr>
+            <tr>
+              <td><code>tts_engine</code></td>
+              <td><code>string</code></td>
+              <td>Text-to-speech engine (reserved for future TTS integration)</td>
+            </tr>
+            <tr>
+              <td><code>tts_voice</code></td>
+              <td><code>string</code></td>
+              <td>TTS voice selection (reserved for future TTS integration)</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>bool</code></td>
+              <td>System-computed active state (enabled and not soft-deleted)</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the menu was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last update</td>
+            </tr>
+            <tr>
+              <td><code>options</code></td>
+              <td><code>list</code></td>
+              <td>Full list of IVR menu options with their IDs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Menu Options ─────────────────────────────────────────────── -->
+      <h2 id="options">Menu Options (DTMF Mappings)</h2>
+      <p>
+        Each option in the <code>options</code> list maps a DTMF digit sequence to an action.
+        When a caller presses a matching digit, the IVR executes the corresponding action.
+      </p>
+
+      <h3 id="option-fields">IVRMenuOptionCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>digits</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>DTMF digit(s) that trigger this option (1&ndash;10 characters, e.g. <code>"1"</code>, <code>"42"</code>, <code>"*"</code>)</td>
+            </tr>
+            <tr>
+              <td><code>action_type</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Action to perform: <code>"goto"</code>, <code>"extension"</code>, <code>"voicemail"</code>, <code>"queue"</code>, <code>"ring_group"</code>, <code>"conference"</code>, <code>"hangup"</code>, etc.</td>
+            </tr>
+            <tr>
+              <td><code>action_target_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>UUID of the target resource (extension, queue, IVR submenu, etc.)</td>
+            </tr>
+            <tr>
+              <td><code>action_target_value</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Free-text value for actions that do not use a UUID target</td>
+            </tr>
+            <tr>
+              <td><code>label</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Human-readable label for display in the admin UI</td>
+            </tr>
+            <tr>
+              <td><code>position</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>0</code></td>
+              <td>Sort order for display purposes (does not affect call routing)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="action-types">Supported Action Types</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Action Type</th>
+              <th>Target Field</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>extension</code></td>
+              <td><code>action_target_id</code></td>
+              <td>Transfer the call to the specified extension</td>
+            </tr>
+            <tr>
+              <td><code>voicemail</code></td>
+              <td><code>action_target_id</code></td>
+              <td>Send the caller directly to the specified voicemail box</td>
+            </tr>
+            <tr>
+              <td><code>queue</code></td>
+              <td><code>action_target_id</code></td>
+              <td>Place the caller into the specified call queue</td>
+            </tr>
+            <tr>
+              <td><code>ring_group</code></td>
+              <td><code>action_target_id</code></td>
+              <td>Ring the specified ring group</td>
+            </tr>
+            <tr>
+              <td><code>goto</code></td>
+              <td><code>action_target_id</code></td>
+              <td>Jump to another IVR menu (submenu navigation)</td>
+            </tr>
+            <tr>
+              <td><code>conference</code></td>
+              <td><code>action_target_id</code></td>
+              <td>Place the caller into a conference bridge</td>
+            </tr>
+            <tr>
+              <td><code>hangup</code></td>
+              <td>&mdash;</td>
+              <td>Hang up the call (no target needed)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Prompts ──────────────────────────────────────────────────── -->
+      <h2 id="prompts">Prompt Configuration</h2>
+      <p>
+        IVR menus support four distinct prompt slots, each serving a different purpose in the
+        caller experience. All prompts are optional but strongly recommended for production use.
+        Upload audio files through the <a href="audio-prompts.html">Audio Prompts</a> module
+        before referencing them here.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Prompt</th>
+              <th>Field</th>
+              <th>When Played</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Long Greeting</td>
+              <td><code>greet_long_prompt_id</code></td>
+              <td>First time the caller enters the IVR. Typically the full greeting: "Thank you for calling Acme Corp. For Sales, press 1. For Support, press 2..."</td>
+            </tr>
+            <tr>
+              <td>Short Greeting</td>
+              <td><code>greet_short_prompt_id</code></td>
+              <td>Replayed after a timeout or when the caller returns from a submenu. A shorter version: "Press 1 for Sales, 2 for Support..."</td>
+            </tr>
+            <tr>
+              <td>Invalid Sound</td>
+              <td><code>invalid_sound_prompt_id</code></td>
+              <td>When the caller presses an unrecognized key. Typically: "That is not a valid selection. Please try again."</td>
+            </tr>
+            <tr>
+              <td>Exit Sound</td>
+              <td><code>exit_sound_prompt_id</code></td>
+              <td>When max failures or max timeouts are reached and the IVR is about to exit. Typically: "Goodbye."</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Long vs Short Greeting</div>
+        The long greeting plays only once when the caller first enters the IVR. If the caller
+        times out or presses an invalid key, the short greeting replays instead. This avoids
+        forcing repeat callers to listen to the full company introduction each time. If no short
+        greeting is set, the long greeting replays.
+      </div>
+
+      <!-- ── Timeout and Failure ──────────────────────────────────────── -->
+      <h2 id="timeout-failure">Timeout and Failure Handling</h2>
+      <p>
+        The IVR tracks two separate counters: timeouts (caller does nothing) and failures
+        (caller presses an invalid key). Each counter increments independently and resets on
+        a successful selection. When either counter reaches its maximum, the IVR exits.
+      </p>
+
+      <h3 id="timeout-flow">Timeout Flow</h3>
+      <ul>
+        <li>After the greeting plays, the system waits <code>timeout</code> seconds for input.</li>
+        <li>If no input is received, the timeout counter increments by one.</li>
+        <li>If <code>max_timeouts</code> has not been reached, the short greeting replays.</li>
+        <li>If <code>max_timeouts</code> is reached, the exit sound plays and the caller is routed to the exit destination.</li>
+      </ul>
+
+      <h3 id="failure-flow">Failure Flow</h3>
+      <ul>
+        <li>When the caller presses a digit that does not match any option, the failure counter increments.</li>
+        <li>The invalid sound prompt plays, then the short greeting replays.</li>
+        <li>If <code>max_failures</code> is reached, the exit sound plays and the caller exits.</li>
+      </ul>
+
+      <h3 id="exit-destination">Exit Destination</h3>
+      <p>
+        When the IVR exits due to max failures or max timeouts, the caller is routed to the
+        exit destination defined by <code>exit_destination_type</code> and
+        <code>exit_destination_id</code>. Common exit destinations include an operator extension,
+        a general voicemail box, or the company receptionist. If no exit destination is configured,
+        the call is disconnected.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Always Set an Exit Destination</div>
+        Without an exit destination, callers who cannot navigate the IVR will be disconnected
+        silently. Always configure an exit destination &mdash; at minimum, send them to a
+        voicemail box or operator extension.
+      </div>
+
+      <!-- ── Multi-Digit Input ────────────────────────────────────────── -->
+      <h2 id="multi-digit">Multi-Digit Input</h2>
+      <p>
+        By default, <code>digit_len</code> is set to <code>1</code>, meaning the IVR expects
+        a single key press per selection. For IVRs that need multi-digit input (such as dialing
+        an extension number directly), increase <code>digit_len</code> to match the expected
+        length.
+      </p>
+      <ul>
+        <li><code>digit_len: 1</code> &mdash; Standard single-key menus (press 1, 2, 3, etc.)</li>
+        <li><code>digit_len: 3</code> &mdash; Three-digit extension dial-by-number (press 100, 101, etc.)</li>
+        <li><code>digit_len: 4</code> &mdash; Four-digit extension ranges</li>
+      </ul>
+      <p>
+        The <code>inter_digit_timeout</code> controls how long the system waits between
+        consecutive key presses. If the caller pauses longer than this value between digits,
+        the system treats the collected digits as the complete input. Set this higher (3&ndash;5
+        seconds) for users who may dial slowly.
+      </p>
+
+      <!-- ── Nested IVRs ──────────────────────────────────────────────── -->
+      <h2 id="nested-ivr">Nested IVRs (Submenus)</h2>
+      <p>
+        IVR menus can be chained together by using the <code>"goto"</code> action type with
+        the target set to another IVR menu's UUID. This creates a multi-level menu tree where
+        callers navigate deeper by pressing digits.
+      </p>
+      <p>
+        There is no hard limit on nesting depth, but best practice is to keep it to two or
+        three levels. Deeply nested menus frustrate callers and increase abandonment rates.
+      </p>
+
+      <pre><code>// Option in top-level IVR that leads to a submenu
+{
+  "digits": "3",
+  "action_type": "goto",
+  "action_target_id": "ivr-uuid-billing-submenu",
+  "label": "Billing Department"
+}
+
+// The billing submenu IVR might have its own options:
+// Press 1 for Account Balance
+// Press 2 for Payment History
+// Press 3 for Speak to Billing Agent</code></pre>
+
+      <div class="callout">
+        <div class="callout-title">Submenu Prompts</div>
+        Each submenu is a fully independent IVR with its own greeting prompts, timeouts, and
+        failure handling. When a caller enters a submenu, that menu's long greeting plays. Design
+        each submenu to be self-contained with its own exit destination.
+      </div>
+
+      <!-- ── TTS Integration ──────────────────────────────────────────── -->
+      <h2 id="tts">TTS Integration <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        The IVR response includes <code>tts_engine</code> and <code>tts_voice</code> fields
+        reserved for future text-to-speech integration. When available, TTS will allow you to
+        generate IVR prompts dynamically from text instead of uploading pre-recorded audio files.
+      </p>
+      <ul>
+        <li>Define prompt text directly in the IVR configuration</li>
+        <li>Select from multiple TTS engines and voice options</li>
+        <li>Automatic prompt regeneration when text is updated</li>
+        <li>Support for SSML markup for fine-grained speech control</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">TTS Not Yet Available</div>
+        Text-to-speech integration is planned for a future release. Currently, all IVR prompts
+        must be pre-recorded audio files uploaded through the
+        <a href="audio-prompts.html">Audio Prompts</a> module.
+      </div>
+
+      <!-- ── IVR Tree Diagram ─────────────────────────────────────────── -->
+      <h2 id="ivr-diagram">IVR Tree Example</h2>
+      <p>
+        The following diagram shows a typical two-level IVR structure for a mid-size company.
+      </p>
+
+      <div class="diagram">Inbound Call
+  &#9474;
+  &#9492;&#9472; Main IVR (greet_long: "Thank you for calling Acme Corp...")
+       &#9474;
+       &#9500;&#9472; [1] Sales Queue
+       &#9474;
+       &#9500;&#9472; [2] Support Queue
+       &#9474;
+       &#9500;&#9472; [3] Billing Sub-IVR
+       &#9474;    &#9474;
+       &#9474;    &#9500;&#9472; [1] Account Balance &#8594; Extension 410
+       &#9474;    &#9500;&#9472; [2] Payment History &#8594; Extension 411
+       &#9474;    &#9492;&#9472; [3] Billing Agent &#8594; Ring Group "Billing"
+       &#9474;
+       &#9500;&#9472; [4] Company Directory (digit_len: 3)
+       &#9474;
+       &#9500;&#9472; [0] Operator &#8594; Extension 100
+       &#9474;
+       &#9492;&#9472; [timeout/max_failures] &#8594; Exit &#8594; Operator Voicemail</div>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="audio-prompts.html">Audio Prompts</a> &mdash; Upload and manage IVR greeting recordings</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Route incoming DID calls to an IVR</li>
+          <li><a href="queues.html">Queues</a> &mdash; Call queues often used as IVR destinations</li>
+          <li><a href="ring-groups.html">Ring Groups</a> &mdash; Ring groups used as IVR option targets</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Individual extensions as direct transfer targets</li>
+          <li><a href="time-conditions.html">Time Conditions</a> &mdash; Route to different IVRs based on business hours</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="queues.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Queues</span>
+        </a>
+        <a href="conferences.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Conferences</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#creating">Creating an IVR Menu</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#options">Menu Options (DTMF)</a></li>
+      <li><a href="#prompts">Prompt Configuration</a></li>
+      <li><a href="#timeout-failure">Timeout &amp; Failure Handling</a></li>
+      <li><a href="#multi-digit">Multi-Digit Input</a></li>
+      <li><a href="#nested-ivr">Nested IVRs</a></li>
+      <li><a href="#tts">TTS Integration</a></li>
+      <li><a href="#ivr-diagram">IVR Tree Example</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

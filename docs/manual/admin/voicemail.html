@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voicemail Boxes &amp; Messages &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html" class="active">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="voicemail.html">Reports</a>
+        <span class="sep">/</span>
+        <span>Voicemail</span>
+      </div>
+
+      <h1>Voicemail Boxes &amp; Messages</h1>
+      <p class="page-subtitle">Create and manage voicemail boxes, configure greetings and notifications, and work with voicemail messages.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Voicemail boxes provide a destination for unanswered calls. When a call reaches an
+        extension that is busy, unanswered, or has no registered device and no call forwarding
+        destination is configured, the caller hears a greeting and can leave a recorded message.
+      </p>
+      <p>
+        Each voicemail box is an independent entity identified by a <code>mailbox_number</code>.
+        Boxes are linked to extensions via the extension's <code>voicemail_box_id</code> field,
+        but a box can exist without being linked (e.g., a shared departmental mailbox or a
+        pre-provisioned box awaiting assignment).
+      </p>
+      <p>
+        Users access their voicemail by dialing a feature code from their phone, through the
+        web UI voicemail panel, or via the mobile app. Administrators can manage all voicemail
+        boxes within their tenant and access message metadata (but message playback respects
+        role-based access controls).
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Voicemail Boxes vs. Extensions</div>
+        A voicemail box is separate from an extension. Create the voicemail box first, then
+        link it to an extension by setting the extension's <code>voicemail_box_id</code>.
+        One extension can have one voicemail box, and one voicemail box should be linked to
+        one extension (though a box can technically be shared by updating multiple extensions
+        to point to the same box).
+      </div>
+
+      <!-- ── Creating a Voicemail Box ─────────────────────────────────── -->
+      <h2 id="creating">Creating a Voicemail Box</h2>
+      <p>
+        To create a new voicemail box, submit a <code>POST</code> request to
+        <code>/api/v1/voicemail/boxes</code> with a JSON body matching the
+        <code>VoicemailBoxCreate</code> schema, or use the admin UI:
+      </p>
+
+      <ol class="steps">
+        <li>Navigate to <strong>Reports &gt; Voicemail</strong> in the admin interface.</li>
+        <li>Click <strong>Add Voicemail Box</strong>.</li>
+        <li>Enter the <strong>mailbox number</strong> (e.g., "100"). This typically matches the associated extension number for user convenience.</li>
+        <li>Set the <strong>PIN</strong> (4&ndash;20 digits). The user will need this to check voicemail from a phone.</li>
+        <li>Choose a <strong>greeting type</strong> and configure email notification settings.</li>
+        <li>Click <strong>Save</strong>.</li>
+      </ol>
+
+      <p>
+        After creating the box, link it to an extension by editing the extension and setting
+        its <code>voicemail_box_id</code> to the new box's <code>id</code>.
+      </p>
+
+      <!-- ── VoicemailBoxCreate Fields ────────────────────────────────── -->
+      <h2 id="box-fields">VoicemailBoxCreate Field Reference</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Constraints</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>mailbox_number</code></td>
+              <td>string</td>
+              <td>Yes</td>
+              <td>1&ndash;20 characters</td>
+              <td>The voicemail box number, used for access from phones. Typically matches the extension number (e.g., "100").</td>
+            </tr>
+            <tr>
+              <td><code>pin</code></td>
+              <td>string</td>
+              <td>Yes</td>
+              <td>4&ndash;20 characters</td>
+              <td>Numeric PIN for phone-based voicemail access. Users enter this when dialing into the voicemail system.</td>
+            </tr>
+            <tr>
+              <td><code>greeting_type</code></td>
+              <td>enum</td>
+              <td>No</td>
+              <td>Default: DEFAULT</td>
+              <td>Which greeting callers hear. One of: <code>DEFAULT</code>, <code>CUSTOM</code>, <code>COMPANY</code>. See <a href="#greetings">Greeting Types</a>.</td>
+            </tr>
+            <tr>
+              <td><code>email_notification</code></td>
+              <td>boolean</td>
+              <td>No</td>
+              <td>Default: true</td>
+              <td>When enabled, the system sends an email notification each time a new voicemail message is left.</td>
+            </tr>
+            <tr>
+              <td><code>notification_email</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 320 characters</td>
+              <td>Email address for voicemail notifications. If not set and <code>email_notification</code> is enabled, the system uses the linked user's email address.</td>
+            </tr>
+            <tr>
+              <td><code>max_messages</code></td>
+              <td>integer</td>
+              <td>No</td>
+              <td>1&ndash;9999, default 100</td>
+              <td>Maximum number of messages the box can store. When the limit is reached, new callers hear a "mailbox full" announcement.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── VoicemailBoxResponse ─────────────────────────────────────── -->
+      <h2 id="box-response">VoicemailBoxResponse Fields</h2>
+      <p>
+        API responses for voicemail boxes include all create fields plus the following
+        system-managed fields:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>UUID</td>
+              <td>Unique identifier for the voicemail box.</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td>UUID</td>
+              <td>The tenant this voicemail box belongs to. Set automatically; enforced by row-level security.</td>
+            </tr>
+            <tr>
+              <td><code>mailbox_number</code></td>
+              <td>string</td>
+              <td>The voicemail box number.</td>
+            </tr>
+            <tr>
+              <td><code>greeting_type</code></td>
+              <td>string</td>
+              <td>Current greeting type (DEFAULT, CUSTOM, or COMPANY).</td>
+            </tr>
+            <tr>
+              <td><code>email_notification</code></td>
+              <td>boolean</td>
+              <td>Whether email notifications are enabled.</td>
+            </tr>
+            <tr>
+              <td><code>notification_email</code></td>
+              <td>string | null</td>
+              <td>Override email address for notifications, or null if using the linked user's email.</td>
+            </tr>
+            <tr>
+              <td><code>max_messages</code></td>
+              <td>integer</td>
+              <td>Maximum message capacity.</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td>boolean</td>
+              <td><code>true</code> if the voicemail box is active. Inactive boxes reject new messages.</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td>datetime</td>
+              <td>Timestamp when the box was created (UTC).</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td>datetime</td>
+              <td>Timestamp of the last modification (UTC).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Greeting Types ───────────────────────────────────────────── -->
+      <h2 id="greetings">Greeting Types</h2>
+      <p>
+        The <code>greeting_type</code> field determines which greeting a caller hears before
+        leaving a message:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>DEFAULT</code></td>
+              <td>The system plays a generic greeting: "The person at extension [number] is not available. Please leave a message after the tone." No custom recording needed.</td>
+            </tr>
+            <tr>
+              <td><code>CUSTOM</code></td>
+              <td>The system plays a user-recorded greeting. The user records this by dialing into the voicemail system and following the greeting management prompts, or by uploading an audio file through the web UI.</td>
+            </tr>
+            <tr>
+              <td><code>COMPANY</code></td>
+              <td>The system plays the tenant-wide company greeting. This is a single recording shared by all voicemail boxes in the tenant that use this type. Managed under <a href="audio-prompts.html">Audio Prompts</a>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Users can switch between greeting types from their phone or the web UI without losing
+        previously recorded custom greetings. The custom recording is preserved even when the
+        box is set to DEFAULT or COMPANY.
+      </p>
+
+      <!-- ── Email Notifications ──────────────────────────────────────── -->
+      <h2 id="email-notifications">Email Notifications</h2>
+      <p>
+        When <code>email_notification</code> is enabled (the default), the platform sends an
+        email each time a new voicemail message is deposited in the box. The notification includes:
+      </p>
+      <ul>
+        <li>Caller name and number (if available from caller ID)</li>
+        <li>Date and time of the message</li>
+        <li>Duration of the recording</li>
+        <li>A link to play the message in the web UI (requires authentication)</li>
+      </ul>
+      <p>
+        The notification is sent to the address in <code>notification_email</code>. If that field
+        is empty, the system falls back to the email address of the user linked to the extension
+        that is linked to this voicemail box. If no email can be determined, the notification is
+        silently skipped.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Email Delivery</div>
+        Voicemail notification emails are sent via the platform's configured SMTP provider.
+        Ensure your tenant's email settings are configured correctly under
+        <strong>System &gt; Admin Ops</strong>. Emails may be subject to spam filtering by the
+        recipient's mail provider.
+      </div>
+
+      <!-- ── Managing Messages ────────────────────────────────────────── -->
+      <h2 id="managing-messages">Managing Voicemail Messages</h2>
+      <p>
+        Voicemail messages are stored as audio files in S3/MinIO object storage. The API provides
+        endpoints to list, filter, play, update, forward, and delete messages.
+      </p>
+
+      <h3 id="message-fields">VoicemailMessageResponse Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>UUID</td>
+              <td>Unique identifier for the message.</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td>UUID</td>
+              <td>Tenant that owns this message.</td>
+            </tr>
+            <tr>
+              <td><code>voicemail_box_id</code></td>
+              <td>UUID</td>
+              <td>The voicemail box this message belongs to.</td>
+            </tr>
+            <tr>
+              <td><code>caller_number</code></td>
+              <td>string</td>
+              <td>Phone number of the caller who left the message.</td>
+            </tr>
+            <tr>
+              <td><code>caller_name</code></td>
+              <td>string</td>
+              <td>Caller ID name of the caller (if available).</td>
+            </tr>
+            <tr>
+              <td><code>duration_seconds</code></td>
+              <td>integer</td>
+              <td>Length of the voicemail recording in seconds.</td>
+            </tr>
+            <tr>
+              <td><code>storage_path</code></td>
+              <td>string</td>
+              <td>Object storage path to the audio file (internal reference).</td>
+            </tr>
+            <tr>
+              <td><code>storage_bucket</code></td>
+              <td>string</td>
+              <td>S3/MinIO bucket name where the file is stored.</td>
+            </tr>
+            <tr>
+              <td><code>file_size_bytes</code></td>
+              <td>integer</td>
+              <td>Size of the audio file in bytes.</td>
+            </tr>
+            <tr>
+              <td><code>format</code></td>
+              <td>string</td>
+              <td>Audio format of the recording: <code>"wav"</code> or <code>"mp3"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>sha256_hash</code></td>
+              <td>string</td>
+              <td>SHA-256 hash of the audio file for integrity verification.</td>
+            </tr>
+            <tr>
+              <td><code>is_read</code></td>
+              <td>boolean</td>
+              <td><code>true</code> if the message has been listened to or marked as read.</td>
+            </tr>
+            <tr>
+              <td><code>is_urgent</code></td>
+              <td>boolean</td>
+              <td><code>true</code> if the caller flagged the message as urgent.</td>
+            </tr>
+            <tr>
+              <td><code>folder</code></td>
+              <td>enum</td>
+              <td>Current folder: <code>INBOX</code>, <code>OLD</code>, <code>WORK</code>, <code>FAMILY</code>, or <code>FRIENDS</code>.</td>
+            </tr>
+            <tr>
+              <td><code>call_id</code></td>
+              <td>string</td>
+              <td>The call ID from the originating call, for correlation with CDR records.</td>
+            </tr>
+            <tr>
+              <td><code>email_sent</code></td>
+              <td>boolean</td>
+              <td><code>true</code> if a notification email was sent for this message.</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td>boolean</td>
+              <td><code>true</code> if the message is active (not soft-deleted).</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td>datetime</td>
+              <td>Timestamp when the message was recorded (UTC).</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td>datetime</td>
+              <td>Timestamp of the last modification (UTC).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="message-update">Updating Messages</h3>
+      <p>
+        Use <code>PATCH /api/v1/voicemail/messages/{id}</code> with a
+        <code>VoicemailMessageUpdate</code> body to update message metadata:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>is_read</code></td>
+              <td>boolean</td>
+              <td>Mark the message as read or unread.</td>
+            </tr>
+            <tr>
+              <td><code>folder</code></td>
+              <td>enum</td>
+              <td>Move the message to a different folder (INBOX, OLD, WORK, FAMILY, FRIENDS).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="message-filter">Filtering Messages</h3>
+      <p>
+        Use <code>GET /api/v1/voicemail/boxes/{box_id}/messages</code> with query parameters
+        to filter and paginate messages:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>folder</code></td>
+              <td>enum</td>
+              <td>Filter by folder (INBOX, OLD, WORK, FAMILY, FRIENDS).</td>
+            </tr>
+            <tr>
+              <td><code>is_read</code></td>
+              <td>boolean</td>
+              <td>Filter by read status (<code>true</code> for read, <code>false</code> for unread).</td>
+            </tr>
+            <tr>
+              <td><code>date_from</code></td>
+              <td>datetime</td>
+              <td>Return messages on or after this date (UTC).</td>
+            </tr>
+            <tr>
+              <td><code>date_to</code></td>
+              <td>datetime</td>
+              <td>Return messages on or before this date (UTC).</td>
+            </tr>
+            <tr>
+              <td><code>limit</code></td>
+              <td>integer</td>
+              <td>Maximum results to return (1&ndash;1000, default 50).</td>
+            </tr>
+            <tr>
+              <td><code>offset</code></td>
+              <td>integer</td>
+              <td>Number of results to skip (default 0). Use with <code>limit</code> for pagination.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="message-forward">Forwarding Messages</h3>
+      <p>
+        Forward a voicemail message to another voicemail box using
+        <code>POST /api/v1/voicemail/messages/{id}/forward</code> with a
+        <code>VoicemailForwardRequest</code> body:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>target_box_id</code></td>
+              <td>UUID</td>
+              <td>Yes</td>
+              <td>The ID of the voicemail box to forward the message to. Must be a box within the same tenant.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Forwarding creates a copy of the message in the target box. The original message remains
+        in the source box. The forwarded copy appears as a new unread message in the target box's
+        INBOX folder.
+      </p>
+
+      <h3 id="message-summary">Message Summary</h3>
+      <p>
+        Get a quick count of unread messages using
+        <code>GET /api/v1/voicemail/boxes/{box_id}/summary</code>. Returns a
+        <code>VoicemailMessageSummaryResponse</code>:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>voicemail_box_id</code></td>
+              <td>UUID</td>
+              <td>The voicemail box ID.</td>
+            </tr>
+            <tr>
+              <td><code>mailbox_number</code></td>
+              <td>string</td>
+              <td>The mailbox number for display purposes.</td>
+            </tr>
+            <tr>
+              <td><code>unread_count</code></td>
+              <td>integer</td>
+              <td>Number of unread messages in the box.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Message Folders ──────────────────────────────────────────── -->
+      <h2 id="folders">Message Folders</h2>
+      <p>
+        Voicemail messages are organized into folders. Users can move messages between folders
+        for organization. The available folders are:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Folder</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>INBOX</code></td>
+              <td>Default folder for all new messages. New voicemails arrive here.</td>
+            </tr>
+            <tr>
+              <td><code>OLD</code></td>
+              <td>Messages that have been listened to. Some phone interfaces automatically move messages here after playback.</td>
+            </tr>
+            <tr>
+              <td><code>WORK</code></td>
+              <td>User-defined organizational folder for work-related messages.</td>
+            </tr>
+            <tr>
+              <td><code>FAMILY</code></td>
+              <td>User-defined organizational folder for family messages.</td>
+            </tr>
+            <tr>
+              <td><code>FRIENDS</code></td>
+              <td>User-defined organizational folder for messages from friends.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Messages are moved between folders using the <code>VoicemailMessageUpdate</code> endpoint.
+        The web UI and mobile app provide drag-and-drop folder management. Phone-based voicemail
+        access supports folder navigation through the IVR menu prompts.
+      </p>
+
+      <div class="diagram">New Voicemail Arrives
+  &#9492;&#9472; Deposited in INBOX (is_read: false)
+       &#9500;&#9472; User listens &#8594; is_read: true
+       &#9474;   &#9500;&#9472; Auto-move to OLD (phone behavior)
+       &#9474;   &#9492;&#9472; Or keep in INBOX (web/mobile behavior)
+       &#9500;&#9472; User moves to WORK / FAMILY / FRIENDS
+       &#9500;&#9472; User forwards to another box &#8594; Copy in target INBOX
+       &#9492;&#9472; User deletes &#8594; Soft-delete (is_active: false)</div>
+
+      <!-- ── Message Playback ─────────────────────────────────────────── -->
+      <h2 id="playback">Message Playback</h2>
+      <p>
+        To play a voicemail message through the web UI or mobile app, the client requests a
+        temporary signed URL from
+        <code>GET /api/v1/voicemail/messages/{id}/playback</code>. The response is a
+        <code>VoicemailMessagePlaybackResponse</code>:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>url</code></td>
+              <td>string</td>
+              <td>Signed URL for direct audio file access. This URL authenticates the request to S3/MinIO without requiring additional credentials.</td>
+            </tr>
+            <tr>
+              <td><code>expires_in_seconds</code></td>
+              <td>integer</td>
+              <td>Number of seconds until the URL expires. Default is 300 (5 minutes). After expiry, a new URL must be requested.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Signed URL Security</div>
+        Signed URLs provide temporary, unauthenticated access to the audio file. They should
+        not be shared or bookmarked. The 5-minute expiry limits the window of exposure. If a
+        user needs to listen again after the URL expires, they simply request a new one.
+      </div>
+
+      <p>
+        Playback is also available from physical phones by dialing the voicemail feature code
+        and navigating the IVR prompts. Phone-based playback does not use signed URLs; the
+        audio is streamed directly through the RTP media path.
+      </p>
+
+      <!-- ── PIN Management ───────────────────────────────────────────── -->
+      <h2 id="pin-management">PIN Management</h2>
+      <p>
+        The voicemail PIN is required when accessing voicemail from a phone. It is set during
+        box creation and can be reset at any time by an administrator.
+      </p>
+      <p>
+        To reset the PIN, call <code>POST /api/v1/voicemail/boxes/{id}/reset-pin</code>. The
+        response returns a <code>PinResetResponse</code>:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>pin</code></td>
+              <td>string</td>
+              <td>The new PIN. Returned only in this response. Communicate it to the user securely.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The PIN is stored as a hashed value; it cannot be retrieved after the reset response.
+        If a user forgets their PIN, the administrator must reset it and provide the new PIN.
+        Users can also change their own PIN from the voicemail IVR menu on their phone (option
+        typically available under "mailbox options").
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">PIN Best Practices</div>
+        Encourage users to change the default PIN immediately after receiving it. PINs should
+        be at least 6 digits and should not be easily guessable sequences (e.g., "1234", "0000",
+        or the extension number). The platform enforces a minimum of 4 digits and a maximum of 20.
+      </div>
+
+      <!-- ── Storage ──────────────────────────────────────────────────── -->
+      <h2 id="storage">Storage (S3/MinIO)</h2>
+      <p>
+        Voicemail recordings are stored in S3-compatible object storage (MinIO in self-hosted
+        deployments, or AWS S3 / any S3-compatible service). Each tenant's messages are stored
+        in an isolated path structure.
+      </p>
+
+      <h3 id="storage-format">Audio Format</h3>
+      <p>
+        The platform stores voicemail in two formats:
+      </p>
+      <ul>
+        <li><strong>WAV</strong> &mdash; Uncompressed audio. Higher quality and larger file size. Default recording format from FreeSWITCH. Typical size: ~1 MB per minute at 16-bit 8kHz mono.</li>
+        <li><strong>MP3</strong> &mdash; Compressed audio. Smaller file size suitable for email attachments and mobile playback. Typical size: ~120 KB per minute.</li>
+      </ul>
+      <p>
+        The <code>format</code> field on each message indicates which format is stored. The
+        platform can be configured to store both formats or to transcode on the fly.
+      </p>
+
+      <h3 id="storage-integrity">File Integrity</h3>
+      <p>
+        Each voicemail message includes a <code>sha256_hash</code> field containing the SHA-256
+        hash of the audio file at the time of recording. This can be used to verify that the
+        file has not been modified in storage, which is important for compliance and legal
+        discovery scenarios.
+      </p>
+
+      <h3 id="storage-structure">Storage Path Structure</h3>
+<pre><code>{bucket}/
+  {tenant_id}/
+    voicemail/
+      {voicemail_box_id}/
+        {message_id}.{format}</code></pre>
+      <p>
+        The <code>storage_bucket</code> and <code>storage_path</code> fields on each message
+        provide the exact location. Direct access to storage requires S3 credentials and is
+        typically only used for backup or migration purposes.
+      </p>
+
+      <!-- ── Linking to Extensions ────────────────────────────────────── -->
+      <h2 id="linking">Linking to Extensions</h2>
+      <p>
+        Voicemail boxes are connected to extensions through the extension's
+        <code>voicemail_box_id</code> field. To link a voicemail box to an extension:
+      </p>
+      <ol class="steps">
+        <li>Note the voicemail box <code>id</code> (UUID) from the box list or creation response.</li>
+        <li>Edit the extension and set <code>voicemail_box_id</code> to that UUID.</li>
+        <li>Save the extension. Unanswered calls to that extension will now route to voicemail when no call forwarding destination handles the call.</li>
+      </ol>
+
+      <p>
+        To unlink a voicemail box from an extension, set the extension's
+        <code>voicemail_box_id</code> to <code>null</code>. The voicemail box and its
+        messages are preserved; only the routing link is removed.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Matching Numbers Convention</div>
+        While not required, it is a common convention to give the voicemail box the same
+        <code>mailbox_number</code> as the extension's <code>extension_number</code>. This
+        makes it intuitive for users when accessing voicemail from their phone &mdash; they dial
+        into the system and the mailbox number matches their extension.
+      </div>
+
+      <!-- ── API Examples ─────────────────────────────────────────────── -->
+      <h2 id="examples">API Examples</h2>
+
+      <h3>Create a Voicemail Box</h3>
+<pre><code>POST /api/v1/voicemail/boxes
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+
+{
+  "mailbox_number": "100",
+  "pin": "839472",
+  "greeting_type": "DEFAULT",
+  "email_notification": true,
+  "notification_email": "jane.doe@acmecorp.com",
+  "max_messages": 200
+}</code></pre>
+
+      <h3>List Unread Messages</h3>
+<pre><code>GET /api/v1/voicemail/boxes/{box_id}/messages?is_read=false&amp;folder=INBOX&amp;limit=25
+Authorization: Bearer &lt;token&gt;</code></pre>
+
+      <h3>Mark Message as Read</h3>
+<pre><code>PATCH /api/v1/voicemail/messages/{message_id}
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+
+{
+  "is_read": true
+}</code></pre>
+
+      <h3>Move Message to WORK Folder</h3>
+<pre><code>PATCH /api/v1/voicemail/messages/{message_id}
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+
+{
+  "folder": "WORK"
+}</code></pre>
+
+      <h3>Forward a Message</h3>
+<pre><code>POST /api/v1/voicemail/messages/{message_id}/forward
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+
+{
+  "target_box_id": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+}</code></pre>
+
+      <h3>Get Playback URL</h3>
+<pre><code>GET /api/v1/voicemail/messages/{message_id}/playback
+Authorization: Bearer &lt;token&gt;
+
+Response:
+{
+  "url": "https://minio.example.com/voicemail/tenant-id/.../msg.wav?X-Amz-...",
+  "expires_in_seconds": 300
+}</code></pre>
+
+      <h3>Reset PIN</h3>
+<pre><code>POST /api/v1/voicemail/boxes/{box_id}/reset-pin
+Authorization: Bearer &lt;token&gt;
+
+Response:
+{
+  "pin": "742918"
+}</code></pre>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="extensions.html">Extensions</a> &mdash; link voicemail boxes to extensions via <code>voicemail_box_id</code></li>
+          <li><a href="audio-prompts.html">Audio Prompts</a> &mdash; manage company-wide voicemail greetings and system prompts</li>
+          <li><a href="recordings.html">Recordings</a> &mdash; call recordings stored in the same S3/MinIO infrastructure</li>
+          <li><a href="cdrs.html">Call History</a> &mdash; correlate voicemail messages with CDR records via <code>call_id</code></li>
+          <li><a href="users.html">Users</a> &mdash; manage user accounts for email notification targeting</li>
+          <li><a href="admin-ops.html">Admin Ops</a> &mdash; configure SMTP settings for voicemail email notifications</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="recordings.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Recordings</span>
+        </a>
+        <a href="users.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Users</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#creating">Creating a Voicemail Box</a></li>
+      <li><a href="#box-fields">Box Field Reference</a></li>
+      <li><a href="#box-response">Response Fields</a></li>
+      <li><a href="#greetings">Greeting Types</a></li>
+      <li><a href="#email-notifications">Email Notifications</a></li>
+      <li><a href="#managing-messages">Managing Messages</a></li>
+      <li><a href="#folders">Message Folders</a></li>
+      <li><a href="#playback">Message Playback</a></li>
+      <li><a href="#pin-management">PIN Management</a></li>
+      <li><a href="#storage">Storage (S3/MinIO)</a></li>
+      <li><a href="#linking">Linking to Extensions</a></li>
+      <li><a href="#examples">API Examples</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

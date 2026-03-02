@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Call Recordings — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html" class="active">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="cdrs.html">Reports</a>
+        <span class="sep">/</span>
+        <span>Recordings</span>
+      </div>
+
+      <h1>Call Recordings</h1>
+      <p class="page-subtitle">Manage, play back, and administer call recordings stored in object storage. Recordings are linked to CDRs and governed by per-extension recording policies.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        The New Phone Platform can record calls and store the audio files in S3-compatible object
+        storage (MinIO or AWS S3). Recordings are created based on the recording policy assigned to
+        each extension and are linked to their corresponding Call Detail Record for easy retrieval.
+      </p>
+      <p>
+        Recording management includes secure playback through time-limited signed URLs, integrity
+        verification via SHA-256 hashes, and configurable retention policies. All recordings are
+        scoped to a tenant and protected by Row-Level Security.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Storage Backend</div>
+        Recordings are stored in S3-compatible object storage (MinIO in self-hosted deployments, AWS
+        S3 in cloud deployments). The platform handles all storage operations transparently &mdash;
+        administrators interact with recordings through the API and web UI without needing direct
+        access to the storage backend.
+      </div>
+
+      <!-- ── Recording Field Reference ───────────────────────────────── -->
+      <h2 id="field-reference">Recording Field Reference</h2>
+      <p>The following table describes every field returned in a <code>RecordingResponse</code> object.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for this recording</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>The tenant this recording belongs to (enforced by RLS)</td>
+            </tr>
+            <tr>
+              <td><code>cdr_id</code></td>
+              <td><code>UUID | null</code></td>
+              <td>Link to the associated Call Detail Record. Null in rare cases where the CDR has not yet been written at recording time.</td>
+            </tr>
+            <tr>
+              <td><code>call_id</code></td>
+              <td><code>string</code></td>
+              <td>The FreeSWITCH call identifier. Matches the <code>call_id</code> field in the corresponding CDR.</td>
+            </tr>
+            <tr>
+              <td><code>storage_path</code></td>
+              <td><code>string | null</code></td>
+              <td>The object key (path) within the S3/MinIO bucket where the recording file is stored</td>
+            </tr>
+            <tr>
+              <td><code>storage_bucket</code></td>
+              <td><code>string | null</code></td>
+              <td>The S3/MinIO bucket name containing the recording file</td>
+            </tr>
+            <tr>
+              <td><code>file_size_bytes</code></td>
+              <td><code>integer</code></td>
+              <td>Size of the recording file in bytes. Useful for estimating storage consumption and download times.</td>
+            </tr>
+            <tr>
+              <td><code>duration_seconds</code></td>
+              <td><code>integer</code></td>
+              <td>Length of the recording in seconds. May differ slightly from the CDR duration due to recording start/stop timing.</td>
+            </tr>
+            <tr>
+              <td><code>format</code></td>
+              <td><code>string</code></td>
+              <td>Audio file format: <code>"wav"</code> (uncompressed, higher quality) or <code>"mp3"</code> (compressed, smaller files)</td>
+            </tr>
+            <tr>
+              <td><code>sample_rate</code></td>
+              <td><code>integer</code></td>
+              <td>Audio sample rate in Hertz. Typically <code>8000</code> (narrowband/telephony) or <code>16000</code> (wideband/HD voice).</td>
+            </tr>
+            <tr>
+              <td><code>sha256_hash</code></td>
+              <td><code>string | null</code></td>
+              <td>SHA-256 hash of the recording file for integrity verification. Used to detect corruption or tampering.</td>
+            </tr>
+            <tr>
+              <td><code>recording_policy</code></td>
+              <td><code>string</code></td>
+              <td>The policy that was in effect when this recording was created: <code>"never"</code>, <code>"always"</code>, or <code>"on_demand"</code></td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Whether the recording is active and accessible. Inactive recordings have been soft-deleted or archived.</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the recording metadata was created in the database (ISO 8601, UTC)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Recording Policies ──────────────────────────────────────── -->
+      <h2 id="recording-policies">Recording Policies</h2>
+      <p>
+        Each extension has a <code>recording_policy</code> that controls when calls involving that
+        extension are recorded. The policy is evaluated at call setup time and determines whether the
+        recording subsystem is activated for the call.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Policy</th>
+              <th>Behavior</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>never</code></td>
+              <td>Calls are never recorded, regardless of the other party's policy. No recording metadata or audio files are created.</td>
+              <td>Executives, legal department, or any role where recording is prohibited by policy or regulation.</td>
+            </tr>
+            <tr>
+              <td><code>always</code></td>
+              <td>Every call involving this extension is recorded automatically. Recording starts when the call is answered and stops when it ends.</td>
+              <td>Call center agents, sales teams, support representatives. Required for compliance in regulated industries.</td>
+            </tr>
+            <tr>
+              <td><code>on_demand</code></td>
+              <td>Recording does not start automatically. The user can initiate recording during a call using a feature code (typically <code>*1</code>) or a button in the softphone. Once started, recording continues until the call ends or the user stops it.</td>
+              <td>General office staff who occasionally need to record a call for documentation purposes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="policy-precedence">Policy Precedence</h3>
+      <p>
+        When two extensions with different policies are on a call together, the following precedence
+        applies:
+      </p>
+      <ul>
+        <li>If either party has <code>never</code>, the call is not recorded</li>
+        <li>If either party has <code>always</code> (and neither has <code>never</code>), the call is recorded</li>
+        <li>If both parties have <code>on_demand</code>, recording only occurs if manually triggered</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Changing Policies</div>
+        Recording policies are configured on the extension settings page. Changes take effect for new
+        calls only &mdash; calls already in progress when a policy changes continue under the original
+        policy. See <a href="extensions.html">Extensions</a> for configuration details.
+      </div>
+
+      <!-- ── Storage ─────────────────────────────────────────────────── -->
+      <h2 id="storage">Storage</h2>
+      <p>
+        Recordings are stored as individual audio files in S3-compatible object storage. The platform
+        manages the full lifecycle: creation, storage, retrieval, and deletion.
+      </p>
+
+      <h3 id="storage-format">Audio Format</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Format</th>
+              <th>Extension</th>
+              <th>Typical Size</th>
+              <th>Quality</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>WAV</td>
+              <td><code>.wav</code></td>
+              <td>~1 MB/min (8kHz) or ~2 MB/min (16kHz)</td>
+              <td>Lossless</td>
+              <td>Best quality. Preferred for compliance and legal holds. Larger file sizes.</td>
+            </tr>
+            <tr>
+              <td>MP3</td>
+              <td><code>.mp3</code></td>
+              <td>~0.12 MB/min</td>
+              <td>Lossy</td>
+              <td>Significantly smaller files. Suitable for general business use where storage efficiency matters.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="storage-integrity">File Integrity</h3>
+      <p>
+        Each recording includes a <code>sha256_hash</code> field containing the SHA-256 digest of
+        the audio file. This hash is computed when the recording is uploaded to object storage and
+        can be used to:
+      </p>
+      <ul>
+        <li>Verify that a downloaded file has not been corrupted during transfer</li>
+        <li>Confirm that a recording has not been tampered with since creation</li>
+        <li>Meet chain-of-custody requirements for legal or regulatory proceedings</li>
+      </ul>
+
+      <h3 id="storage-organization">Storage Organization</h3>
+      <p>
+        Recordings are organized in object storage using a hierarchical key structure:
+      </p>
+      <pre><code>{tenant_id}/{year}/{month}/{day}/{call_id}.{format}</code></pre>
+      <p>
+        This structure enables efficient lifecycle policies, bulk operations on date ranges, and
+        logical isolation between tenants at the storage level.
+      </p>
+
+      <!-- ── Playback ────────────────────────────────────────────────── -->
+      <h2 id="playback">Playback</h2>
+      <p>
+        Recordings are never served directly from object storage. Instead, the API generates
+        time-limited signed URLs that grant temporary read access to the audio file. This approach
+        ensures that recordings cannot be accessed without valid API authentication.
+      </p>
+
+      <h3 id="playback-response">RecordingPlaybackResponse Schema</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>url</code></td>
+              <td><code>string</code></td>
+              <td>A signed URL providing temporary read access to the recording file. Can be used directly in an audio player or for download.</td>
+            </tr>
+            <tr>
+              <td><code>expires_in_seconds</code></td>
+              <td><code>integer</code></td>
+              <td>Number of seconds until the signed URL expires. Default is <code>300</code> (5 minutes).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="playback-workflow">Playback Workflow</h3>
+      <ol>
+        <li>Request a playback URL from the Recordings API by providing the recording ID</li>
+        <li>The API verifies the user's permissions and tenant context</li>
+        <li>A signed URL is generated with a 5-minute expiration window</li>
+        <li>The client uses the signed URL to stream or download the audio file</li>
+        <li>After expiration, the URL becomes invalid and a new one must be requested</li>
+      </ol>
+
+      <div class="callout warning">
+        <div class="callout-title">URL Expiration</div>
+        Signed playback URLs expire after 5 minutes by default. Do not cache or bookmark these URLs.
+        If a URL expires during playback, the audio stream will be interrupted and the client must
+        request a new URL. The web UI handles this automatically by requesting a fresh URL before
+        each playback.
+      </div>
+
+      <!-- ── Filtering and Searching ─────────────────────────────────── -->
+      <h2 id="filtering">Filtering and Searching</h2>
+      <p>
+        The recording list endpoint accepts filter parameters to narrow results. All filters are
+        optional and can be combined with AND logic.
+      </p>
+
+      <h3 id="recording-filter">RecordingFilter Parameters</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>date_from</code></td>
+              <td><code>datetime</code></td>
+              <td><em>none</em></td>
+              <td>Return recordings created on or after this timestamp (ISO 8601, UTC)</td>
+            </tr>
+            <tr>
+              <td><code>date_to</code></td>
+              <td><code>datetime</code></td>
+              <td><em>none</em></td>
+              <td>Return recordings created on or before this timestamp (ISO 8601, UTC)</td>
+            </tr>
+            <tr>
+              <td><code>call_id</code></td>
+              <td><code>string</code></td>
+              <td><em>none</em></td>
+              <td>Filter by the FreeSWITCH call identifier to find all recording segments for a specific call</td>
+            </tr>
+            <tr>
+              <td><code>cdr_id</code></td>
+              <td><code>UUID</code></td>
+              <td><em>none</em></td>
+              <td>Filter by CDR identifier to find the exact recording for a specific call record</td>
+            </tr>
+            <tr>
+              <td><code>limit</code></td>
+              <td><code>integer</code></td>
+              <td><code>50</code></td>
+              <td>Maximum number of records to return per request (1&ndash;1000)</td>
+            </tr>
+            <tr>
+              <td><code>offset</code></td>
+              <td><code>integer</code></td>
+              <td><code>0</code></td>
+              <td>Number of records to skip before returning results (for pagination)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Pagination works identically to CDR pagination &mdash; see <a href="cdrs.html#pagination">CDR Pagination</a>
+        for details on the offset-based model.
+      </p>
+
+      <!-- ── Linking Recordings to CDRs ──────────────────────────────── -->
+      <h2 id="cdr-link">Linking Recordings to CDRs</h2>
+      <p>
+        Recordings and CDRs are linked through two fields, providing flexible lookup in both
+        directions:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Lookup Direction</th>
+              <th>Field</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>CDR &rarr; Recording</td>
+              <td><code>CDR.has_recording</code></td>
+              <td>Boolean on the CDR indicating whether a recording exists. If <code>true</code>, use the CDR's <code>call_id</code> or <code>id</code> to look up the recording.</td>
+            </tr>
+            <tr>
+              <td>Recording &rarr; CDR</td>
+              <td><code>Recording.cdr_id</code></td>
+              <td>Direct foreign key to the CDR. Use this to navigate from a recording back to its call details.</td>
+            </tr>
+            <tr>
+              <td>Shared key</td>
+              <td><code>call_id</code></td>
+              <td>Present on both CDR and Recording. Use when you need to find all artifacts (CDR, recordings, events) for a single call.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        A single call may produce multiple recording segments if the call was transferred or if
+        recording was started and stopped multiple times. In such cases, multiple recordings will
+        share the same <code>call_id</code> but have different <code>id</code> values.
+      </p>
+
+      <!-- ── Legal Compliance ────────────────────────────────────────── -->
+      <h2 id="legal-compliance">Legal Compliance</h2>
+      <p>
+        Call recording is subject to a complex patchwork of federal, state, and international laws.
+        Administrators must understand and comply with the applicable regulations before enabling
+        recording for any extension.
+      </p>
+
+      <h3 id="consent-models">Consent Models</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Requirement</th>
+              <th>Jurisdictions (Examples)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>One-Party Consent</strong></td>
+              <td>Only one participant in the call needs to know the call is being recorded. The person initiating the recording satisfies this requirement.</td>
+              <td>US federal law (Wiretap Act), most US states, United Kingdom</td>
+            </tr>
+            <tr>
+              <td><strong>Two-Party (All-Party) Consent</strong></td>
+              <td>All participants must be informed and consent to the recording before it begins. Typically satisfied by playing an announcement at the start of the call.</td>
+              <td>California, Florida, Illinois, Pennsylvania, Washington, Canada (some provinces), Germany, many EU countries</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="compliance-recommendations">Compliance Recommendations</h3>
+      <ul>
+        <li><strong>Always announce recording</strong> &mdash; Play a recording announcement at the start of recorded calls. This satisfies both one-party and two-party consent requirements and is considered best practice regardless of jurisdiction.</li>
+        <li><strong>Use IVR announcements</strong> &mdash; Configure your IVR menus to include a recording disclosure before routing to agents. See <a href="ivr-menus.html">IVR Menus</a>.</li>
+        <li><strong>Document your policy</strong> &mdash; Maintain a written call recording policy that specifies which calls are recorded, why, how recordings are stored, who has access, and how long they are retained.</li>
+        <li><strong>Restrict access</strong> &mdash; Use RBAC to limit recording playback to authorized personnel only. See <a href="rbac.html">Roles &amp; Permissions</a>.</li>
+        <li><strong>Consult legal counsel</strong> &mdash; Laws vary by jurisdiction and change frequently. Obtain legal advice specific to your operating locations before finalizing your recording policy.</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Legal Disclaimer</div>
+        This documentation provides general guidance only and does not constitute legal advice.
+        Recording laws vary significantly by jurisdiction and are subject to change. Consult with
+        qualified legal counsel to ensure your recording practices comply with all applicable laws.
+      </div>
+
+      <!-- ── Storage Tiering ─────────────────────────────────────────── -->
+      <h2 id="storage-tiering">Storage Tiering <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        A future release will introduce automatic storage tiering to optimize costs for long-term
+        recording retention. Recordings will automatically transition through storage classes based
+        on their age:
+      </p>
+      <ul>
+        <li><strong>Hot tier</strong> (0&ndash;30 days) &mdash; Standard storage with immediate access. Used for recent recordings that are frequently played back.</li>
+        <li><strong>Warm tier</strong> (30&ndash;90 days) &mdash; Infrequent access storage with slightly higher retrieval latency. Reduced storage cost.</li>
+        <li><strong>Cold tier</strong> (90+ days) &mdash; Archive storage with multi-hour retrieval times. Lowest storage cost. Suitable for compliance retention where immediate access is not required.</li>
+      </ul>
+      <p>
+        Transition rules will be configurable per tenant by MSP administrators. Until this feature
+        is available, all recordings remain in standard storage regardless of age.
+      </p>
+
+      <!-- ── Retention and Deletion ──────────────────────────────────── -->
+      <h2 id="retention">Retention and Deletion</h2>
+      <p>
+        Recording retention is managed separately from CDR retention, since recordings consume
+        significantly more storage space. The default retention policy deletes recording audio files
+        after 90 days while preserving the recording metadata record (which references the CDR).
+      </p>
+
+      <h3 id="retention-defaults">Default Retention Settings</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Retention</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Audio file (object storage)</td>
+              <td>90 days</td>
+              <td>The actual audio file is deleted from S3/MinIO. Playback is no longer possible.</td>
+            </tr>
+            <tr>
+              <td>Recording metadata (database)</td>
+              <td>Matches CDR retention</td>
+              <td>The database record persists to maintain CDR linkage and audit history, even after the audio file is deleted.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="deletion-behavior">Deletion Behavior</h3>
+      <ul>
+        <li>When a recording audio file is deleted, the <code>is_active</code> field is set to <code>false</code></li>
+        <li>The <code>storage_path</code> and <code>storage_bucket</code> fields are cleared</li>
+        <li>Attempts to generate a playback URL for an inactive recording return an error</li>
+        <li>Metadata (duration, format, hash, timestamps) remains available for historical reference</li>
+        <li>Deletion is permanent and cannot be undone &mdash; there is no recycle bin for recordings</li>
+      </ul>
+
+      <h3 id="legal-hold">Legal Hold</h3>
+      <p>
+        Recordings can be placed on legal hold to prevent automatic deletion. When a recording is
+        under legal hold, the retention policy is suspended and the audio file is preserved
+        indefinitely until the hold is released by an administrator. Use legal holds when recordings
+        may be needed for litigation, regulatory investigation, or dispute resolution.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Storage Cost Impact</div>
+        Recording audio files are typically the largest data category in the platform. A single
+        tenant with 50 extensions making 100 calls per day at 3 minutes average duration generates
+        approximately 300 MB/day in WAV format or 36 MB/day in MP3 format. Plan storage capacity
+        and budget accordingly, especially when extending retention periods.
+      </div>
+
+      <!-- ── See Also ────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="cdrs.html">Call History</a> &mdash; View call detail records linked to recordings</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Configure per-extension recording policies</li>
+          <li><a href="voicemail.html">Voicemail</a> &mdash; Manage voicemail messages (stored separately from call recordings)</li>
+          <li><a href="rbac.html">Roles &amp; Permissions</a> &mdash; Control who can access recordings</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; Track recording access and deletion events</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ─────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="cdrs.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Call History</span>
+        </a>
+        <a href="voicemail.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Voicemail</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#field-reference">Recording Field Reference</a></li>
+      <li><a href="#recording-policies">Recording Policies</a></li>
+      <li><a href="#storage">Storage</a></li>
+      <li><a href="#playback">Playback</a></li>
+      <li><a href="#filtering">Filtering and Searching</a></li>
+      <li><a href="#cdr-link">Linking Recordings to CDRs</a></li>
+      <li><a href="#legal-compliance">Legal Compliance</a></li>
+      <li><a href="#storage-tiering">Storage Tiering</a></li>
+      <li><a href="#retention">Retention and Deletion</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

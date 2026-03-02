@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coming Soon — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html" class="active">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <span>Coming Soon</span>
+      </div>
+
+      <h1>Coming Soon</h1>
+      <p class="page-subtitle">Planned features and capabilities on the New Phone Platform roadmap, organized by category.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        The New Phone Platform is under active development with a comprehensive feature roadmap.
+        This page lists all planned features that are not yet implemented, grouped by category.
+        Features marked with <span class="badge badge-coming">Coming Soon</span> are on the
+        roadmap and will be added in future releases. Priorities and timelines may shift based
+        on customer feedback and operational needs.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Feature Requests</div>
+        If you have specific feature requests or want to influence roadmap priorities, contact
+        your MSP administrator. Feature requests are tracked and prioritized based on demand
+        across the tenant base.
+      </div>
+
+      <!-- ── Mobile & Desktop ─────────────────────────────────────────── -->
+      <h2 id="mobile-desktop">Mobile &amp; Desktop</h2>
+
+      <h3>Flutter Mobile App <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A native mobile application built with Flutter for iOS and Android. On iOS, the app
+        will integrate with CallKit to provide native call UI, lock-screen call notifications,
+        and Siri integration. On Android, it will use ConnectionService for native dialer
+        integration and incoming call handling even when the app is in the background.
+      </p>
+
+      <h3>Electron Desktop App <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A cross-platform desktop application for Windows, macOS, and Linux. The desktop app
+        will run as a system tray application with global keyboard shortcuts for answering
+        calls, click-to-call from any application, and desktop notifications that work even
+        when the browser is closed.
+      </p>
+
+      <!-- ── Phone Provisioning ───────────────────────────────────────── -->
+      <h2 id="phone-provisioning">Phone Provisioning</h2>
+
+      <h3>Auto-Provision Desk Phones <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Zero-touch provisioning for Yealink, Polycom, and Cisco desk phones. Phones will
+        automatically discover the provisioning server via DHCP Option 66 or DNS SRV records,
+        download their configuration, and register with FreeSWITCH. Administrators will be
+        able to assign phones to extensions, configure button layouts, and push firmware
+        updates from the web UI.
+      </p>
+
+      <h3>DPMA Replacement for Sangoma P-Series <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A Rust-based replacement for Digium Phone Module for Asterisk (DPMA) that provides
+        native support for Sangoma P-series phones. This service will handle phone discovery,
+        provisioning, presence (BLF), and feature key synchronization without depending on
+        Asterisk or the proprietary DPMA module.
+      </p>
+
+      <h3>Desk Phone XML Apps <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        On-phone applications rendered through the desk phone's XML browser for Yealink,
+        Polycom, and Cisco models. These apps will include a corporate directory with search,
+        visual voicemail with message playback controls, a parking lot panel showing occupied
+        and available slots, and a queue dashboard for agents to view queue status and log
+        in/out directly from their phone screen.
+      </p>
+
+      <!-- ── Integrations ─────────────────────────────────────────────── -->
+      <h2 id="integrations">Integrations</h2>
+
+      <h3>ConnectWise PSA <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Deep integration with ConnectWise PSA for managed service providers. The platform will
+        automatically create tickets from missed calls, voicemails, and completed calls. It will
+        map extensions to ConnectWise companies, attach call recordings to tickets, and log call
+        activity as time entries. Inbound caller ID will trigger screen pops showing the
+        matching ConnectWise company and open tickets.
+      </p>
+
+      <h3>Zendesk Integration <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Connect the phone system with Zendesk for customer support workflows. Inbound calls
+        will trigger ticket lookup and screen pops, call recordings will be attached to tickets
+        automatically, and agents can click-to-call directly from Zendesk ticket views.
+      </p>
+
+      <h3>Salesforce Integration <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        CRM integration with Salesforce to log call activity, match callers to contacts and
+        accounts, and provide sales teams with click-to-call from within Salesforce. Call
+        recordings and transcriptions will be linked to the appropriate Salesforce records.
+      </p>
+
+      <h3>Microsoft Teams Integration <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Presence synchronization between the phone platform and Microsoft Teams. When a user
+        is on a Teams call, their phone extension will show busy. Direct routing will allow
+        Teams users to make and receive PSTN calls through the platform's SIP trunks.
+      </p>
+
+      <h3>Slack Integration <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Slack notifications for missed calls, voicemails, and queue alerts. Users will receive
+        DMs when they miss a call, and channels can be configured to receive queue overflow
+        alerts. A Slack slash command will allow click-to-call directly from Slack.
+      </p>
+
+      <!-- ── Advanced Call Center ─────────────────────────────────────── -->
+      <h2 id="call-center">Advanced Call Center</h2>
+
+      <h3>Dashboards &amp; Analytics <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Real-time and historical call center dashboards with wallboard mode for display screens.
+        Metrics will include service level adherence, average handle time, abandonment rates,
+        agent utilization, and hourly call volume trends with customizable date ranges and
+        drill-down capabilities.
+      </p>
+
+      <h3>Workforce Management <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Schedule management for call center agents, including shift planning, break scheduling,
+        and adherence monitoring. The system will forecast call volumes based on historical data
+        and recommend staffing levels to meet SLA targets.
+      </p>
+
+      <h3>QA Scorecards <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Quality assurance scoring for recorded calls. Supervisors will create customizable
+        scorecards with weighted criteria, score agent calls, and track quality trends over
+        time. Scores can be linked to specific call recordings for agent coaching sessions.
+      </p>
+
+      <h3>Disposition Codes <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Configurable disposition codes that agents select after each call to categorize the
+        outcome (e.g., sale, support resolved, callback needed, wrong number). Disposition
+        data feeds into reporting dashboards and can trigger automated follow-up workflows.
+      </p>
+
+      <h3>Scheduled Callbacks <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Allow callers waiting in queue to request a callback instead of holding. The system
+        will maintain the caller's position in the virtual queue and automatically dial them
+        back when an agent becomes available, preserving their original wait position.
+      </p>
+
+      <h3>Post-Call Surveys <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Automated IVR surveys presented to callers after a call ends. Callers rate their
+        experience using DTMF input or voice, and results are tracked per agent, per queue,
+        and over time to measure customer satisfaction trends.
+      </p>
+
+      <h3>Wrap-Up Codes <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Configurable wrap-up time after each queue call during which the agent is not offered
+        new calls. Agents use this time to complete notes, set disposition codes, and finish
+        post-call tasks. Wrap-up duration is configurable per queue.
+      </p>
+
+      <!-- ── AI Features ──────────────────────────────────────────────── -->
+      <h2 id="ai-features">AI Features</h2>
+
+      <h3>Transcription <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Automatic speech-to-text transcription of call recordings. Transcriptions will be
+        searchable, allowing administrators to find calls by spoken content. Multiple STT
+        providers will be supported including OpenAI Whisper, Deepgram, and Google Speech.
+      </p>
+
+      <h3>Summarization <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        AI-generated summaries of call recordings that extract key discussion points, action
+        items, and decisions. Summaries will be attached to CDR records and can be included
+        in ConnectWise ticket notes or email notifications.
+      </p>
+
+      <h3>Sentiment Analysis <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Real-time and post-call sentiment scoring that detects caller emotion throughout the
+        conversation. Supervisors can monitor live calls flagged with negative sentiment and
+        intervene if needed. Historical sentiment data feeds into quality assurance reporting.
+      </p>
+
+      <h3>AI Voice Agent System <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A full conversational AI agent modeled after a multi-provider STT/LLM/TTS pipeline.
+        The voice agent handles inbound calls with natural conversation, tool calling for
+        CRM lookups and ticket creation, barge-in support for interrupting the AI mid-sentence,
+        and seamless handoff to live agents when needed. Multiple AI providers will be supported
+        including OpenAI, Deepgram, Google Gemini, and ElevenLabs.
+      </p>
+
+      <h3>AI Compliance Monitoring <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Automated monitoring of call recordings for compliance with regulatory requirements
+        and company policies. The system will flag calls where required disclosures were
+        missed, detect potential PCI violations (credit card numbers spoken aloud), and
+        verify script adherence for regulated industries.
+      </p>
+
+      <!-- ── SMS & Messaging ──────────────────────────────────────────── -->
+      <h2 id="sms-messaging">SMS &amp; Messaging</h2>
+
+      <h3>WhatsApp Business <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Integration with the WhatsApp Business API for omnichannel customer communication.
+        Incoming WhatsApp messages will route to queues alongside voice calls and SMS, with
+        conversation threading and shared inbox support for team collaboration.
+      </p>
+
+      <h3>Facebook Messenger <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Connect Facebook Messenger to the queue system for businesses that receive customer
+        inquiries through Facebook. Messages will be handled by the same agents and queues
+        as voice and SMS, providing a unified communication experience.
+      </p>
+
+      <h3>Email-to-Queue <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Route inbound emails to call center queues for agents to handle alongside voice and
+        messaging channels. Emails will be assigned to agents using the same routing strategies
+        as calls (round-robin, least-recent, skills-based), with response templates and SLA
+        tracking.
+      </p>
+
+      <!-- ── Security & Compliance ────────────────────────────────────── -->
+      <h2 id="security-compliance">Security &amp; Compliance</h2>
+
+      <h3>STIR/SHAKEN <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Implementation of the STIR/SHAKEN caller ID authentication framework. Outbound calls
+        will be signed with attestation certificates, and inbound calls will display verification
+        status (full, partial, or gateway attestation) to help users identify legitimate callers
+        and filter robocalls.
+      </p>
+
+      <h3>Robocall Filtering <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Intelligent call screening that blocks known robocall numbers, challenges suspected
+        spam callers with CAPTCHA-style audio prompts, and maintains per-tenant block/allow
+        lists. The system will use reputation databases and STIR/SHAKEN attestation data to
+        score incoming calls.
+      </p>
+
+      <h3>TCPA Compliance <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Tools to help organizations comply with the Telephone Consumer Protection Act,
+        including do-not-call list management, consent tracking for outbound campaigns, and
+        automated opt-out processing. The system will enforce calling hour restrictions and
+        maintain auditable records of consent.
+      </p>
+
+      <h3>10DLC Toolkit <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A complete 10-digit long code compliance toolkit for SMS/MMS messaging. This includes
+        brand registration, campaign registration with The Campaign Registry (TCR), opt-in
+        form generation, privacy policy and terms of service templates, and throughput
+        monitoring to stay within approved message volumes.
+      </p>
+
+      <!-- ── Infrastructure ───────────────────────────────────────────── -->
+      <h2 id="infrastructure">Infrastructure</h2>
+
+      <h3>High Availability <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Active/passive and active/active clustering for all platform components. FreeSWITCH
+        will support failover pairs with shared registration state, PostgreSQL will use
+        streaming replication with automatic failover, and the API layer will run behind a
+        load balancer with health-check-based routing.
+      </p>
+
+      <h3>Disaster Recovery <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Automated disaster recovery with configurable RPO (recovery point objective) and RTO
+        (recovery time objective) targets. The system will support cross-region replication
+        of databases, media storage, and configuration, with automated failover procedures
+        and regular DR testing capabilities.
+      </p>
+
+      <h3>Multi-Region Deployment <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Deploy platform instances across multiple geographic regions to reduce latency for
+        distributed workforces and meet data residency requirements. Each region will operate
+        independently with cross-region synchronization for global directory and configuration.
+      </p>
+
+      <h3>Status Page <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A public-facing status page showing real-time health of all platform components.
+        Tenants and their end users can subscribe to incident notifications via email or
+        webhook. The status page will include historical uptime metrics and incident
+        post-mortems.
+      </p>
+
+      <!-- ── Billing & Business ───────────────────────────────────────── -->
+      <h2 id="billing-business">Billing &amp; Business</h2>
+
+      <h3>Usage Metering <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Per-tenant usage tracking for billable resources including call minutes (inbound,
+        outbound, toll-free), SMS/MMS messages, recording storage, DID rental, and API
+        calls. Usage data will be available in real time via the admin dashboard and
+        exportable for billing systems.
+      </p>
+
+      <h3>Rate Decks <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Configurable per-destination rate tables for call pricing. MSP administrators will
+        be able to define markup rules on top of carrier costs, set per-tenant rate
+        overrides, and generate cost-vs-revenue reports for each tenant.
+      </p>
+
+      <h3>Pax8 / ConnectWise Billing Integration <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Direct integration with Pax8 and ConnectWise billing systems to automate invoice
+        generation for MSP customers. Usage data from the metering system will flow into
+        billing agreements, with support for tiered pricing, bundled plans, and overage
+        charges.
+      </p>
+
+      <!-- ── Advanced Features ────────────────────────────────────────── -->
+      <h2 id="advanced-features">Advanced Features</h2>
+
+      <h3>White-Label Branding <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Per-tenant branding customization including logos, color schemes, custom domain names,
+        and branded email templates. MSPs will be able to resell the platform under their own
+        brand with no visible reference to the underlying platform.
+      </p>
+
+      <h3>Inter-Tenant Calling <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Direct extension-to-extension calling between tenants on the same platform without
+        routing through external SIP trunks. This reduces cost and latency for MSPs whose
+        customers frequently call each other, with configurable per-tenant permissions for
+        which tenants can be reached.
+      </p>
+
+      <h3>Boss/Admin (Executive/Assistant) <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Executive/assistant call filtering where an assistant screens calls for an executive.
+        The assistant's phone rings first, and they can announce the caller, put the call
+        through, take a message, or route to voicemail. Multiple assistants can be assigned
+        to one executive with priority ordering.
+      </p>
+
+      <h3>Camp-On / Callback on Busy <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        When a caller reaches a busy extension, they can choose to "camp on" and be
+        automatically called back when the extension becomes available. The system monitors
+        the target extension's state and initiates the callback within seconds of it going
+        idle.
+      </p>
+
+      <h3>Multi-Site / Multi-Timezone <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Support for tenants with offices in multiple locations and time zones. Time conditions,
+        business hours, and holiday calendars can be configured per site. The system will
+        route calls based on the local time at each site and support site-specific dial plans
+        and emergency routing.
+      </p>
+
+      <h3>CDR Enrichment from CRM <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Automatically enrich call detail records with data from connected CRM systems. Inbound
+        caller phone numbers will be matched against CRM contacts to display company name,
+        account status, and recent ticket history alongside call records, making CDR reports
+        more actionable.
+      </p>
+
+      <h3>Click-to-Call Browser Extension <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A Chrome/Firefox browser extension that detects phone numbers on any web page and
+        adds a click-to-call overlay. Clicking a detected number initiates a call through
+        the platform's WebRTC softphone or sends a dial command to a registered desk phone.
+      </p>
+
+      <!-- ── Developer ────────────────────────────────────────────────── -->
+      <h2 id="developer">Developer</h2>
+
+      <h3>Developer Portal <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A self-service developer portal with interactive API documentation (Swagger/ReDoc),
+        API key management, usage analytics, code samples in multiple languages, and a
+        sandbox environment for testing integrations without affecting production data.
+      </p>
+
+      <h3>Webhooks <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Configurable webhook endpoints that fire on platform events such as call start/end,
+        voicemail received, extension registration changes, and queue events. Webhooks will
+        include HMAC signature verification, retry logic with exponential backoff, and a
+        delivery log for debugging.
+      </p>
+
+      <h3>SDKs <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Official client SDKs for Python, JavaScript/TypeScript, Go, and C# that wrap the
+        REST API with typed models, authentication handling, pagination helpers, and retry
+        logic. SDKs will be published to PyPI, npm, and NuGet respectively.
+      </p>
+
+      <h3>Plugin / Marketplace Architecture <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        An extensibility framework allowing third-party developers to build plugins that
+        integrate with the platform. Plugins will be able to add custom call flow actions,
+        UI panels, reporting widgets, and integration connectors. A marketplace will allow
+        MSPs to discover and install plugins.
+      </p>
+
+      <!-- ── Other ────────────────────────────────────────────────────── -->
+      <h2 id="other">Other</h2>
+
+      <h3>Receptionist Console <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A dedicated web interface designed for receptionists and operators who handle high
+        call volumes. The console provides a streamlined view with drag-and-drop call
+        transfer, extension presence panel, speed-dial contacts, and a call parking lot
+        visualizer, all optimized for rapid call handling.
+      </p>
+
+      <h3>Hospitality Module <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Features tailored for hotels and hospitality environments including room extension
+        management, wake-up call scheduling, guest check-in/check-out integration, minibar
+        and housekeeping status codes, and restricted dialing profiles for guest room phones.
+      </p>
+
+      <h3>Headset Integration <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Native integration with professional headsets from Jabra, Poly, and EPOS/Sennheiser.
+        Physical headset buttons (answer, hang up, mute, volume) will control the WebRTC
+        softphone directly via the WebHID API, providing a seamless hardware-software
+        experience.
+      </p>
+
+      <h3>Emergency / Physical Security Integration <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Integration with physical security systems to trigger actions on emergency calls.
+        When a 911 call is placed, the system can activate building security cameras, unlock
+        doors for emergency responders, send notifications to designated security personnel,
+        and log the calling location for E911 dispatch.
+      </p>
+
+      <h3>Recording Storage Tiering <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Automated lifecycle management for call recordings, moving files between storage tiers
+        based on age and access patterns. Recent recordings stay on fast storage (SSD-backed
+        S3), older recordings move to cost-effective cold storage, and expired recordings are
+        automatically purged based on retention policies.
+      </p>
+
+      <h3>Localization / i18n <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Full internationalization of the web UI and system prompts. The platform will support
+        multiple languages for the admin interface, end-user portal, IVR prompts, and email
+        templates. Per-tenant language preferences will control which language is used for
+        system-generated content.
+      </p>
+
+      <h3>Migration Tools <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Automated migration tools for importing data from existing PBX systems including
+        FreePBX, 3CX, and Asterisk. The tools will import extensions, ring groups, IVR menus,
+        time conditions, DIDs, voicemail messages, and call recordings, with a pre-migration
+        validation report.
+      </p>
+
+      <h3>Network QoS Tools <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        Built-in network quality diagnostics including jitter, latency, and packet loss
+        measurement between endpoints and the platform. Administrators can run on-demand
+        network assessments before deploying phones at a new site and set up continuous
+        monitoring with alerts when quality degrades.
+      </p>
+
+      <h3>SIP Debugging Tools <span class="badge badge-coming">Coming Soon</span></h3>
+      <p>
+        A web-based SIP trace viewer for troubleshooting call setup failures, registration
+        issues, and codec negotiation problems. The tool will capture SIP message flows in
+        real time, display them as ladder diagrams, and allow filtering by extension, trunk,
+        or call ID without requiring SSH access to the FreeSWITCH server.
+      </p>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="index.html">Getting Started</a> &mdash; Overview of currently available features</li>
+          <li><a href="dashboard.html">Dashboard</a> &mdash; Monitor your current phone system</li>
+          <li><a href="admin-ops.html">Admin Operations</a> &mdash; System maintenance and management</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="ui-guide.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">UI Guide</span>
+        </a>
+        <a href="index.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Getting Started</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#mobile-desktop">Mobile &amp; Desktop</a></li>
+      <li><a href="#phone-provisioning">Phone Provisioning</a></li>
+      <li><a href="#integrations">Integrations</a></li>
+      <li><a href="#call-center">Advanced Call Center</a></li>
+      <li><a href="#ai-features">AI Features</a></li>
+      <li><a href="#sms-messaging">SMS &amp; Messaging</a></li>
+      <li><a href="#security-compliance">Security &amp; Compliance</a></li>
+      <li><a href="#infrastructure">Infrastructure</a></li>
+      <li><a href="#billing-business">Billing &amp; Business</a></li>
+      <li><a href="#advanced-features">Advanced Features</a></li>
+      <li><a href="#developer">Developer</a></li>
+      <li><a href="#other">Other</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

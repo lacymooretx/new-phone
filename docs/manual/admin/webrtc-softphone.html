@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebRTC Softphone — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html" class="active">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="dashboard.html">Interface</a>
+        <span class="sep">/</span>
+        <span>WebRTC Softphone</span>
+      </div>
+
+      <h1>WebRTC Softphone</h1>
+      <p class="page-subtitle">Browser-based SIP calling via WebSocket Secure &mdash; make and receive calls directly from the web UI without a desk phone.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        The WebRTC Softphone is a built-in browser-based phone that connects to FreeSWITCH
+        via WebSocket Secure (WSS). It allows users to make and receive calls directly from
+        the web application without any additional software or hardware. The softphone registers
+        as a SIP endpoint using the user's assigned extension, and all signaling travels over
+        encrypted WebSocket connections while media is encrypted with SRTP.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Encryption by Default</div>
+        All WebRTC connections use mandatory encryption. Signaling flows over WSS (WebSocket
+        over TLS) and media is protected by SRTP with DTLS key exchange. There is no option
+        to use unencrypted connections, consistent with the platform's security-first design.
+      </div>
+
+      <!-- ── System Requirements ──────────────────────────────────────── -->
+      <h2 id="requirements">System Requirements</h2>
+      <p>
+        The WebRTC softphone runs entirely in the browser. The following requirements must
+        be met for proper operation.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Requirement</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Browser</strong></td>
+              <td>Chrome 90+, Firefox 88+, Edge 90+, Safari 15+</td>
+            </tr>
+            <tr>
+              <td><strong>Protocol</strong></td>
+              <td>Page must be served over HTTPS (required for microphone access)</td>
+            </tr>
+            <tr>
+              <td><strong>Microphone</strong></td>
+              <td>Browser must have permission to access the microphone</td>
+            </tr>
+            <tr>
+              <td><strong>Network</strong></td>
+              <td>Outbound WSS (port 443 or 7443) and UDP/TCP for STUN/TURN</td>
+            </tr>
+            <tr>
+              <td><strong>Audio Output</strong></td>
+              <td>Speakers or headset for call audio playback</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Safari Limitations</div>
+        Safari on iOS does not support background WebRTC audio. Incoming call notifications
+        will not ring if the browser tab is in the background. For mobile use, the native
+        Flutter app (coming soon) is recommended.
+      </div>
+
+      <!-- ── Getting Started ──────────────────────────────────────────── -->
+      <h2 id="getting-started">Getting Started</h2>
+      <p>
+        To use the WebRTC softphone, navigate to the Softphone section in the web application.
+        The softphone panel can be accessed from the phone icon in the top navigation bar or
+        from the sidebar under <strong>Interface &rarr; WebRTC Softphone</strong>.
+      </p>
+
+      <h3 id="auto-registration">Automatic Registration</h3>
+      <p>
+        When the softphone panel opens, it automatically fetches WebRTC credentials from the
+        API and registers with FreeSWITCH via WSS. The registration process takes 1-3 seconds.
+        Once registered, the status indicator turns green and displays "Registered."
+      </p>
+      <ol>
+        <li>Open the Softphone panel (click the phone icon or navigate via sidebar)</li>
+        <li>Grant microphone permission when prompted by the browser</li>
+        <li>Wait for the status to show <strong>Registered</strong> (green indicator)</li>
+        <li>You are ready to make and receive calls</li>
+      </ol>
+
+      <!-- ── Making Calls ─────────────────────────────────────────────── -->
+      <h2 id="making-calls">Making Calls</h2>
+      <p>
+        There are two ways to initiate outbound calls from the softphone.
+      </p>
+
+      <h3 id="dial-pad">Using the Dial Pad</h3>
+      <p>
+        Click the dial pad button to open the numeric keypad. Enter the number you want to
+        call (extension number for internal calls, or full phone number for external calls)
+        and press the green call button. You can also type the number directly using your
+        keyboard.
+      </p>
+
+      <h3 id="click-to-call">Click-to-Call from Contacts</h3>
+      <p>
+        Throughout the web application, phone numbers and extension numbers are clickable.
+        Clicking a phone number in the contacts list, call history, or any other page
+        automatically opens the softphone and initiates the call. This works for both
+        internal extensions and external numbers.
+      </p>
+
+      <!-- ── Receiving Calls ──────────────────────────────────────────── -->
+      <h2 id="receiving-calls">Receiving Calls</h2>
+      <p>
+        When your extension receives an incoming call, the softphone displays a notification
+        with the caller's information.
+      </p>
+
+      <h3 id="incoming-notification">Incoming Call Notification</h3>
+      <ul>
+        <li><strong>Caller name</strong> &mdash; Display name from caller ID or contact match</li>
+        <li><strong>Caller number</strong> &mdash; The calling party's phone number or extension</li>
+        <li><strong>Ring type</strong> &mdash; Whether the call is direct, from a queue, or from a ring group</li>
+      </ul>
+
+      <h3 id="answer-reject">Answer or Reject</h3>
+      <p>
+        Click the green <strong>Answer</strong> button to accept the call, or the red
+        <strong>Reject</strong> button to send the call to voicemail (or the next destination
+        in the call flow). If the call is not answered within the configured ring timeout,
+        it follows the extension's no-answer destination.
+      </p>
+
+      <!-- ── Call Controls ────────────────────────────────────────────── -->
+      <h2 id="call-controls">Call Controls</h2>
+      <p>
+        During an active call, the softphone displays control buttons for common call
+        operations.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Control</th>
+              <th>Action</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hold</strong></td>
+              <td>Toggle</td>
+              <td>Places the call on hold with music. Press again to resume.</td>
+            </tr>
+            <tr>
+              <td><strong>Mute</strong></td>
+              <td>Toggle</td>
+              <td>Mutes your microphone. The other party cannot hear you. Press again to unmute.</td>
+            </tr>
+            <tr>
+              <td><strong>Transfer</strong></td>
+              <td>Opens transfer dialog</td>
+              <td>Blind transfer (enter number, press send) or attended transfer (call first, then complete).</td>
+            </tr>
+            <tr>
+              <td><strong>DTMF</strong></td>
+              <td>Opens keypad</td>
+              <td>Send DTMF tones during a call (for IVR navigation, conference PINs, etc.).</td>
+            </tr>
+            <tr>
+              <td><strong>Hang Up</strong></td>
+              <td>Ends call</td>
+              <td>Terminates the active call.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Audio Device Selection ───────────────────────────────────── -->
+      <h2 id="audio-devices">Audio Device Selection</h2>
+      <p>
+        The softphone allows you to select which audio input (microphone) and output (speaker)
+        device to use. This is useful when you have multiple audio devices connected, such as
+        a USB headset and built-in laptop speakers.
+      </p>
+
+      <h3 id="device-settings">Changing Devices</h3>
+      <p>
+        Click the gear icon in the softphone panel to open audio settings. You will see
+        dropdown menus for:
+      </p>
+      <ul>
+        <li><strong>Microphone</strong> &mdash; Select the input device for your voice</li>
+        <li><strong>Speaker</strong> &mdash; Select the output device for call audio</li>
+        <li><strong>Ringer</strong> &mdash; Select the output device for incoming ring tones (Chrome only)</li>
+      </ul>
+      <p>
+        Device changes take effect immediately, even during an active call. Your selection
+        is saved in browser local storage and persists across sessions.
+      </p>
+
+      <!-- ── Registration Status ──────────────────────────────────────── -->
+      <h2 id="registration-status">Registration Status</h2>
+      <p>
+        The softphone displays its SIP registration status in the top bar of the softphone
+        panel.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Indicator</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Registered</td>
+              <td><span style="color:#22c55e">Green</span></td>
+              <td>Successfully registered with FreeSWITCH; ready to make and receive calls</td>
+            </tr>
+            <tr>
+              <td>Registering</td>
+              <td><span style="color:#f59e0b">Amber</span></td>
+              <td>Attempting to register; waiting for server response</td>
+            </tr>
+            <tr>
+              <td>Unregistered</td>
+              <td><span style="color:#6b7280">Gray</span></td>
+              <td>Not connected; the softphone is idle or the panel was just opened</td>
+            </tr>
+            <tr>
+              <td>Error</td>
+              <td><span style="color:#ef4444">Red</span></td>
+              <td>Registration failed; check credentials, network, or FreeSWITCH status</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Call Timer ───────────────────────────────────────────────── -->
+      <h2 id="call-timer">Call Timer</h2>
+      <p>
+        During an active call, a timer displays in the softphone panel showing the elapsed
+        call duration in <code>MM:SS</code> format (or <code>HH:MM:SS</code> for calls
+        exceeding one hour). The timer starts when the call is answered and stops when either
+        party hangs up.
+      </p>
+
+      <!-- ── WebRTC Credentials ───────────────────────────────────────── -->
+      <h2 id="credentials">WebRTC Credentials</h2>
+      <p>
+        The softphone obtains its SIP credentials automatically from the API when the panel
+        opens. These credentials are temporary and scoped to the user's session. The API
+        endpoint returns a <code>WebRTCCredentials</code> object.
+      </p>
+
+      <h3 id="credentials-schema">WebRTCCredentials Schema</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>sip_username</code></td>
+              <td><code>str</code></td>
+              <td>SIP authentication username for WebSocket registration</td>
+            </tr>
+            <tr>
+              <td><code>sip_password</code></td>
+              <td><code>str</code></td>
+              <td>Temporary SIP password (rotated per session)</td>
+            </tr>
+            <tr>
+              <td><code>sip_domain</code></td>
+              <td><code>str</code></td>
+              <td>FreeSWITCH domain for the SIP REGISTER request</td>
+            </tr>
+            <tr>
+              <td><code>wss_url</code></td>
+              <td><code>str</code></td>
+              <td>WebSocket Secure endpoint URL (e.g., <code>wss://pbx.example.com:7443</code>)</td>
+            </tr>
+            <tr>
+              <td><code>extension_number</code></td>
+              <td><code>str</code></td>
+              <td>The extension number assigned to this user (e.g., "1001")</td>
+            </tr>
+            <tr>
+              <td><code>extension_id</code></td>
+              <td><code>UUID</code></td>
+              <td>The unique identifier of the extension in the database</td>
+            </tr>
+            <tr>
+              <td><code>display_name</code></td>
+              <td><code>str</code></td>
+              <td>Caller ID name sent in outbound SIP INVITE headers</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Credential Security</div>
+        The <code>sip_password</code> is temporary and rotated each time the softphone
+        panel is opened. It is never stored persistently on the client. The credential
+        endpoint requires a valid JWT access token, ensuring only authenticated users
+        can obtain SIP credentials.
+      </div>
+
+      <!-- ── Troubleshooting ──────────────────────────────────────────── -->
+      <h2 id="troubleshooting">Troubleshooting</h2>
+      <p>
+        Common issues and their solutions when using the WebRTC softphone.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Likely Cause</th>
+              <th>Resolution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>No audio (both directions)</td>
+              <td>Microphone permission denied</td>
+              <td>Click the lock/site-settings icon in the browser address bar and allow microphone access. Reload the page.</td>
+            </tr>
+            <tr>
+              <td>Can hear but cannot be heard</td>
+              <td>Wrong microphone selected or muted</td>
+              <td>Check audio device settings in the softphone. Verify the correct microphone is selected and not muted at the OS level.</td>
+            </tr>
+            <tr>
+              <td>One-way audio (caller hears you, you hear nothing)</td>
+              <td>Speaker device misconfigured or NAT issue</td>
+              <td>Check speaker device selection. If correct, this may be a NAT/firewall issue blocking inbound RTP. Verify TURN server configuration.</td>
+            </tr>
+            <tr>
+              <td>Registration failure (Error status)</td>
+              <td>Invalid credentials or network block</td>
+              <td>Refresh the page to obtain new credentials. Check that WSS port (7443) is not blocked by corporate firewall or proxy.</td>
+            </tr>
+            <tr>
+              <td>Echo during calls</td>
+              <td>Speaker audio feeding back into microphone</td>
+              <td>Use a headset instead of speakers. If using speakers, reduce volume and increase distance from microphone.</td>
+            </tr>
+            <tr>
+              <td>Choppy or robotic audio</td>
+              <td>Network congestion or high latency</td>
+              <td>Check network connection quality. Ensure sufficient bandwidth (100 Kbps per call minimum). Close bandwidth-heavy applications.</td>
+            </tr>
+            <tr>
+              <td>Call drops after a few seconds</td>
+              <td>SRTP negotiation failure</td>
+              <td>Check browser console for ICE/DTLS errors. Verify FreeSWITCH SRTP configuration matches the WebRTC requirements.</td>
+            </tr>
+            <tr>
+              <td>No incoming call notification</td>
+              <td>Tab in background (Safari) or notifications blocked</td>
+              <td>Keep the tab in the foreground, or allow browser notifications for the site. On Safari/iOS, use the native app instead.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Browser Compatibility ────────────────────────────────────── -->
+      <h2 id="browser-compatibility">Browser Compatibility</h2>
+      <p>
+        The WebRTC softphone has been tested on the following browsers. Other Chromium-based
+        browsers (Brave, Vivaldi, Opera) generally work but are not officially supported.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Browser</th>
+              <th>Minimum Version</th>
+              <th>Audio Output Selection</th>
+              <th>Background Ringing</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Google Chrome</td>
+              <td>90+</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Fully Supported</td>
+            </tr>
+            <tr>
+              <td>Microsoft Edge</td>
+              <td>90+</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Fully Supported</td>
+            </tr>
+            <tr>
+              <td>Mozilla Firefox</td>
+              <td>88+</td>
+              <td>No (uses system default)</td>
+              <td>Yes</td>
+              <td>Supported</td>
+            </tr>
+            <tr>
+              <td>Safari (macOS)</td>
+              <td>15+</td>
+              <td>No</td>
+              <td>Limited</td>
+              <td>Supported</td>
+            </tr>
+            <tr>
+              <td>Safari (iOS)</td>
+              <td>15+</td>
+              <td>No</td>
+              <td>No</td>
+              <td>Limited</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Recommended Browser</div>
+        Google Chrome provides the best WebRTC experience with full audio device selection,
+        background ringing support, and the most reliable SRTP/DTLS implementation. We
+        recommend Chrome for primary softphone use.
+      </div>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="extensions.html">Extensions</a> &mdash; Configure extensions and SIP credentials</li>
+          <li><a href="sip-trunks.html">SIP Trunks</a> &mdash; Carrier connectivity for external calls</li>
+          <li><a href="dashboard.html">Dashboard</a> &mdash; Monitor active calls in real time</li>
+          <li><a href="admin-ops.html">Admin Operations</a> &mdash; FreeSWITCH management and troubleshooting</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="dashboard.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Dashboard</span>
+        </a>
+        <a href="ui-guide.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">UI Guide</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#requirements">System Requirements</a></li>
+      <li><a href="#getting-started">Getting Started</a></li>
+      <li><a href="#making-calls">Making Calls</a></li>
+      <li><a href="#receiving-calls">Receiving Calls</a></li>
+      <li><a href="#call-controls">Call Controls</a></li>
+      <li><a href="#audio-devices">Audio Device Selection</a></li>
+      <li><a href="#registration-status">Registration Status</a></li>
+      <li><a href="#call-timer">Call Timer</a></li>
+      <li><a href="#credentials">WebRTC Credentials</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+      <li><a href="#browser-compatibility">Browser Compatibility</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

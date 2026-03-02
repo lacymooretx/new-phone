@@ -1,0 +1,5 @@
+You have a new voicemail message.
+
+Mailbox: {{ mailbox_number }}
+From: {{ caller_name }} <{{ caller_number }}>
+Duration: {{ duration_seconds }} seconds

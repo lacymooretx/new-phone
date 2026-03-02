@@ -1,0 +1,147 @@
+/* Click-to-Call link styling */
+.np-c2c-link {
+  color: inherit !important;
+  text-decoration: underline dotted !important;
+  text-decoration-color: #4f8cff !important;
+  text-underline-offset: 2px !important;
+  cursor: pointer !important;
+  transition: text-decoration-color 0.15s ease !important;
+}
+
+.np-c2c-link:hover {
+  text-decoration-color: #2563eb !important;
+  text-decoration-style: solid !important;
+}
+
+/* Tooltip container */
+.np-c2c-tooltip {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+  padding: 12px;
+  min-width: 220px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #1a202c;
+  z-index: 2147483647;
+}
+
+.np-c2c-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.np-c2c-tooltip-icon {
+  font-size: 18px;
+}
+
+.np-c2c-tooltip-number {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1a202c;
+}
+
+/* Buttons */
+.np-c2c-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+  font-family: inherit;
+}
+
+.np-c2c-btn:last-child {
+  margin-bottom: 0;
+}
+
+.np-c2c-btn-call {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.np-c2c-btn-call:hover {
+  background: #1d4ed8;
+}
+
+.np-c2c-btn-web {
+  background: #f0f4ff;
+  color: #2563eb;
+}
+
+.np-c2c-btn-web:hover {
+  background: #dbeafe;
+}
+
+.np-c2c-btn-copy {
+  background: #f7fafc;
+  color: #4a5568;
+}
+
+.np-c2c-btn-copy:hover {
+  background: #edf2f7;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .np-c2c-tooltip {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+  }
+
+  .np-c2c-tooltip-header {
+    border-bottom-color: #334155;
+  }
+
+  .np-c2c-tooltip-number {
+    color: #f1f5f9;
+  }
+
+  .np-c2c-link {
+    text-decoration-color: #60a5fa !important;
+  }
+
+  .np-c2c-link:hover {
+    text-decoration-color: #93bbfd !important;
+  }
+
+  .np-c2c-btn-call {
+    background: #3b82f6;
+  }
+
+  .np-c2c-btn-call:hover {
+    background: #2563eb;
+  }
+
+  .np-c2c-btn-web {
+    background: #1e3a5f;
+    color: #93bbfd;
+  }
+
+  .np-c2c-btn-web:hover {
+    background: #1e40af;
+  }
+
+  .np-c2c-btn-copy {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+  }
+
+  .np-c2c-btn-copy:hover {
+    background: #334155;
+  }
+}

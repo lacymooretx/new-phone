@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logging In &amp; MFA — New Phone User Guide</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="" width="28" height="28">
+      <div>
+        <span class="logo-text">New Phone</span>
+        <span class="logo-sub">User Guide</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+          <a href="login.html" class="active">Logging In</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Your Phone</div>
+        <div class="sidebar-group-items">
+          <a href="your-extension.html">Your Extension</a>
+          <a href="voicemail.html">Voicemail</a>
+          <a href="call-history.html">Call History</a>
+          <a href="softphone.html">Web Softphone</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Application</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="profile.html">Your Profile</a>
+          <a href="keyboard-shortcuts.html">Shortcuts</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="../index.html" style="font-size:13px;color:var(--text-muted)">Manual Home</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">&#127763;</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="../index.html">Manual</a>
+        <span class="sep">/</span>
+        <a href="index.html">User Guide</a>
+        <span class="sep">/</span>
+        <span>Logging In</span>
+      </div>
+
+      <h1>Logging In &amp; MFA</h1>
+      <p class="page-subtitle">How to sign into New Phone, complete multi-factor authentication, and resolve common login issues.</p>
+
+      <!-- Accessing the Web App -->
+      <h2 id="accessing">Accessing the Web App</h2>
+      <p>
+        Your administrator will provide you with a web address (URL) for the New Phone web app. This is
+        typically something like <code>https://phone.yourcompany.com</code>. Open this URL in any modern
+        web browser &mdash; Chrome, Firefox, Edge, or Safari all work well.
+      </p>
+      <p>
+        Bookmark this address so you can find it quickly. If you do not know the URL, ask your
+        administrator or check your company's internal documentation.
+      </p>
+
+      <!-- Signing In -->
+      <h2 id="signing-in">Signing In with Email and Password</h2>
+      <p>Follow these steps to log into New Phone:</p>
+      <ol>
+        <li>Open the New Phone web app in your browser.</li>
+        <li>On the login screen, enter your <strong>email address</strong> in the first field.</li>
+        <li>Enter your <strong>password</strong> in the second field.</li>
+        <li>Click the <strong>Sign In</strong> button.</li>
+      </ol>
+      <p>
+        If your account does not have multi-factor authentication (MFA) enabled, you will be taken
+        directly to the dashboard. If MFA is enabled, you will see a second screen asking for a
+        verification code &mdash; continue to the next section.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Tip</div>
+        Your email address is not case-sensitive. <code>jane@example.com</code> and
+        <code>Jane@Example.com</code> are treated as the same account.
+      </div>
+
+      <!-- MFA Challenge -->
+      <h2 id="mfa-challenge">Completing the MFA Challenge</h2>
+      <p>
+        If your organization requires multi-factor authentication, you will see a verification screen
+        after entering your email and password. This adds an extra layer of security to your account.
+      </p>
+      <ol>
+        <li>Open your authenticator app on your phone (Google Authenticator, Authy, or Microsoft Authenticator).</li>
+        <li>Find the entry for <strong>New Phone</strong> in the app.</li>
+        <li>Enter the <strong>6-digit code</strong> shown in the app into the verification field.</li>
+        <li>Click <strong>Verify</strong>.</li>
+      </ol>
+      <p>
+        The code changes every 30 seconds. If you enter the code and it does not work, wait for a new
+        code to appear and try again. Make sure the time on your phone is accurate, as authenticator
+        apps depend on your device clock being correct.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Code Timing</div>
+        If the 6-digit code in your authenticator app is about to expire (the timer is almost at zero),
+        wait for the next code. Entering an expiring code may cause a verification failure.
+      </div>
+
+      <!-- Setting Up MFA -->
+      <h2 id="mfa-setup">Setting Up MFA for the First Time</h2>
+      <p>
+        If your administrator has enabled MFA for your account but you have not set it up yet, you will
+        be guided through the setup process the next time you log in. Here is what to expect:
+      </p>
+      <ol>
+        <li>After entering your email and password, you will see a QR code on screen.</li>
+        <li>Open your authenticator app and tap the option to <strong>add a new account</strong> (usually a + icon).</li>
+        <li>Choose <strong>Scan QR code</strong> and point your phone's camera at the code on screen.</li>
+        <li>The app will add a new entry called <strong>New Phone</strong> with your email address.</li>
+        <li>Enter the <strong>6-digit code</strong> from the app to confirm setup.</li>
+        <li>You may also be shown <strong>recovery codes</strong>. Save these in a safe place &mdash; they can be used to log in if you lose access to your authenticator app.</li>
+      </ol>
+
+      <h3 id="supported-apps">Supported Authenticator Apps</h3>
+      <p>Any TOTP-compatible authenticator app will work. Popular options include:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>App</th>
+              <th>Available On</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Google Authenticator</td>
+              <td>iOS, Android</td>
+              <td>Free. Simple and widely used.</td>
+            </tr>
+            <tr>
+              <td>Microsoft Authenticator</td>
+              <td>iOS, Android</td>
+              <td>Free. Also supports push notifications for Microsoft accounts.</td>
+            </tr>
+            <tr>
+              <td>Authy</td>
+              <td>iOS, Android, Desktop</td>
+              <td>Free. Supports cloud backup of your codes across devices.</td>
+            </tr>
+            <tr>
+              <td>1Password</td>
+              <td>iOS, Android, Desktop</td>
+              <td>Paid. Stores TOTP codes alongside your passwords.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Session Duration -->
+      <h2 id="session-duration">Staying Logged In</h2>
+      <p>
+        After you sign in, your session stays active for a period of time so you do not have to log in
+        every time you open the app. Here is how it works:
+      </p>
+      <ul>
+        <li>Your login session is valid as long as you use the app regularly.</li>
+        <li>If you close the browser and come back later, you may still be logged in.</li>
+        <li>After an extended period of inactivity, you will be asked to sign in again.</li>
+        <li>Your administrator controls the exact session duration &mdash; this varies by organization.</li>
+      </ul>
+      <p>
+        To log out manually, click your profile icon in the top-right corner and select <strong>Sign Out</strong>.
+        This is recommended when using a shared or public computer.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Tip</div>
+        Always sign out when using a computer that other people have access to. This prevents
+        others from accessing your phone system account.
+      </div>
+
+      <!-- Forgot Password -->
+      <h2 id="forgot-password">Forgot Your Password</h2>
+      <p>If you cannot remember your password, you have two options:</p>
+      <ol>
+        <li><strong>Use the password reset link</strong> &mdash; On the login screen, click <strong>Forgot Password</strong>. Enter your email address, and a reset link will be sent to your inbox. Click the link and create a new password.</li>
+        <li><strong>Contact your administrator</strong> &mdash; If the reset link does not arrive, or if your account is locked, ask your admin to reset your password manually.</li>
+      </ol>
+      <p>
+        When creating a new password, it must be at least 8 characters long. Use a mix of letters,
+        numbers, and symbols for better security. Avoid reusing passwords from other accounts.
+      </p>
+
+      <!-- SSO -->
+      <h2 id="sso">SSO Login <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        In a future release, New Phone will support Single Sign-On (SSO) with Microsoft and Google.
+        This means you will be able to log in using the same credentials you use for your company
+        email and other corporate applications.
+      </p>
+      <ul>
+        <li><strong>Microsoft Entra ID</strong> &mdash; Sign in with your Microsoft 365 / Azure AD account.</li>
+        <li><strong>Google Workspace</strong> &mdash; Sign in with your Google company account.</li>
+      </ul>
+      <p>
+        When SSO becomes available, your administrator will configure it for your organization. You
+        will see a "Sign in with Microsoft" or "Sign in with Google" button on the login page.
+      </p>
+
+      <!-- Troubleshooting -->
+      <h2 id="troubleshooting">Troubleshooting Login Issues</h2>
+      <p>If you are having trouble signing in, check the following:</p>
+
+      <h3 id="wrong-password">Wrong Password</h3>
+      <ul>
+        <li>Make sure Caps Lock is off.</li>
+        <li>Double-check that you are typing the correct email address.</li>
+        <li>Try the <strong>Forgot Password</strong> link to reset it.</li>
+        <li>If you recently changed your password, make sure you are using the new one.</li>
+      </ul>
+
+      <h3 id="mfa-not-working">MFA Code Not Working</h3>
+      <ul>
+        <li>Make sure you are reading the code for <strong>New Phone</strong>, not a different account in your authenticator app.</li>
+        <li>Wait for a fresh code if the current one is about to expire.</li>
+        <li>Check that the time on your phone is accurate. Go to Settings &gt; Date &amp; Time and enable automatic time sync.</li>
+        <li>If you changed phones, you may need to set up MFA again &mdash; contact your administrator.</li>
+      </ul>
+
+      <h3 id="locked-out">Account Locked Out</h3>
+      <ul>
+        <li>After several failed login attempts, your account may be temporarily locked for security.</li>
+        <li>Wait a few minutes and try again, or contact your administrator to unlock your account.</li>
+        <li>Do not keep trying different passwords while locked out &mdash; this will not help and may extend the lockout.</li>
+      </ul>
+
+      <h3 id="browser-issues">Browser Issues</h3>
+      <ul>
+        <li>Clear your browser cache and cookies, then try again.</li>
+        <li>Try a different browser or an incognito/private window.</li>
+        <li>Make sure JavaScript is enabled in your browser settings.</li>
+        <li>Check that you are using the correct URL for the New Phone web app.</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Still stuck?</div>
+        If none of the above solutions work, contact your system administrator. They can check
+        your account status, reset your password, and review login logs to identify the issue.
+      </div>
+
+      <!-- See Also -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="index.html">Getting Started</a> &mdash; Quick start guide for new users</li>
+          <li><a href="your-extension.html">Your Extension</a> &mdash; View and manage your extension settings</li>
+          <li><a href="profile.html">Your Profile</a> &mdash; Update your display name and preferences</li>
+        </ul>
+      </div>
+
+      <!-- Prev / Next -->
+      <div class="page-nav">
+        <a href="index.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Getting Started</span>
+        </a>
+        <a href="your-extension.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Your Extension</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Page TOC -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#accessing">Accessing the Web App</a></li>
+      <li><a href="#signing-in">Signing In</a></li>
+      <li><a href="#mfa-challenge">MFA Challenge</a></li>
+      <li><a href="#mfa-setup">Setting Up MFA</a></li>
+      <li><a href="#session-duration">Staying Logged In</a></li>
+      <li><a href="#forgot-password">Forgot Password</a></li>
+      <li><a href="#sso">SSO Login</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

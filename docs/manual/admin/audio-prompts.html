@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Prompts &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html" class="active">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="time-conditions.html">System</a>
+        <span class="sep">/</span>
+        <span>Audio Prompts</span>
+      </div>
+
+      <h1>Audio Prompts</h1>
+      <p class="page-subtitle">Upload, manage, and organize audio files used for music on hold, greetings, IVR prompts, announcements, voicemail, and notifications.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Audio prompts are pre-recorded audio files used throughout the phone system. They provide
+        the voice of your organization &mdash; from the greeting callers hear when they first connect,
+        to the music they hear while on hold, to the announcements played in IVR menus and queue
+        wait messages.
+      </p>
+      <p>
+        The platform stores all audio files in S3-compatible object storage (MinIO or AWS S3),
+        organized by tenant. Each prompt tracks metadata including format, duration, sample rate,
+        and a SHA-256 hash for integrity verification. Playback is handled through time-limited
+        signed URLs for secure access.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Tenant Isolation</div>
+        Audio prompts are scoped to individual tenants. Each tenant manages their own library
+        of prompts, and prompts from one tenant are never accessible to another. System-wide
+        default prompts are provided by the platform for common use cases.
+      </div>
+
+      <!-- ── Uploading ────────────────────────────────────────────────── -->
+      <h2 id="uploading">Uploading Audio Prompts</h2>
+      <p>
+        Navigate to <strong>System &gt; Audio Prompts</strong> and click
+        <strong>Upload Prompt</strong>. Provide a name, select a category, and choose the audio
+        file from your computer. The platform validates the file format and extracts metadata
+        (duration, sample rate, file size) automatically upon upload.
+      </p>
+      <p>
+        The upload process involves two steps:
+      </p>
+      <ol>
+        <li><strong>Create the prompt record</strong> &mdash; Submit the name, description, and category to create the metadata entry</li>
+        <li><strong>Upload the audio file</strong> &mdash; Attach the actual audio file to the created prompt record</li>
+      </ol>
+      <p>
+        After upload, the file is stored in the configured S3/MinIO bucket and the prompt
+        record is updated with the storage path, file size, duration, format details, and
+        integrity hash.
+      </p>
+
+      <!-- ── Field Reference: Create ──────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="fields-create">AudioPromptCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>Descriptive name (1&ndash;255 characters). Example: "Main Greeting - Business Hours"</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td>Optional description of the prompt's content or purpose</td>
+            </tr>
+            <tr>
+              <td><code>category</code></td>
+              <td><code>enum</code></td>
+              <td>No</td>
+              <td>Organizational category. Default: <code>GENERAL</code>. See <a href="#categories">Categories</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-response">AudioPromptResponse Fields</h3>
+      <p>The full response includes all create fields plus system-managed and file metadata fields:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the prompt</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Owning tenant (set automatically from auth context)</td>
+            </tr>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Prompt name</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td><code>string | null</code></td>
+              <td>Prompt description</td>
+            </tr>
+            <tr>
+              <td><code>category</code></td>
+              <td><code>enum</code></td>
+              <td>Prompt category</td>
+            </tr>
+            <tr>
+              <td><code>storage_path</code></td>
+              <td><code>string</code></td>
+              <td>Object storage key (path within the bucket)</td>
+            </tr>
+            <tr>
+              <td><code>storage_bucket</code></td>
+              <td><code>string</code></td>
+              <td>S3/MinIO bucket name</td>
+            </tr>
+            <tr>
+              <td><code>file_size_bytes</code></td>
+              <td><code>integer</code></td>
+              <td>File size in bytes</td>
+            </tr>
+            <tr>
+              <td><code>duration_seconds</code></td>
+              <td><code>float</code></td>
+              <td>Audio duration in seconds</td>
+            </tr>
+            <tr>
+              <td><code>format</code></td>
+              <td><code>string</code></td>
+              <td>Audio format: <code>wav</code> or <code>mp3</code></td>
+            </tr>
+            <tr>
+              <td><code>sample_rate</code></td>
+              <td><code>integer</code></td>
+              <td>Audio sample rate in Hz (e.g., 8000, 16000, 44100, 48000)</td>
+            </tr>
+            <tr>
+              <td><code>sha256_hash</code></td>
+              <td><code>string</code></td>
+              <td>SHA-256 hash of the file contents for integrity verification</td>
+            </tr>
+            <tr>
+              <td><code>local_path</code></td>
+              <td><code>string | null</code></td>
+              <td>Local filesystem path if the file is cached on the FreeSWITCH server</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Whether the prompt is currently active</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the prompt was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-playback">AudioPromptPlaybackResponse Fields</h3>
+      <p>Returned when requesting a playback URL for a prompt:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>url</code></td>
+              <td><code>string</code></td>
+              <td>Pre-signed URL for streaming or downloading the audio file</td>
+            </tr>
+            <tr>
+              <td><code>expires_in_seconds</code></td>
+              <td><code>integer</code></td>
+              <td>Seconds until the signed URL expires. Default: <code>300</code> (5 minutes)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Categories ───────────────────────────────────────────────── -->
+      <h2 id="categories">Categories</h2>
+      <p>
+        Categories help organize your prompt library and make it easier to find the right audio
+        file when configuring system features. Each prompt is assigned to exactly one category.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Purpose</th>
+              <th>Typical Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>GENERAL</code></td>
+              <td>Default category for uncategorized prompts</td>
+              <td>Miscellaneous audio files, system sounds</td>
+            </tr>
+            <tr>
+              <td><code>MOH</code></td>
+              <td>Music on Hold</td>
+              <td>Background music played while callers wait on hold or in queues</td>
+            </tr>
+            <tr>
+              <td><code>GREETING</code></td>
+              <td>Welcome greetings</td>
+              <td>IVR welcome messages, auto-attendant greetings, business-hours/after-hours greetings</td>
+            </tr>
+            <tr>
+              <td><code>ANNOUNCEMENT</code></td>
+              <td>Informational announcements</td>
+              <td>Queue position updates, holiday closure notices, service alerts</td>
+            </tr>
+            <tr>
+              <td><code>VOICEMAIL</code></td>
+              <td>Voicemail prompts</td>
+              <td>Voicemail greeting ("Please leave a message"), unavailable messages, busy messages</td>
+            </tr>
+            <tr>
+              <td><code>NOTIFICATION</code></td>
+              <td>System notifications</td>
+              <td>Tone alerts, transfer notifications, recording warnings ("This call may be recorded")</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Audio Format Requirements ────────────────────────────────── -->
+      <h2 id="formats">Audio Format Requirements</h2>
+      <p>
+        The platform accepts WAV and MP3 audio files. For optimal telephony quality and
+        compatibility, WAV files at 8 kHz or 16 kHz are recommended.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>WAV (Recommended)</th>
+              <th>MP3</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Format</td>
+              <td>PCM WAV (RIFF)</td>
+              <td>MPEG Audio Layer 3</td>
+            </tr>
+            <tr>
+              <td>Sample rates</td>
+              <td>8000, 16000, 32000, 44100, 48000 Hz</td>
+              <td>8000, 16000, 22050, 44100, 48000 Hz</td>
+            </tr>
+            <tr>
+              <td>Channels</td>
+              <td>Mono (1 channel) preferred</td>
+              <td>Mono or stereo (downmixed to mono)</td>
+            </tr>
+            <tr>
+              <td>Bit depth</td>
+              <td>16-bit</td>
+              <td>N/A (lossy compression)</td>
+            </tr>
+            <tr>
+              <td>Recommended</td>
+              <td>8 kHz / 16-bit / Mono for telephony</td>
+              <td>Acceptable for MOH with higher quality needs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Automatic Transcoding</div>
+        FreeSWITCH handles real-time transcoding between formats and sample rates as needed.
+        However, uploading files in the native telephony format (8 kHz WAV) reduces processing
+        overhead and ensures the best quality without transcoding artifacts.
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">File Size Limits</div>
+        Audio files are subject to upload size limits configured by your administrator.
+        For long-duration music on hold, consider using multiple shorter tracks in a playlist
+        rather than a single large file. As a guideline, 1 minute of 8 kHz mono WAV audio
+        is approximately 960 KB.
+      </div>
+
+      <!-- ── Storage ──────────────────────────────────────────────────── -->
+      <h2 id="storage">Storage</h2>
+      <p>
+        Audio files are stored in S3-compatible object storage (MinIO for self-hosted deployments,
+        AWS S3 for cloud deployments). Each file is stored under a tenant-specific path to ensure
+        isolation.
+      </p>
+      <p>The storage path follows this structure:</p>
+      <pre><code>{bucket}/{tenant_id}/audio-prompts/{prompt_id}/{filename}</code></pre>
+      <p>Key storage characteristics:</p>
+      <ul>
+        <li><strong>Durability:</strong> Object storage provides high durability with redundant copies</li>
+        <li><strong>Integrity:</strong> SHA-256 hash is computed at upload and can be verified at any time</li>
+        <li><strong>Caching:</strong> Frequently-used prompts may be cached locally on the FreeSWITCH server for low-latency playback</li>
+        <li><strong>Cleanup:</strong> Deleting a prompt record also removes the file from object storage</li>
+      </ul>
+
+      <!-- ── Playback ─────────────────────────────────────────────────── -->
+      <h2 id="playback">Playback and Signed URLs</h2>
+      <p>
+        Audio prompts are not served directly from object storage. Instead, the API generates
+        pre-signed URLs with a configurable expiration time (default: 5 minutes / 300 seconds).
+        This ensures that audio files are only accessible to authenticated users for a limited
+        time window.
+      </p>
+      <p>Use the playback endpoint to get a signed URL:</p>
+      <pre><code>GET /api/v1/audio-prompts/{id}/playback
+
+Response:
+{
+  "url": "https://minio.example.com/audio/tenant-123/audio-prompts/prompt-456/greeting.wav?X-Amz-...",
+  "expires_in_seconds": 300
+}</code></pre>
+      <p>
+        The signed URL can be used in the browser's audio player for preview, or passed to
+        external applications. After the expiration time, the URL becomes invalid and a new
+        one must be generated.
+      </p>
+
+      <!-- ── Where Prompts Are Used ───────────────────────────────────── -->
+      <h2 id="usage">Where Prompts Are Used</h2>
+      <p>
+        Audio prompts are referenced throughout the system wherever audio playback is needed.
+        The following features support prompt assignment:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Prompt Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="ivr-menus.html">IVR Menus</a></td>
+              <td>GREETING</td>
+              <td>Welcome message and menu option prompts</td>
+            </tr>
+            <tr>
+              <td><a href="queues.html">Queues</a></td>
+              <td>MOH, ANNOUNCEMENT</td>
+              <td>Hold music and periodic position/wait-time announcements</td>
+            </tr>
+            <tr>
+              <td><a href="conferences.html">Conferences</a></td>
+              <td>MOH, NOTIFICATION</td>
+              <td>Waiting room music and join/leave notification tones</td>
+            </tr>
+            <tr>
+              <td><a href="voicemail.html">Voicemail</a></td>
+              <td>VOICEMAIL</td>
+              <td>Personalized unavailable, busy, and temporary greetings</td>
+            </tr>
+            <tr>
+              <td><a href="ring-groups.html">Ring Groups</a></td>
+              <td>MOH</td>
+              <td>Music or ringing tone while the group rings</td>
+            </tr>
+            <tr>
+              <td><a href="extensions.html">Extensions</a></td>
+              <td>MOH</td>
+              <td>Per-extension hold music</td>
+            </tr>
+            <tr>
+              <td><a href="inbound-routes.html">Inbound Routes</a></td>
+              <td>ANNOUNCEMENT</td>
+              <td>Pre-answer announcements before routing</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── TTS Coming Soon ──────────────────────────────────────────── -->
+      <h2 id="tts">Text-to-Speech (TTS) Generation <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        A future release will add the ability to generate audio prompts from text using
+        text-to-speech engines. This will allow administrators to type a greeting or announcement
+        and have the system generate a professional-sounding audio file automatically.
+      </p>
+      <p>Planned TTS features include:</p>
+      <ul>
+        <li>Multiple voice options (male/female, different accents)</li>
+        <li>Multiple language support</li>
+        <li>SSML support for fine-tuned pronunciation and pacing</li>
+        <li>Preview before saving</li>
+        <li>Provider options including cloud TTS services (Google, AWS, ElevenLabs)</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">TTS Not Yet Available</div>
+        Text-to-speech prompt generation is planned for a future release. Currently, all
+        prompts must be uploaded as pre-recorded audio files.
+      </div>
+
+      <!-- ── Best Practices ───────────────────────────────────────────── -->
+      <h2 id="best-practices">Best Practices</h2>
+
+      <h3>Audio Quality</h3>
+      <ul>
+        <li>Record in a quiet environment with minimal background noise</li>
+        <li>Use a quality microphone; avoid laptop or phone microphones for professional prompts</li>
+        <li>Speak clearly and at a moderate pace</li>
+        <li>Normalize audio levels to prevent volume jumps between prompts</li>
+        <li>Leave a brief silence (0.5&ndash;1 second) at the beginning and end of each recording</li>
+      </ul>
+
+      <h3>File Management</h3>
+      <ul>
+        <li>Use descriptive names that indicate content and context (e.g., "Main IVR - Business Hours Greeting" not "greeting1")</li>
+        <li>Assign appropriate categories to keep the library organized</li>
+        <li>Use the description field to note when the prompt was recorded and by whom</li>
+        <li>Regularly review and remove outdated prompts (seasonal greetings, old announcements)</li>
+        <li>Keep backup copies of important recordings outside the system</li>
+      </ul>
+
+      <h3>File Size and Duration</h3>
+      <ul>
+        <li>Use 8 kHz mono WAV for telephony prompts &mdash; smallest size, best compatibility</li>
+        <li>Keep greetings and announcements concise (under 30 seconds when possible)</li>
+        <li>For MOH, use MP3 if higher audio quality is desired for music tracks</li>
+        <li>Avoid uploading unnecessarily high sample rates (48 kHz) for telephony use &mdash; the extra quality is lost in phone audio</li>
+      </ul>
+
+      <!-- ── See Also ─────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="ivr-menus.html">IVR Menus</a> &mdash; Assign greeting prompts to auto-attendant menus</li>
+          <li><a href="queues.html">Queues</a> &mdash; Configure hold music and queue announcements</li>
+          <li><a href="voicemail.html">Voicemail</a> &mdash; Set up voicemail greetings</li>
+          <li><a href="conferences.html">Conferences</a> &mdash; Configure conference room audio</li>
+          <li><a href="time-conditions.html">Time Conditions</a> &mdash; Route calls to different greetings based on time of day</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="users.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Users</span>
+        </a>
+        <a href="time-conditions.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Time Conditions</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#uploading">Uploading Prompts</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#categories">Categories</a></li>
+      <li><a href="#formats">Audio Format Requirements</a></li>
+      <li><a href="#storage">Storage</a></li>
+      <li><a href="#playback">Playback &amp; Signed URLs</a></li>
+      <li><a href="#usage">Where Prompts Are Used</a></li>
+      <li><a href="#tts">TTS Generation</a></li>
+      <li><a href="#best-practices">Best Practices</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

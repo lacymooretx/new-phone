@@ -1,0 +1,5 @@
+Vous avez un nouveau message vocal.
+
+Boîte vocale : {{ mailbox_number }}
+De : {{ caller_name }} <{{ caller_number }}>
+Durée : {{ duration_seconds }} secondes

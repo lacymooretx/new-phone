@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paging &amp; Intercom &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html" class="active">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="extensions.html">Telephony</a>
+        <span class="sep">/</span>
+        <span>Paging</span>
+      </div>
+
+      <h1>Paging &amp; Intercom</h1>
+      <p class="page-subtitle">Configure page groups for one-way announcements broadcast through phone speakers, or two-way intercom for hands-free conversations.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Paging allows a user to dial a page group number and broadcast an audio announcement
+        through the speakers of all phones in the group. Unlike a regular call, the receiving
+        phones auto-answer on speaker without anyone picking up the handset. This is the
+        phone-system equivalent of a PA (public address) system.
+      </p>
+      <p>
+        The platform supports two paging modes:
+      </p>
+      <ul>
+        <li>
+          <strong>One-way paging (ONE_WAY)</strong> &mdash; The initiator speaks and all member
+          phones listen. Members cannot respond. This is used for announcements: "Lunch is
+          ready in the break room" or "Customer pickup at the front desk."
+        </li>
+        <li>
+          <strong>Two-way intercom (TWO_WAY)</strong> &mdash; The initiator speaks and the
+          member phones auto-answer with both speaker and microphone active. Members can
+          respond immediately, creating a hands-free conversation. This is used for quick
+          point-to-point or group communication.
+        </li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Phone Compatibility</div>
+        Paging requires desk phones that support auto-answer via SIP headers. Most modern
+        Yealink, Polycom, and Cisco phones support this feature. Softphones (WebRTC, mobile)
+        may not auto-answer and will ring normally instead. Verify auto-answer support with
+        your handset models before deploying paging groups.
+      </div>
+
+      <!-- ── Creating a Page Group ────────────────────────────────────── -->
+      <h2 id="creating">Creating a Page Group</h2>
+      <p>
+        Create a page group by submitting a <code>POST</code> request with the group
+        configuration and member list. The required fields are <code>name</code> and
+        <code>page_number</code>.
+      </p>
+
+      <pre><code>POST /api/v1/page-groups
+
+{
+  "name": "Warehouse PA",
+  "page_number": "700",
+  "description": "All warehouse floor phones",
+  "page_mode": "ONE_WAY",
+  "timeout": 60,
+  "members": [
+    { "extension_id": "ext-uuid-warehouse-1", "position": 1 },
+    { "extension_id": "ext-uuid-warehouse-2", "position": 2 },
+    { "extension_id": "ext-uuid-warehouse-3", "position": 3 },
+    { "extension_id": "ext-uuid-shipping",    "position": 4 }
+  ]
+}</code></pre>
+
+      <!-- ── Field Reference ─────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="create-fields">PageGroupCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Display name for the page group (1&ndash;255 characters)</td>
+            </tr>
+            <tr>
+              <td><code>page_number</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>The dial number to initiate a page to this group (1&ndash;20 characters)</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Optional description of the group's purpose or location</td>
+            </tr>
+            <tr>
+              <td><code>page_mode</code></td>
+              <td><code>enum</code></td>
+              <td>No</td>
+              <td><code>ONE_WAY</code></td>
+              <td>Paging mode: <code>ONE_WAY</code> (broadcast) or <code>TWO_WAY</code> (intercom)</td>
+            </tr>
+            <tr>
+              <td><code>timeout</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>60</code></td>
+              <td>Seconds before the page automatically disconnects (1&ndash;300)</td>
+            </tr>
+            <tr>
+              <td><code>members</code></td>
+              <td><code>list</code></td>
+              <td>No</td>
+              <td><code>[]</code></td>
+              <td>List of <code>PageGroupMemberCreate</code> objects (extensions in the group)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="member-fields">PageGroupMemberCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>extension_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>The extension to include in the page group</td>
+            </tr>
+            <tr>
+              <td><code>position</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>0</code></td>
+              <td>Sort order for display in the admin UI (0&ndash;100). Does not affect page delivery order.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="response-fields">Response Fields</h3>
+      <p>The API response includes all create fields plus the following system-managed fields:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for this page group</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Owning tenant (set automatically from auth context)</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>bool</code></td>
+              <td>System-computed active state (enabled and not soft-deleted)</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the group was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last update</td>
+            </tr>
+            <tr>
+              <td><code>members</code></td>
+              <td><code>list</code></td>
+              <td>Full list of page group members with their IDs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Page Modes ───────────────────────────────────────────────── -->
+      <h2 id="page-modes">Page Modes Explained</h2>
+
+      <h3 id="one-way">ONE_WAY (Broadcast Paging)</h3>
+      <p>
+        In one-way mode, the initiator's voice is broadcast through the speakers of all member
+        phones simultaneously. The member phones' microphones remain off. This is a pure
+        announcement channel &mdash; the initiator speaks, everyone listens.
+      </p>
+      <ul>
+        <li>Member phones auto-answer on speaker with microphone muted</li>
+        <li>The initiator speaks; members hear the announcement</li>
+        <li>Members cannot respond through their phones</li>
+        <li>The page ends when the initiator hangs up or the timeout is reached</li>
+      </ul>
+
+      <h3 id="two-way">TWO_WAY (Intercom)</h3>
+      <p>
+        In two-way mode, member phones auto-answer with both speaker and microphone active.
+        This creates a hands-free conversation where everyone can speak and hear each other
+        simultaneously, similar to a walkie-talkie or intercom system.
+      </p>
+      <ul>
+        <li>Member phones auto-answer on speaker with microphone active</li>
+        <li>All participants (initiator and members) can speak and hear each other</li>
+        <li>Works like a quick ad-hoc conference call without dialing a conference number</li>
+        <li>Best suited for small groups (2&ndash;5 phones) to avoid audio chaos</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Two-Way Group Size</div>
+        Two-way intercom with large groups can be difficult to use because multiple people
+        speaking simultaneously creates crosstalk. Keep two-way groups small (2&ndash;5 members).
+        For larger groups, use one-way paging for announcements and conferences or ring groups
+        for multi-party conversations.
+      </div>
+
+      <!-- ── Member Management ────────────────────────────────────────── -->
+      <h2 id="members">Member Management</h2>
+      <p>
+        Page group members are extensions whose phones participate in the page. When a page
+        is initiated, the system sends a SIP INVITE with auto-answer headers to every member
+        extension simultaneously.
+      </p>
+      <ul>
+        <li><strong>Adding members</strong> &mdash; Include extension IDs in the <code>members</code> list when creating or updating the group.</li>
+        <li><strong>Removing members</strong> &mdash; Update the group with a new <code>members</code> list that excludes the extensions you want to remove.</li>
+        <li><strong>Position</strong> &mdash; The <code>position</code> field controls display order in the admin UI only. Pages are delivered to all members simultaneously regardless of position.</li>
+        <li><strong>Busy extensions</strong> &mdash; If a member extension is on an active call when a page is initiated, that phone does not participate in the page. The page proceeds with the remaining available members.</li>
+      </ul>
+
+      <!-- ── Timeout ──────────────────────────────────────────────────── -->
+      <h2 id="timeout">Timeout Behavior</h2>
+      <p>
+        The <code>timeout</code> field sets the maximum duration of a page in seconds. When
+        the timeout is reached, the system automatically disconnects all participants. This
+        prevents accidental open-mic situations where the initiator forgets to hang up.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Timeout</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>30</code></td>
+              <td>Quick announcements: "Customer at front desk" or "Delivery at dock 3"</td>
+            </tr>
+            <tr>
+              <td><code>60</code> (default)</td>
+              <td>Standard announcements with a comfortable speaking window</td>
+            </tr>
+            <tr>
+              <td><code>120</code></td>
+              <td>Longer announcements or two-way intercom conversations</td>
+            </tr>
+            <tr>
+              <td><code>300</code></td>
+              <td>Extended intercom sessions for troubleshooting or coordination</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The initiator can always end the page early by hanging up. If the initiator hangs up
+        before the timeout, all member phones disconnect immediately.
+      </p>
+
+      <!-- ── Phone Speaker Behavior ───────────────────────────────────── -->
+      <h2 id="auto-answer">Phone Speaker Behavior</h2>
+      <p>
+        Paging relies on the SIP auto-answer mechanism to activate phone speakers without
+        user interaction. The platform sends specific SIP headers with the page INVITE that
+        instruct the phone to auto-answer on speaker.
+      </p>
+
+      <h3 id="sip-headers">Auto-Answer SIP Headers</h3>
+      <p>
+        Different phone manufacturers use different SIP headers for auto-answer. The platform
+        sends multiple headers to maximize compatibility:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Header</th>
+              <th>Phone Brand</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Alert-Info: info=alert-autoanswer</code></td>
+              <td>Polycom</td>
+            </tr>
+            <tr>
+              <td><code>Alert-Info: ;answer-after=0</code></td>
+              <td>Yealink, Cisco SPA</td>
+            </tr>
+            <tr>
+              <td><code>Call-Info: ;answer-after=0</code></td>
+              <td>Snom</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="phone-config">Phone Configuration Requirements</h3>
+      <p>
+        Most desk phones require auto-answer to be enabled in their configuration. If pages
+        are not working (phones ring normally instead of auto-answering), check these settings:
+      </p>
+      <ul>
+        <li><strong>Auto-answer enabled</strong> &mdash; The phone must be configured to honor auto-answer SIP headers. This is often disabled by default.</li>
+        <li><strong>Speaker volume</strong> &mdash; Ensure the phone's speaker volume is set to an audible level for the environment (warehouse, office, etc.).</li>
+        <li><strong>DND interaction</strong> &mdash; Phones in Do Not Disturb mode may reject page attempts. Decide whether DND should block pages based on your environment.</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Provisioning Tip</div>
+        If you manage phone provisioning centrally, add auto-answer settings to your provisioning
+        templates. This ensures all new phones are page-ready without manual configuration.
+      </div>
+
+      <!-- ── Common Use Cases ─────────────────────────────────────────── -->
+      <h2 id="use-cases">Common Use Cases</h2>
+
+      <h3 id="uc-warehouse">Warehouse Paging</h3>
+      <p>
+        One-way broadcast to all warehouse phones for general announcements. Use a short timeout
+        (30&ndash;60 seconds) and include all phones on the warehouse floor.
+      </p>
+      <pre><code>{
+  "name": "Warehouse All-Page",
+  "page_number": "700",
+  "page_mode": "ONE_WAY",
+  "timeout": 60,
+  "members": [
+    { "extension_id": "ext-dock-1",   "position": 1 },
+    { "extension_id": "ext-dock-2",   "position": 2 },
+    { "extension_id": "ext-floor-1",  "position": 3 },
+    { "extension_id": "ext-floor-2",  "position": 4 },
+    { "extension_id": "ext-shipping", "position": 5 }
+  ]
+}</code></pre>
+
+      <h3 id="uc-office-intercom">Office Intercom</h3>
+      <p>
+        Two-way intercom between an executive assistant and office. A quick hands-free
+        conversation without placing a formal call.
+      </p>
+      <pre><code>{
+  "name": "Executive Intercom",
+  "page_number": "701",
+  "page_mode": "TWO_WAY",
+  "timeout": 120,
+  "members": [
+    { "extension_id": "ext-ceo-office",  "position": 1 },
+    { "extension_id": "ext-assistant",   "position": 2 }
+  ]
+}</code></pre>
+
+      <h3 id="uc-all-page">All-Office Page</h3>
+      <p>
+        Company-wide one-way page for emergency announcements or important notifications.
+        Include every phone in the building.
+      </p>
+      <pre><code>{
+  "name": "All Office Page",
+  "page_number": "799",
+  "page_mode": "ONE_WAY",
+  "timeout": 120,
+  "description": "Emergency and company-wide announcements"
+}</code></pre>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="extensions.html">Extensions</a> &mdash; Manage extensions that are members of page groups</li>
+          <li><a href="conferences.html">Conferences</a> &mdash; For longer multi-party conversations use conference bridges</li>
+          <li><a href="ring-groups.html">Ring Groups</a> &mdash; Ring multiple phones for incoming calls (ring, not page)</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="conferences.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Conferences</span>
+        </a>
+        <a href="follow-me.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Follow Me</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#creating">Creating a Page Group</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#page-modes">Page Modes</a></li>
+      <li><a href="#members">Member Management</a></li>
+      <li><a href="#timeout">Timeout Behavior</a></li>
+      <li><a href="#auto-answer">Phone Speaker Behavior</a></li>
+      <li><a href="#use-cases">Common Use Cases</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

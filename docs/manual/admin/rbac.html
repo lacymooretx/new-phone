@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roles &amp; Permissions — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html" class="active">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="auth.html">Security</a>
+        <span class="sep">/</span>
+        <span>Roles &amp; Permissions</span>
+      </div>
+
+      <h1>Roles &amp; Permissions</h1>
+      <p class="page-subtitle">Role-Based Access Control (RBAC) defines what each user can see and do across the platform.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        The New Phone Platform uses a five-role RBAC model that separates MSP-level operations
+        from tenant-level management. Each user is assigned exactly one role, and that role
+        determines their complete set of permissions. Permissions are enforced at the API level
+        on every request, ensuring consistent access control regardless of client.
+      </p>
+      <p>
+        Roles are hierarchical in terms of capability but not inheritance &mdash; each role has an
+        explicitly defined set of permissions. There is no implicit "everything the lower role can
+        do" logic; instead, the full permission set is enumerated for each role.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Tenant Isolation</div>
+        RBAC works in conjunction with PostgreSQL Row-Level Security (RLS). Even if a permission
+        is granted, a tenant-scoped user can only access data belonging to their own tenant.
+        MSP roles can access data across all tenants.
+      </div>
+
+      <!-- ── Role Descriptions ─────────────────────────────────────────── -->
+      <h2 id="roles">Role Descriptions</h2>
+
+      <h3 id="role-msp-super-admin">MSP Super Admin <span class="badge badge-role">msp_super_admin</span></h3>
+      <p>
+        Full platform access with no restrictions. This is the highest-privilege role, intended for
+        the MSP organization's top-level administrators. MSP Super Admins can manage all tenants,
+        all settings, and all features across the entire platform. This is the only role with the
+        <code>manage_platform</code> permission, which controls global platform settings such as
+        system configuration, license management, and platform-wide policies.
+      </p>
+      <ul>
+        <li>Create, modify, and delete tenants</li>
+        <li>Manage platform-wide settings and configurations</li>
+        <li>Access all data across all tenants</li>
+        <li>Assign any role to any user</li>
+        <li>Full access to audit logs across the platform</li>
+      </ul>
+
+      <h3 id="role-msp-tech">MSP Tech <span class="badge badge-role">msp_tech</span></h3>
+      <p>
+        Nearly identical to MSP Super Admin but without the <code>manage_platform</code> permission.
+        Intended for MSP technicians who need cross-tenant access for support and configuration
+        tasks but should not modify global platform settings.
+      </p>
+      <ul>
+        <li>Access and manage all tenants</li>
+        <li>Configure telephony, connectivity, and system settings for any tenant</li>
+        <li>Manage users and roles within any tenant</li>
+        <li>Cannot modify global platform configuration</li>
+      </ul>
+
+      <h3 id="role-tenant-admin">Tenant Admin <span class="badge badge-role">tenant_admin</span></h3>
+      <p>
+        Full access within their assigned tenant. Tenant Admins can manage all features,
+        users, and settings for their organization. They cannot see other tenants or access
+        platform-level settings.
+      </p>
+      <ul>
+        <li>Manage all telephony features (extensions, trunks, routes, queues, IVR, etc.)</li>
+        <li>Create and manage users within their tenant</li>
+        <li>View audit logs for their tenant</li>
+        <li>Configure DIDs, inbound/outbound routes, and SIP trunks</li>
+        <li>Cannot access other tenants or platform settings</li>
+      </ul>
+
+      <h3 id="role-tenant-manager">Tenant Manager <span class="badge badge-role">tenant_manager</span></h3>
+      <p>
+        Mid-level access within a tenant. Managers can handle day-to-day user and extension
+        management, view most configurations, and manage recordings and voicemail. They cannot
+        manage trunks, DIDs, routes, IVR menus, queues, conferences, or paging groups.
+      </p>
+      <ul>
+        <li>Manage users and extensions</li>
+        <li>Manage ring groups, recordings, voicemail, and voicemail messages</li>
+        <li>View (but not modify) trunks, DIDs, routes, IVR, queues, conferences, and paging</li>
+        <li>View call history and audit logs</li>
+        <li>Cannot create or modify connectivity settings</li>
+      </ul>
+
+      <h3 id="role-tenant-user">Tenant User <span class="badge badge-role">tenant_user</span></h3>
+      <p>
+        Basic end-user access. Tenant Users can view their own profile, see extensions and
+        ring groups, access voicemail, view call history, and listen to recordings. They have
+        no management capabilities.
+      </p>
+      <ul>
+        <li>View and edit own profile</li>
+        <li>View extensions and ring groups</li>
+        <li>Access voicemail and voicemail messages (view only)</li>
+        <li>View call history and recordings</li>
+        <li>No management or configuration access</li>
+      </ul>
+
+      <!-- ── Permission Matrix ─────────────────────────────────────────── -->
+      <h2 id="permission-matrix">Full Permission Matrix</h2>
+      <p>
+        The following table shows every permission in the system and which roles have it.
+        A <span class="rbac-check">&#10003;</span> indicates the role has the permission;
+        a <span class="rbac-no">&mdash;</span> indicates it does not.
+      </p>
+
+      <div class="table-wrap">
+        <table class="rbac-matrix">
+          <thead>
+            <tr>
+              <th style="text-align:left">Permission</th>
+              <th>MSP Super Admin</th>
+              <th>MSP Tech</th>
+              <th>Tenant Admin</th>
+              <th>Tenant Manager</th>
+              <th>Tenant User</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Platform & Tenant -->
+            <tr>
+              <td><code>manage_platform</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_all_tenants</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>manage_tenant</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_tenant</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <!-- Users -->
+            <tr>
+              <td><code>manage_users</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_users</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_own_profile</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+            </tr>
+            <tr>
+              <td><code>edit_own_profile</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+            </tr>
+            <!-- Extensions -->
+            <tr>
+              <td><code>manage_extensions</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_extensions</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+            </tr>
+            <!-- Trunks -->
+            <tr>
+              <td><code>manage_trunks</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_trunks</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <!-- DIDs -->
+            <tr>
+              <td><code>manage_dids</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_dids</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <!-- Inbound Routes -->
+            <tr>
+              <td><code>manage_inbound_routes</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_inbound_routes</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <!-- Outbound Routes -->
+            <tr>
+              <td><code>manage_outbound_routes</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_outbound_routes</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <!-- Ring Groups -->
+            <tr>
+              <td><code>manage_ring_groups</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_ring_groups</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+            </tr>
+            <!-- Voicemail -->
+            <tr>
+              <td><code>manage_voicemail</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_voicemail</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+            </tr>
+            <!-- CDRs -->
+            <tr>
+              <td><code>view_cdrs</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+            </tr>
+            <!-- Recordings -->
+            <tr>
+              <td><code>manage_recordings</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_recordings</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+            </tr>
+            <!-- Voicemail Messages -->
+            <tr>
+              <td><code>manage_voicemail_messages</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_voicemail_messages</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+            </tr>
+            <!-- IVR -->
+            <tr>
+              <td><code>manage_ivr</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_ivr</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <!-- Queues -->
+            <tr>
+              <td><code>manage_queues</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_queues</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <!-- Conferences -->
+            <tr>
+              <td><code>manage_conferences</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_conferences</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <!-- Paging -->
+            <tr>
+              <td><code>manage_paging</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <tr>
+              <td><code>view_paging</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+            <!-- Audit Logs -->
+            <tr>
+              <td><code>view_audit_logs</code></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-check">&#10003;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+              <td><span class="rbac-no">&mdash;</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Role Comparison Summary ───────────────────────────────────── -->
+      <h2 id="role-comparison">Role Comparison Summary</h2>
+      <p>
+        A quick reference for understanding the scope and boundaries of each role.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Scope</th>
+              <th>Key Capability</th>
+              <th>Key Limitation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>msp_super_admin</code></td>
+              <td>All tenants + platform</td>
+              <td>Full unrestricted access; manage_platform</td>
+              <td>None</td>
+            </tr>
+            <tr>
+              <td><code>msp_tech</code></td>
+              <td>All tenants</td>
+              <td>Cross-tenant support and configuration</td>
+              <td>No manage_platform</td>
+            </tr>
+            <tr>
+              <td><code>tenant_admin</code></td>
+              <td>Single tenant</td>
+              <td>Full tenant management including connectivity</td>
+              <td>No cross-tenant access; no platform settings</td>
+            </tr>
+            <tr>
+              <td><code>tenant_manager</code></td>
+              <td>Single tenant</td>
+              <td>User/extension management; recordings; voicemail</td>
+              <td>No trunks, DIDs, routes, IVR, queues, conferences, paging management</td>
+            </tr>
+            <tr>
+              <td><code>tenant_user</code></td>
+              <td>Own data only</td>
+              <td>View own profile, extensions, voicemail, CDRs</td>
+              <td>No management capabilities; view-only</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Assigning Roles ───────────────────────────────────────────── -->
+      <h2 id="assigning-roles">Assigning Roles</h2>
+      <p>
+        Roles are assigned when creating or editing a user account. The role you can assign
+        depends on your own role:
+      </p>
+      <ul>
+        <li><strong>MSP Super Admin</strong> &mdash; Can assign any role to any user in any tenant</li>
+        <li><strong>MSP Tech</strong> &mdash; Can assign any tenant-level role in any tenant (cannot create MSP-level users)</li>
+        <li><strong>Tenant Admin</strong> &mdash; Can assign tenant_admin, tenant_manager, or tenant_user within their tenant</li>
+        <li><strong>Tenant Manager</strong> &mdash; Can assign tenant_manager or tenant_user within their tenant</li>
+        <li><strong>Tenant User</strong> &mdash; Cannot assign roles</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Role Escalation Prevention</div>
+        Users cannot assign a role with higher privileges than their own. A tenant_manager
+        cannot promote a user to tenant_admin. This is enforced at the API level.
+      </div>
+
+      <!-- ── Permission Enforcement ────────────────────────────────────── -->
+      <h2 id="enforcement">Permission Enforcement</h2>
+      <p>
+        Permissions are enforced on every API request through middleware that inspects the
+        JWT access token. The enforcement flow is:
+      </p>
+      <ol>
+        <li>Extract the JWT from the <code>Authorization: Bearer</code> header</li>
+        <li>Verify the token signature and check expiration</li>
+        <li>Extract <code>role</code> and <code>tenant_id</code> from token claims</li>
+        <li>Look up the role's permission set</li>
+        <li>Check that the required permission for the endpoint is in the set</li>
+        <li>Set the <code>app.current_tenant</code> context for PostgreSQL RLS</li>
+        <li>If all checks pass, execute the request; otherwise return <code>403 Forbidden</code></li>
+      </ol>
+
+      <div class="callout">
+        <div class="callout-title">Defense in Depth</div>
+        Even if a permission check is somehow bypassed, PostgreSQL RLS provides a second layer
+        of tenant isolation at the database level. Tenant-scoped users can never read or write
+        data belonging to another tenant, regardless of API-level checks.
+      </div>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="auth.html">Authentication &amp; Login</a> &mdash; How users obtain JWT tokens with role claims</li>
+          <li><a href="mfa.html">MFA Setup</a> &mdash; Secure accounts with multi-factor authentication</li>
+          <li><a href="users.html">Users</a> &mdash; Create users and assign roles</li>
+          <li><a href="tenants.html">Tenants</a> &mdash; Multi-tenant architecture and isolation</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; Track role changes and permission events</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="mfa.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">MFA Setup</span>
+        </a>
+        <a href="tenants.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Tenants</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#roles">Role Descriptions</a></li>
+      <li><a href="#permission-matrix">Permission Matrix</a></li>
+      <li><a href="#role-comparison">Role Comparison</a></li>
+      <li><a href="#assigning-roles">Assigning Roles</a></li>
+      <li><a href="#enforcement">Permission Enforcement</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+<configuration name="callcenter.conf" description="CallCenter">
+  <!-- Actual configuration is served dynamically via mod_xml_curl -->
+  <queues/>
+  <agents/>
+  <tiers/>
+</configuration>

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Operations — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html" class="active">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="admin-ops.html">System</a>
+        <span class="sep">/</span>
+        <span>Admin Operations</span>
+      </div>
+
+      <h1>Admin Operations</h1>
+      <p class="page-subtitle">System maintenance tasks, health monitoring, and operational procedures for platform administrators.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Admin Operations covers the day-to-day maintenance tasks that keep the New Phone Platform
+        running smoothly. This includes pushing configuration to desk phones, managing voicemail
+        storage, clearing caches, reloading FreeSWITCH components, verifying database health,
+        and monitoring system status. These operations are typically performed by MSP administrators
+        or tenant-level system administrators.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Role Requirement</div>
+        Most admin operations require the <strong>System Admin</strong> or <strong>MSP Admin</strong>
+        role. Tenant administrators can perform tenant-scoped operations but cannot affect other
+        tenants or global system settings.
+      </div>
+
+      <!-- ── Phone Resync ─────────────────────────────────────────────── -->
+      <h2 id="phone-resync">Phone Resync</h2>
+      <p>
+        When desk phone configuration changes are made (extension assignments, button mappings,
+        firmware updates, or phonebook changes), those changes must be pushed to the physical
+        devices. The resync operation sends a SIP NOTIFY message to the phone, instructing it
+        to re-download its configuration from the provisioning server.
+      </p>
+
+      <h3 id="resync-single">Resync a Single Phone</h3>
+      <p>
+        Navigate to the extension's detail page and click <strong>Resync Phone</strong>. The phone
+        will reboot or re-fetch its configuration within a few seconds, depending on the phone
+        model and firmware.
+      </p>
+
+      <h3 id="resync-bulk">Bulk Resync</h3>
+      <p>
+        To resync all phones for a tenant, go to <strong>Admin Ops &rarr; Phone Resync</strong>
+        and click <strong>Resync All</strong>. This sends NOTIFY messages to every registered
+        device. Use this after making bulk changes such as updating a global phonebook or changing
+        dial plan rules.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Phone Interruption</div>
+        Resyncing phones may cause a brief interruption (1-3 seconds) as the device reboots or
+        reloads configuration. Avoid bulk resyncs during peak call hours. Some phone models
+        support hot-reload without a full reboot.
+      </div>
+
+      <!-- ── Voicemail Cleanup ────────────────────────────────────────── -->
+      <h2 id="voicemail-cleanup">Voicemail Cleanup</h2>
+      <p>
+        Voicemail messages consume storage space in MinIO/S3. Over time, old messages can
+        accumulate and increase storage costs. The voicemail cleanup operation purges messages
+        that meet specified age criteria.
+      </p>
+
+      <h3 id="cleanup-policy">Cleanup Policy</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Retention period (read)</td>
+              <td>90 days</td>
+              <td>Delete read voicemails older than this</td>
+            </tr>
+            <tr>
+              <td>Retention period (unread)</td>
+              <td>180 days</td>
+              <td>Delete unread voicemails older than this</td>
+            </tr>
+            <tr>
+              <td>Max messages per mailbox</td>
+              <td>200</td>
+              <td>Oldest messages removed when exceeded</td>
+            </tr>
+            <tr>
+              <td>Auto-cleanup schedule</td>
+              <td>Daily at 02:00 UTC</td>
+              <td>Automatic cleanup runs on this schedule</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="manual-cleanup">Manual Cleanup</h3>
+      <p>
+        To run a manual cleanup, go to <strong>Admin Ops &rarr; Voicemail Cleanup</strong>.
+        You can preview which messages will be affected before confirming the operation. Deleted
+        voicemails are permanently removed from object storage and cannot be recovered.
+      </p>
+
+      <!-- ── Cache Management ─────────────────────────────────────────── -->
+      <h2 id="cache-management">Cache Management</h2>
+      <p>
+        The platform uses Redis for caching frequently accessed data such as extension lookups,
+        dial plan rules, tenant configuration, and session tokens. In rare cases, cached data
+        may become stale and need to be manually cleared.
+      </p>
+
+      <h3 id="cache-categories">Cache Categories</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cache</th>
+              <th>TTL</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>tenant:config</code></td>
+              <td>5 min</td>
+              <td>Tenant settings and feature flags</td>
+            </tr>
+            <tr>
+              <td><code>ext:lookup</code></td>
+              <td>2 min</td>
+              <td>Extension number-to-UUID resolution</td>
+            </tr>
+            <tr>
+              <td><code>dialplan:routes</code></td>
+              <td>5 min</td>
+              <td>Compiled outbound routing rules</td>
+            </tr>
+            <tr>
+              <td><code>user:session</code></td>
+              <td>30 min</td>
+              <td>Active user session metadata</td>
+            </tr>
+            <tr>
+              <td><code>did:routing</code></td>
+              <td>5 min</td>
+              <td>Inbound DID-to-destination mapping</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="clear-cache">Clearing the Cache</h3>
+      <p>
+        Navigate to <strong>Admin Ops &rarr; Cache Management</strong> to flush specific cache
+        categories or clear all caches. Clearing a cache causes the next request to rebuild it
+        from the database, which may briefly increase response times.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">When to Clear Cache</div>
+        You should rarely need to clear caches manually. The platform automatically invalidates
+        cache entries when underlying data changes. Manual clearing is useful if you suspect
+        stale data after a database restore or manual SQL edits.
+      </div>
+
+      <!-- ── FreeSWITCH Management ────────────────────────────────────── -->
+      <h2 id="freeswitch-management">FreeSWITCH Management</h2>
+      <p>
+        FreeSWITCH is the media engine powering all voice calls. Some configuration changes
+        require reloading FreeSWITCH modules without restarting the entire service. These
+        operations are available to MSP admins only.
+      </p>
+
+      <h3 id="fs-dialplan-reload">Reload Dialplan</h3>
+      <p>
+        After modifying dial plan XML templates, reload the dialplan module so FreeSWITCH
+        picks up the new rules. Active calls are not affected by a dialplan reload.
+      </p>
+      <pre><code>POST /api/v1/admin/freeswitch/reload-dialplan</code></pre>
+
+      <h3 id="fs-sofia-reload">Reload Sofia Profiles</h3>
+      <p>
+        Sofia is the SIP stack in FreeSWITCH. Reloading a Sofia profile applies changes to
+        SIP settings such as TLS certificates, codec preferences, or NAT traversal. This
+        operation gracefully updates the profile without dropping active calls.
+      </p>
+      <pre><code>POST /api/v1/admin/freeswitch/reload-sofia</code></pre>
+
+      <h3 id="fs-gateway-status">Gateway Status</h3>
+      <p>
+        View the registration status of SIP trunk gateways. A gateway shows as
+        <strong>UP</strong> when registered with the carrier, <strong>DOWN</strong> when
+        unreachable, or <strong>TRYING</strong> when a registration attempt is in progress.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Active Call Warning</div>
+        Reloading Sofia profiles during high call volume may cause brief registration flaps
+        on some SIP trunks. Schedule profile reloads during low-traffic windows when possible.
+      </div>
+
+      <!-- ── Database Maintenance ─────────────────────────────────────── -->
+      <h2 id="database-maintenance">Database Maintenance</h2>
+      <p>
+        PostgreSQL is the primary data store. The platform uses Row-Level Security (RLS) to
+        isolate tenant data. Regular verification ensures RLS policies are functioning correctly
+        and that connection pools are healthy.
+      </p>
+
+      <h3 id="rls-verification">RLS Verification</h3>
+      <p>
+        The RLS verification check confirms that every tenant-scoped table has active RLS
+        policies and that the application database user (<code>new_phone_app</code>) cannot
+        access data across tenant boundaries. This check runs automatically daily and can
+        be triggered manually.
+      </p>
+      <pre><code>POST /api/v1/admin/database/verify-rls</code></pre>
+
+      <h3 id="connection-pool">Connection Pool Monitoring</h3>
+      <p>
+        The API server maintains a connection pool to PostgreSQL. Monitor pool utilization
+        to detect connection leaks or capacity issues.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Healthy Range</th>
+              <th>Action if Exceeded</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pool size</td>
+              <td>5&ndash;20 connections</td>
+              <td>Increase <code>NP_DB_POOL_SIZE</code></td>
+            </tr>
+            <tr>
+              <td>Active connections</td>
+              <td>&lt; 80% of pool size</td>
+              <td>Investigate slow queries</td>
+            </tr>
+            <tr>
+              <td>Waiting requests</td>
+              <td>0</td>
+              <td>Increase pool size or optimize queries</td>
+            </tr>
+            <tr>
+              <td>Overflow connections</td>
+              <td>0&ndash;5</td>
+              <td>Tune <code>NP_DB_POOL_MAX_OVERFLOW</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Health Checks ────────────────────────────────────────────── -->
+      <h2 id="health-checks">Health Checks</h2>
+      <p>
+        The platform exposes health check endpoints for monitoring systems and load balancers.
+        Each subsystem reports its status independently, and the aggregate health endpoint
+        returns an overall status.
+      </p>
+
+      <h3 id="health-endpoint">Health Endpoint</h3>
+      <pre><code>GET /api/v1/health</code></pre>
+      <p>Returns a JSON object with the status of each subsystem:</p>
+      <pre><code>{
+  "status": "healthy",
+  "checks": {
+    "api": "ok",
+    "database": "ok",
+    "redis": "ok",
+    "freeswitch": "ok"
+  },
+  "version": "1.0.0",
+  "uptime_seconds": 86400
+}</code></pre>
+
+      <h3 id="health-subsystems">Subsystem Checks</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Subsystem</th>
+              <th>Check Method</th>
+              <th>Timeout</th>
+              <th>Failure Means</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>API</td>
+              <td>Self-check (always ok if responding)</td>
+              <td>&mdash;</td>
+              <td>API process is down</td>
+            </tr>
+            <tr>
+              <td>PostgreSQL</td>
+              <td><code>SELECT 1</code> query</td>
+              <td>3 seconds</td>
+              <td>Database unreachable or overloaded</td>
+            </tr>
+            <tr>
+              <td>Redis</td>
+              <td><code>PING</code> command</td>
+              <td>2 seconds</td>
+              <td>Cache/pubsub layer down</td>
+            </tr>
+            <tr>
+              <td>FreeSWITCH</td>
+              <td>Raw socket ESL connection</td>
+              <td>5 seconds</td>
+              <td>Media engine unreachable</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">ESL Health Check</div>
+        The FreeSWITCH health check uses a raw socket ESL connection rather than an ESL library.
+        This approach was chosen because no reliable async ESL library is available on PyPI. The
+        check connects, authenticates, sends <code>api status</code>, and disconnects.
+      </div>
+
+      <!-- ── System Status Monitoring ─────────────────────────────────── -->
+      <h2 id="system-status">System Status Monitoring</h2>
+      <p>
+        Beyond individual health checks, the platform provides system-level status monitoring
+        for capacity planning and proactive issue detection.
+      </p>
+
+      <h3 id="status-metrics">Key Metrics</h3>
+      <ul>
+        <li><strong>Active calls</strong> &mdash; Number of concurrent calls across all tenants</li>
+        <li><strong>Registered endpoints</strong> &mdash; Count of SIP devices currently registered</li>
+        <li><strong>API request rate</strong> &mdash; Requests per second to the API layer</li>
+        <li><strong>API response time</strong> &mdash; P50, P95, and P99 latency percentiles</li>
+        <li><strong>Queue depth</strong> &mdash; Number of callers waiting in all queues</li>
+        <li><strong>Error rate</strong> &mdash; Percentage of 5xx responses</li>
+        <li><strong>Disk usage</strong> &mdash; Object storage utilization for recordings and voicemail</li>
+      </ul>
+
+      <h3 id="status-alerts">Alert Thresholds</h3>
+      <p>
+        Configure alert thresholds to receive notifications when metrics exceed normal ranges.
+        Alerts can be sent via email, webhook, or integrated with your existing monitoring stack.
+      </p>
+
+      <!-- ── Backup Procedures ────────────────────────────────────────── -->
+      <h2 id="backup-procedures">Backup Procedures</h2>
+      <p>
+        Regular backups protect against data loss. The platform has three categories of data
+        that require backup strategies.
+      </p>
+
+      <h3 id="backup-database">Database Backups</h3>
+      <p>
+        PostgreSQL should be backed up using <code>pg_dump</code> or continuous archiving (WAL).
+        The recommended approach is automated daily dumps with WAL archiving for point-in-time
+        recovery.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Backup Type</th>
+              <th>Frequency</th>
+              <th>Retention</th>
+              <th>Method</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Full dump</td>
+              <td>Daily</td>
+              <td>30 days</td>
+              <td><code>pg_dump --format=custom</code></td>
+            </tr>
+            <tr>
+              <td>WAL archiving</td>
+              <td>Continuous</td>
+              <td>7 days</td>
+              <td>PostgreSQL archive_command</td>
+            </tr>
+            <tr>
+              <td>Configuration</td>
+              <td>On change</td>
+              <td>Indefinite</td>
+              <td>Git-versioned config files</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="backup-media">Media Backups</h3>
+      <p>
+        Call recordings and voicemail messages are stored in MinIO/S3. Use bucket replication
+        or scheduled <code>mc mirror</code> to back up media files to a secondary location.
+      </p>
+
+      <h3 id="backup-freeswitch">FreeSWITCH Configuration</h3>
+      <p>
+        FreeSWITCH XML configuration files, dialplan templates, and Sofia profiles should be
+        version-controlled. The platform generates these from the database, but keeping a
+        backup of the generated output aids in disaster recovery.
+      </p>
+
+      <!-- ── Troubleshooting ──────────────────────────────────────────── -->
+      <h2 id="troubleshooting">Troubleshooting Common Issues</h2>
+      <p>
+        The following table covers frequently encountered issues and their resolutions.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Symptoms</th>
+              <th>Resolution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Phone not registering</td>
+              <td>Extension shows offline, phone display shows "No Service"</td>
+              <td>Verify network connectivity, check SIP TLS certificates, resync phone configuration</td>
+            </tr>
+            <tr>
+              <td>One-way audio</td>
+              <td>Caller can hear but callee cannot (or vice versa)</td>
+              <td>Check NAT/firewall rules for RTP ports, verify SRTP configuration, check codec negotiation</td>
+            </tr>
+            <tr>
+              <td>API returning 503</td>
+              <td>Web UI shows connection errors, API health check fails</td>
+              <td>Check API container logs, verify database connectivity, check connection pool exhaustion</td>
+            </tr>
+            <tr>
+              <td>Calls dropping after 30 seconds</td>
+              <td>Calls connect but disconnect after exactly 30s</td>
+              <td>SIP session timer issue; check FreeSWITCH session-expires settings and carrier compatibility</td>
+            </tr>
+            <tr>
+              <td>Voicemail not recording</td>
+              <td>Callers hear greeting but message is not saved</td>
+              <td>Check MinIO/S3 connectivity and bucket permissions, verify disk space</td>
+            </tr>
+            <tr>
+              <td>Cache stale data</td>
+              <td>Changes made in UI not reflecting immediately</td>
+              <td>Clear affected cache category from Admin Ops &rarr; Cache Management</td>
+            </tr>
+            <tr>
+              <td>High database latency</td>
+              <td>API responses slow, connection pool warnings in logs</td>
+              <td>Check PostgreSQL slow query log, run <code>ANALYZE</code>, verify index health</td>
+            </tr>
+            <tr>
+              <td>FreeSWITCH health check failing</td>
+              <td>Health endpoint shows freeswitch: "error"</td>
+              <td>Check if FreeSWITCH process is running, verify ESL port (8021) is accessible, check ESL password</td>
+            </tr>
+            <tr>
+              <td>Redis connection refused</td>
+              <td>API startup fails, cache errors in logs</td>
+              <td>Verify Redis container is running, check <code>NP_REDIS_URL</code> environment variable</td>
+            </tr>
+            <tr>
+              <td>Tenant isolation error</td>
+              <td>RLS verification fails, cross-tenant data visible</td>
+              <td>Immediately investigate; verify <code>SET LOCAL app.current_tenant</code> is being set per transaction</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Tenant Isolation Failures</div>
+        If RLS verification detects a cross-tenant data leak, treat this as a critical security
+        incident. Immediately check the application database user permissions and ensure the
+        <code>app.current_tenant</code> session variable is being set correctly in every
+        database transaction.
+      </div>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="dashboard.html">Dashboard</a> &mdash; Real-time system overview and metrics</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; Review all administrative actions</li>
+          <li><a href="users.html">Users</a> &mdash; Manage user accounts</li>
+          <li><a href="sip-trunks.html">SIP Trunks</a> &mdash; Carrier gateway configuration</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Phone and extension management</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="audit-logs.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Audit Logs</span>
+        </a>
+        <a href="auth.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Authentication</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#phone-resync">Phone Resync</a></li>
+      <li><a href="#voicemail-cleanup">Voicemail Cleanup</a></li>
+      <li><a href="#cache-management">Cache Management</a></li>
+      <li><a href="#freeswitch-management">FreeSWITCH Management</a></li>
+      <li><a href="#database-maintenance">Database Maintenance</a></li>
+      <li><a href="#health-checks">Health Checks</a></li>
+      <li><a href="#system-status">System Status Monitoring</a></li>
+      <li><a href="#backup-procedures">Backup Procedures</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

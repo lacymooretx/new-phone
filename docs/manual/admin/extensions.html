@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extensions Configuration &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html" class="active">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="extensions.html">Telephony</a>
+        <span class="sep">/</span>
+        <span>Extensions</span>
+      </div>
+
+      <h1>Extensions Configuration</h1>
+      <p class="page-subtitle">Create, configure, and manage telephone extensions &mdash; the core telephony identity for every user and device on the platform.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Extensions are the core telephony entity in the New Phone Platform. Each extension
+        represents a dialable number within the system (e.g., "100", "2001") and serves as
+        the primary identity for phone registration, call routing, and caller ID presentation.
+      </p>
+      <p>
+        When an extension is created, the platform automatically generates a unique SIP username
+        that physical phones and softphones use to register. Extensions can optionally be linked
+        to a user account (for web/mobile access) and a voicemail box (for missed call handling).
+      </p>
+      <p>
+        Extensions carry their own caller ID settings, call forwarding rules, E911 location data,
+        recording policies, and class-of-service restrictions. This makes each extension a
+        self-contained telephony endpoint that can operate independently or as part of ring groups,
+        queues, and IVR destinations.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Extensions vs. Users</div>
+        Extensions and users are separate entities. A user is a login account; an extension is a
+        phone line. A user may have zero or one linked extension, and an extension may exist
+        without any linked user (e.g., a lobby phone or conference room phone). Link them via
+        the <code>user_id</code> field on the extension.
+      </div>
+
+      <!-- ── Creating an Extension ────────────────────────────────────── -->
+      <h2 id="creating">Creating an Extension</h2>
+      <p>
+        To create a new extension, submit a <code>POST</code> request to
+        <code>/api/v1/extensions</code> with a JSON body matching the <code>ExtensionCreate</code>
+        schema, or use the admin UI:
+      </p>
+
+      <ol class="steps">
+        <li>Navigate to <strong>Telephony &gt; Extensions</strong> in the admin interface.</li>
+        <li>Click <strong>Add Extension</strong>.</li>
+        <li>Enter the <strong>extension number</strong> (e.g., "100"). This must be unique within the tenant.</li>
+        <li>Optionally link a <strong>user account</strong> and <strong>voicemail box</strong>.</li>
+        <li>Configure caller ID, call forwarding, E911 location, and other settings as needed.</li>
+        <li>Click <strong>Save</strong>. The extension is created and a SIP username is automatically generated.</li>
+      </ol>
+
+      <p>
+        After creation, the extension appears in the extension list. The SIP username is available in
+        the response and on the extension detail page. To provision a physical phone, you will need the
+        SIP username and a SIP password (obtained via the password reset endpoint).
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">SIP Password Security</div>
+        The SIP password is returned <strong>only once</strong> when you perform a password reset via
+        <code>POST /api/v1/extensions/{id}/reset-sip-password</code>. It is not stored in retrievable
+        form. Record it immediately or provision the phone at that time. If lost, reset again.
+      </div>
+
+      <!-- ── Field Reference ──────────────────────────────────────────── -->
+      <h2 id="field-reference">ExtensionCreate Field Reference</h2>
+      <p>All fields available when creating an extension:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Constraints</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>extension_number</code></td>
+              <td>string</td>
+              <td>Yes</td>
+              <td>1&ndash;20 characters</td>
+              <td>The dial number for this extension (e.g., "100", "2001"). Must be unique within the tenant.</td>
+            </tr>
+            <tr>
+              <td><code>user_id</code></td>
+              <td>UUID</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>Link this extension to a user account. The user gains softphone access and web/mobile control of the extension.</td>
+            </tr>
+            <tr>
+              <td><code>voicemail_box_id</code></td>
+              <td>UUID</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>Link to a voicemail box. Unanswered calls route to this box when no call forwarding destination is set.</td>
+            </tr>
+            <tr>
+              <td><code>internal_cid_name</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 100 characters</td>
+              <td>Caller ID name shown on internal (on-net) calls between extensions.</td>
+            </tr>
+            <tr>
+              <td><code>internal_cid_number</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 20 characters</td>
+              <td>Caller ID number shown on internal calls. Defaults to the extension number if not set.</td>
+            </tr>
+            <tr>
+              <td><code>external_cid_name</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 100 characters</td>
+              <td>Caller ID name sent to the PSTN on outbound external calls.</td>
+            </tr>
+            <tr>
+              <td><code>external_cid_number</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 20 characters</td>
+              <td>Caller ID number sent to the PSTN on outbound external calls. Must be a valid DID assigned to the tenant.</td>
+            </tr>
+            <tr>
+              <td><code>emergency_cid_number</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 20 characters</td>
+              <td>Caller ID number sent when dialing emergency services (911/E911). Must match a DID registered with the E911 provider.</td>
+            </tr>
+            <tr>
+              <td><code>e911_street</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>Street address for E911 location (e.g., "123 Main St Suite 400").</td>
+            </tr>
+            <tr>
+              <td><code>e911_city</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>City for E911 location.</td>
+            </tr>
+            <tr>
+              <td><code>e911_state</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>State/province for E911 location (e.g., "TX", "CA").</td>
+            </tr>
+            <tr>
+              <td><code>e911_zip</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>ZIP/postal code for E911 location.</td>
+            </tr>
+            <tr>
+              <td><code>e911_country</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 2 characters, default "US"</td>
+              <td>ISO 3166-1 alpha-2 country code for E911 location.</td>
+            </tr>
+            <tr>
+              <td><code>call_forward_unconditional</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 40 characters</td>
+              <td>Destination for unconditional call forwarding. When set, all calls forward immediately without ringing the extension.</td>
+            </tr>
+            <tr>
+              <td><code>call_forward_busy</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 40 characters</td>
+              <td>Destination when the extension is busy (all lines in use) or DND is enabled.</td>
+            </tr>
+            <tr>
+              <td><code>call_forward_no_answer</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 40 characters</td>
+              <td>Destination when the extension rings for the configured ring time without answer.</td>
+            </tr>
+            <tr>
+              <td><code>call_forward_not_registered</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 40 characters</td>
+              <td>Destination when no phone is registered to the extension (phone offline, network outage).</td>
+            </tr>
+            <tr>
+              <td><code>call_forward_ring_time</code></td>
+              <td>integer</td>
+              <td>No</td>
+              <td>5&ndash;120, default 25</td>
+              <td>Seconds to ring the extension before triggering the no-answer forward. Only applies when <code>call_forward_no_answer</code> is set.</td>
+            </tr>
+            <tr>
+              <td><code>dnd_enabled</code></td>
+              <td>boolean</td>
+              <td>No</td>
+              <td>Default: false</td>
+              <td>Do Not Disturb. When enabled, incoming calls are treated as if the extension is busy and route to the busy forward destination or voicemail.</td>
+            </tr>
+            <tr>
+              <td><code>call_waiting</code></td>
+              <td>boolean</td>
+              <td>No</td>
+              <td>Default: true</td>
+              <td>When enabled, a second incoming call beeps the phone while the first call is active. When disabled, a second call is treated as busy.</td>
+            </tr>
+            <tr>
+              <td><code>max_registrations</code></td>
+              <td>integer</td>
+              <td>No</td>
+              <td>1&ndash;10, default 3</td>
+              <td>Maximum number of SIP devices that can register simultaneously to this extension. All registered devices ring on incoming calls.</td>
+            </tr>
+            <tr>
+              <td><code>outbound_cid_mode</code></td>
+              <td>enum</td>
+              <td>No</td>
+              <td>Default: INTERNAL</td>
+              <td>Controls which caller ID is sent on outbound calls. See <a href="#caller-id">Caller ID Configuration</a> for details.</td>
+            </tr>
+            <tr>
+              <td><code>class_of_service</code></td>
+              <td>enum</td>
+              <td>No</td>
+              <td>Default: DOMESTIC</td>
+              <td>Restricts outbound dialing permissions. See <a href="#class-of-service">Class of Service</a>.</td>
+            </tr>
+            <tr>
+              <td><code>recording_policy</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Default: "never"</td>
+              <td>Call recording behavior: <code>"never"</code>, <code>"always"</code>, or <code>"on_demand"</code>. See <a href="#recording-policies">Recording Policies</a>.</td>
+            </tr>
+            <tr>
+              <td><code>pickup_group</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>Max 20 characters</td>
+              <td>Assigns the extension to a call pickup group. Members of the same group can answer each other's ringing calls.</td>
+            </tr>
+            <tr>
+              <td><code>notes</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>Free-text notes for administrative reference (e.g., "Lobby phone, Building A").</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Caller ID Configuration ──────────────────────────────────── -->
+      <h2 id="caller-id">Caller ID Configuration</h2>
+      <p>
+        Each extension has three sets of caller ID values, each used in a different context:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Caller ID Type</th>
+              <th>Fields</th>
+              <th>Used When</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Internal</strong></td>
+              <td><code>internal_cid_name</code>, <code>internal_cid_number</code></td>
+              <td>Calling another extension within the same tenant. Displayed on the receiving phone's screen.</td>
+            </tr>
+            <tr>
+              <td><strong>External</strong></td>
+              <td><code>external_cid_name</code>, <code>external_cid_number</code></td>
+              <td>Calling an outside number via a SIP trunk. The PSTN carrier delivers this to the called party.</td>
+            </tr>
+            <tr>
+              <td><strong>Emergency</strong></td>
+              <td><code>emergency_cid_number</code></td>
+              <td>Dialing 911 or other emergency numbers. Must be a DID registered with the E911 provider for proper PSAP routing.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="outbound-cid-mode">Outbound CID Mode</h3>
+      <p>
+        The <code>outbound_cid_mode</code> field controls which caller ID is sent on outbound
+        external calls:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>INTERNAL</code> (default)</td>
+              <td>Uses the <code>internal_cid_name</code> and <code>internal_cid_number</code> for outbound calls. Useful when internal and external CID should match.</td>
+            </tr>
+            <tr>
+              <td><code>EXTERNAL</code></td>
+              <td>Uses the <code>external_cid_name</code> and <code>external_cid_number</code>. Use this when the extension needs a specific outbound DID different from the internal number.</td>
+            </tr>
+            <tr>
+              <td><code>EXTENSION</code></td>
+              <td>Sends the raw extension number as the outbound caller ID. Typically only useful for internal testing or SIP trunk configurations that override CID anyway.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">STIR/SHAKEN Compliance</div>
+        External caller ID numbers should be DIDs that your tenant owns and has registered with
+        the SIP trunk provider. Using unregistered numbers may result in calls being flagged as
+        spam or blocked under STIR/SHAKEN attestation rules. The platform validates external CID
+        against the tenant's assigned DID inventory.
+      </div>
+
+      <!-- ── Call Forwarding ──────────────────────────────────────────── -->
+      <h2 id="call-forwarding">Call Forwarding</h2>
+      <p>
+        Extensions support four types of call forwarding, each triggered by a different condition.
+        Forwarding destinations can be another extension number, an external phone number, a ring
+        group, a queue, or any other dialable destination in the dial plan.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Field</th>
+              <th>Trigger</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Unconditional (CFU)</strong></td>
+              <td><code>call_forward_unconditional</code></td>
+              <td>All incoming calls forward immediately. The phone does not ring. Takes priority over all other forwarding types.</td>
+            </tr>
+            <tr>
+              <td><strong>Busy (CFB)</strong></td>
+              <td><code>call_forward_busy</code></td>
+              <td>Triggers when the extension is busy (all lines occupied) or when DND is enabled.</td>
+            </tr>
+            <tr>
+              <td><strong>No Answer (CFNA)</strong></td>
+              <td><code>call_forward_no_answer</code></td>
+              <td>Triggers when the phone rings for <code>call_forward_ring_time</code> seconds without being answered.</td>
+            </tr>
+            <tr>
+              <td><strong>Not Registered (CFNR)</strong></td>
+              <td><code>call_forward_not_registered</code></td>
+              <td>Triggers when no SIP device is registered to the extension (phone powered off, network down, etc.).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="forwarding-flow">Call Forwarding Flow</h3>
+      <p>
+        The following diagram shows how the platform evaluates call forwarding rules for an
+        incoming call to an extension:
+      </p>
+
+      <div class="diagram">Incoming Call &#8594; Extension
+  &#9500;&#9472; CFU set? &#8594; Forward unconditionally to CFU destination
+  &#9500;&#9472; DND enabled? &#8594; CF Busy destination (or voicemail)
+  &#9500;&#9472; Phone rings...
+  &#9474;   &#9500;&#9472; Answered &#8594; Connected
+  &#9474;   &#9500;&#9472; Busy (all lines occupied) &#8594; CF Busy destination
+  &#9474;   &#9500;&#9472; No answer (ring_time elapsed) &#8594; CF No Answer destination
+  &#9474;   &#9492;&#9472; Not registered (phone offline) &#8594; CF Not Registered destination
+  &#9492;&#9472; No CF set, no answer &#8594; Voicemail (if linked)</div>
+
+      <p>
+        Forwarding rules are evaluated in priority order: CFU first, then device state
+        (not registered), then DND/busy, then ring timeout. If no forwarding destination is
+        configured for the matching condition, the call falls through to voicemail (if a
+        voicemail box is linked) or receives a busy signal.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Ring Time and No-Answer Forward</div>
+        The <code>call_forward_ring_time</code> setting (default 25 seconds) controls how long
+        the phone rings before the no-answer forward triggers. A typical ring cycle is about
+        6 seconds, so the default of 25 seconds gives approximately 4 ring cycles. Adjust this
+        value based on user preference and workflow &mdash; for example, reception desks may want
+        a longer ring time (45&ndash;60 seconds) while a sales queue overflow might use a shorter
+        ring time (15 seconds).
+      </div>
+
+      <!-- ── E911 Location ────────────────────────────────────────────── -->
+      <h2 id="e911">E911 Location (PIDF-LO)</h2>
+      <p>
+        Each extension can have its own physical street address for Enhanced 911 (E911) purposes.
+        When a user dials 911, the platform sends this location data to the Public Safety Answering
+        Point (PSAP) using the PIDF-LO (Presence Information Data Format &mdash; Location Object)
+        standard, ensuring that emergency responders are dispatched to the correct address.
+      </p>
+
+      <h3 id="e911-fields">E911 Address Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Example</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>e911_street</code></td>
+              <td>123 Main St Suite 400</td>
+              <td>Full street address including suite, floor, or unit number.</td>
+            </tr>
+            <tr>
+              <td><code>e911_city</code></td>
+              <td>Austin</td>
+              <td>City name.</td>
+            </tr>
+            <tr>
+              <td><code>e911_state</code></td>
+              <td>TX</td>
+              <td>Two-letter state or province code.</td>
+            </tr>
+            <tr>
+              <td><code>e911_zip</code></td>
+              <td>78701</td>
+              <td>ZIP or postal code.</td>
+            </tr>
+            <tr>
+              <td><code>e911_country</code></td>
+              <td>US</td>
+              <td>ISO 3166-1 alpha-2 country code. Defaults to "US".</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">E911 Compliance Is Critical</div>
+        <p>
+          Federal regulations (Kari's Law and RAY BAUM's Act) require multi-line telephone
+          systems to provide accurate dispatchable location information for every 911 call.
+          For multi-floor or multi-suite offices, each extension should have its specific
+          floor/suite in the <code>e911_street</code> field.
+        </p>
+        <p>
+          The <code>emergency_cid_number</code> must be a DID registered with your E911 service
+          provider (e.g., ClearlyIP) and associated with the same address. Mismatched CID and
+          address data can cause routing failures.
+        </p>
+      </div>
+
+      <h3 id="e911-remote">Remote and Mobile Workers</h3>
+      <p>
+        For users who work from home or travel, the E911 address on their extension should reflect
+        their actual physical location. The admin UI and user self-service portal allow updating
+        E911 addresses. Consider implementing a policy that requires remote workers to verify
+        their E911 address quarterly or when they change locations.
+      </p>
+
+      <!-- ── Recording Policies ───────────────────────────────────────── -->
+      <h2 id="recording-policies">Call Recording Policies</h2>
+      <p>
+        The <code>recording_policy</code> field on each extension controls whether calls are
+        recorded. This is independent of any tenant-wide or route-level recording settings.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Policy</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>"never"</code> (default)</td>
+              <td>Calls are never recorded for this extension, regardless of other settings. Use for extensions where recording is prohibited (e.g., legal counsel lines).</td>
+            </tr>
+            <tr>
+              <td><code>"always"</code></td>
+              <td>Every call involving this extension is automatically recorded. Both inbound and outbound calls are captured. Recordings are stored in S3/MinIO.</td>
+            </tr>
+            <tr>
+              <td><code>"on_demand"</code></td>
+              <td>Recording is not automatic but can be started mid-call by the user pressing a feature code or using the softphone recording button.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Legal Considerations</div>
+        Call recording laws vary by jurisdiction. Some states and countries require all-party
+        consent (all participants must be informed), while others require only one-party consent.
+        Consult your legal team before enabling <code>"always"</code> recording. The platform can
+        be configured to play a recording announcement; see
+        <a href="audio-prompts.html">Audio Prompts</a> for details.
+      </div>
+
+      <!-- ── Class of Service ─────────────────────────────────────────── -->
+      <h2 id="class-of-service">Class of Service</h2>
+      <p>
+        The <code>class_of_service</code> field restricts what types of outbound calls an
+        extension is permitted to make. This prevents unauthorized toll calls and controls
+        international dialing access.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Allowed Destinations</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>EMERGENCY</code></td>
+              <td>Emergency calls only (911). No local, long-distance, or international calls. Suitable for lobby phones or elevator phones.</td>
+            </tr>
+            <tr>
+              <td><code>DOMESTIC</code> (default)</td>
+              <td>Emergency calls plus all domestic calls (local and long-distance within the country). No international calls.</td>
+            </tr>
+            <tr>
+              <td><code>INTERNATIONAL</code></td>
+              <td>Full dialing permissions including international calls. Assign only to extensions that require international access.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Class of service is enforced at the outbound route level. When an extension attempts a call
+        that exceeds its class, the call is rejected with a "call restricted" announcement. The
+        attempt is logged in the CDR with a disposition of <code>RESTRICTED</code>.
+      </p>
+
+      <!-- ── SIP Registration ─────────────────────────────────────────── -->
+      <h2 id="sip-registration">SIP Registration</h2>
+      <p>
+        Each extension is assigned an auto-generated <code>sip_username</code> when created. This
+        username, combined with a SIP password, is what phones use to register with the platform
+        over SIP TLS.
+      </p>
+
+      <h3 id="sip-username">SIP Username</h3>
+      <p>
+        The SIP username is automatically generated by the platform and cannot be changed. It is
+        returned in the extension response as <code>sip_username</code> and is visible on the
+        extension detail page in the admin UI. The format is system-determined and guaranteed
+        unique across the platform.
+      </p>
+
+      <h3 id="max-registrations">Max Registrations</h3>
+      <p>
+        The <code>max_registrations</code> field (default 3, range 1&ndash;10) controls how many
+        SIP devices can simultaneously register with the same extension credentials. When multiple
+        devices are registered, all devices ring on incoming calls (fork ringing).
+      </p>
+      <p>
+        Common configurations:
+      </p>
+      <ul>
+        <li><strong>1 registration</strong> &mdash; Single device only. Desk phone or softphone, not both.</li>
+        <li><strong>3 registrations</strong> (default) &mdash; Desk phone + softphone + mobile app. Covers the typical setup.</li>
+        <li><strong>5+ registrations</strong> &mdash; Shared extensions (e.g., warehouse paging phones, multiple devices at a reception desk).</li>
+      </ul>
+
+      <h3 id="sip-password-reset">SIP Password Reset</h3>
+      <p>
+        SIP passwords are managed separately from user account passwords. To set or reset the
+        SIP password, call <code>POST /api/v1/extensions/{id}/reset-sip-password</code>. The
+        response returns a <code>SIPPasswordResetResponse</code>:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>sip_password</code></td>
+              <td>string</td>
+              <td>The new SIP password. Returned only in this response &mdash; it cannot be retrieved later. Record it or provision the phone immediately.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">SIP TLS Mandatory</div>
+        All SIP registrations must use TLS. The platform does not accept SIP over UDP or TCP.
+        When provisioning phones, ensure the transport is set to TLS and the SIP port is the
+        platform's TLS port. SRTP is also mandatory for all media.
+      </div>
+
+      <!-- ── DND and Call Waiting ─────────────────────────────────────── -->
+      <h2 id="dnd-call-waiting">Do Not Disturb &amp; Call Waiting</h2>
+
+      <h3 id="dnd">Do Not Disturb (DND)</h3>
+      <p>
+        When <code>dnd_enabled</code> is <code>true</code>, the extension is treated as busy for
+        all incoming calls. Calls are routed to the <code>call_forward_busy</code> destination if
+        configured, or to voicemail if a voicemail box is linked. The phone does not ring.
+      </p>
+      <p>
+        DND can be toggled by an administrator via the API or admin UI, or by the user via a
+        feature code on their phone, the softphone interface, or the mobile app.
+      </p>
+
+      <h3 id="call-waiting">Call Waiting</h3>
+      <p>
+        When <code>call_waiting</code> is <code>true</code> (default), a second incoming call
+        while the extension is on an active call produces a call-waiting beep on the phone. The
+        user can switch between calls.
+      </p>
+      <p>
+        When <code>call_waiting</code> is <code>false</code>, a second incoming call while the
+        extension is busy is treated as a busy condition and routes to the
+        <code>call_forward_busy</code> destination or voicemail. This is useful for users who
+        prefer not to be interrupted during calls.
+      </p>
+
+      <!-- ── Call Pickup Groups ───────────────────────────────────────── -->
+      <h2 id="pickup-groups">Call Pickup Groups</h2>
+      <p>
+        The <code>pickup_group</code> field assigns an extension to a named pickup group. Any
+        extension in the same pickup group can answer a ringing call on another extension in
+        that group by dialing the directed call pickup feature code.
+      </p>
+      <p>
+        Pickup groups are identified by a string label (e.g., "sales", "support", "front-desk").
+        Extensions with the same <code>pickup_group</code> value are in the same group. An
+        extension with no <code>pickup_group</code> set is not in any group and its calls
+        cannot be picked up by others.
+      </p>
+      <p>
+        Example: Three extensions (100, 101, 102) all have <code>pickup_group</code> set to
+        "reception". If extension 100 is ringing, a user at extension 101 or 102 can pick up
+        that call by dialing the group pickup feature code.
+      </p>
+
+      <!-- ── Response Fields ──────────────────────────────────────────── -->
+      <h2 id="response-fields">Extension Response Fields</h2>
+      <p>
+        API responses for extensions include all fields from the create schema plus the following
+        system-managed fields:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>UUID</td>
+              <td>Unique identifier for the extension record.</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td>UUID</td>
+              <td>The tenant this extension belongs to. Set automatically; enforced by row-level security.</td>
+            </tr>
+            <tr>
+              <td><code>sip_username</code></td>
+              <td>string</td>
+              <td>Auto-generated SIP registration username. Used by phones to register with the platform.</td>
+            </tr>
+            <tr>
+              <td><code>agent_status</code></td>
+              <td>string</td>
+              <td>Current queue agent status (e.g., "available", "unavailable", "on_break"). Relevant when the extension is a member of a call queue.</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td>boolean</td>
+              <td><code>true</code> if the extension is active. Inactive extensions cannot register or receive calls.</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td>datetime</td>
+              <td>Timestamp when the extension was created (UTC).</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td>datetime</td>
+              <td>Timestamp of the last modification (UTC).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── API Examples ─────────────────────────────────────────────── -->
+      <h2 id="examples">API Examples</h2>
+
+      <h3>Create an Extension</h3>
+<pre><code>POST /api/v1/extensions
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+
+{
+  "extension_number": "100",
+  "user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "internal_cid_name": "Jane Doe",
+  "internal_cid_number": "100",
+  "external_cid_name": "Acme Corp",
+  "external_cid_number": "+15125551234",
+  "emergency_cid_number": "+15125551234",
+  "e911_street": "123 Main St Suite 400",
+  "e911_city": "Austin",
+  "e911_state": "TX",
+  "e911_zip": "78701",
+  "call_forward_no_answer": "200",
+  "call_forward_ring_time": 30,
+  "max_registrations": 3,
+  "outbound_cid_mode": "EXTERNAL",
+  "class_of_service": "DOMESTIC",
+  "recording_policy": "on_demand",
+  "pickup_group": "reception"
+}</code></pre>
+
+      <h3>Reset SIP Password</h3>
+<pre><code>POST /api/v1/extensions/a1b2c3d4-e5f6-7890-abcd-ef1234567890/reset-sip-password
+Authorization: Bearer &lt;token&gt;
+
+Response:
+{
+  "sip_password": "xK9#mP2$vL5nQ8wR"
+}</code></pre>
+
+      <h3>Update Call Forwarding</h3>
+<pre><code>PATCH /api/v1/extensions/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+
+{
+  "call_forward_unconditional": "+15125559999",
+  "dnd_enabled": false
+}</code></pre>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="users.html">Users</a> &mdash; manage user accounts linked to extensions</li>
+          <li><a href="voicemail.html">Voicemail</a> &mdash; configure voicemail boxes and link them to extensions</li>
+          <li><a href="ring-groups.html">Ring Groups</a> &mdash; group extensions for simultaneous or sequential ringing</li>
+          <li><a href="queues.html">Queues</a> &mdash; add extensions as queue agents</li>
+          <li><a href="dids.html">DIDs</a> &mdash; manage phone numbers assigned to your tenant</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; route incoming DID calls to extensions</li>
+          <li><a href="recordings.html">Recordings</a> &mdash; access and manage call recordings</li>
+          <li><a href="sip-trunks.html">SIP Trunks</a> &mdash; configure SIP trunk connections for external calling</li>
+          <li><a href="caller-id-rules.html">Caller ID Rules</a> &mdash; tenant-wide caller ID override rules</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; track extension configuration changes</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="index.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Getting Started</span>
+        </a>
+        <a href="ring-groups.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Ring Groups</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#creating">Creating an Extension</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#caller-id">Caller ID Configuration</a></li>
+      <li><a href="#call-forwarding">Call Forwarding</a></li>
+      <li><a href="#e911">E911 Location (PIDF-LO)</a></li>
+      <li><a href="#recording-policies">Recording Policies</a></li>
+      <li><a href="#class-of-service">Class of Service</a></li>
+      <li><a href="#sip-registration">SIP Registration</a></li>
+      <li><a href="#dnd-call-waiting">DND &amp; Call Waiting</a></li>
+      <li><a href="#pickup-groups">Pickup Groups</a></li>
+      <li><a href="#response-fields">Response Fields</a></li>
+      <li><a href="#examples">API Examples</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

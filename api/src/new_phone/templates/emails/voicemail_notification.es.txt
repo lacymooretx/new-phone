@@ -1,0 +1,5 @@
+Tiene un nuevo mensaje de correo de voz.
+
+Buzón: {{ mailbox_number }}
+De: {{ caller_name }} <{{ caller_number }}>
+Duración: {{ duration_seconds }} segundos

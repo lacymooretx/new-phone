@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Extension — New Phone User Guide</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="" width="28" height="28">
+      <div>
+        <span class="logo-text">New Phone</span>
+        <span class="logo-sub">User Guide</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+          <a href="login.html">Logging In</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Your Phone</div>
+        <div class="sidebar-group-items">
+          <a href="your-extension.html" class="active">Your Extension</a>
+          <a href="voicemail.html">Voicemail</a>
+          <a href="call-history.html">Call History</a>
+          <a href="softphone.html">Web Softphone</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Application</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="profile.html">Your Profile</a>
+          <a href="keyboard-shortcuts.html">Shortcuts</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="../index.html" style="font-size:13px;color:var(--text-muted)">Manual Home</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">&#127763;</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="../index.html">Manual</a>
+        <span class="sep">/</span>
+        <a href="index.html">User Guide</a>
+        <span class="sep">/</span>
+        <span>Your Extension</span>
+      </div>
+
+      <h1>Your Extension</h1>
+      <p class="page-subtitle">View your extension number, manage Do Not Disturb, call forwarding, and other settings you control day to day.</p>
+
+      <!-- What Is Your Extension -->
+      <h2 id="what-is-your-extension">What Is Your Extension Number?</h2>
+      <p>
+        Your extension number is a short number (typically 3 or 4 digits) that identifies you within the
+        phone system. Coworkers can dial your extension to reach you directly without going through the
+        main company number. For example, if your extension is <strong>150</strong>, anyone inside your
+        organization can dial <strong>150</strong> to call your desk.
+      </p>
+      <p>
+        Your extension number is assigned by your administrator. If you need a different extension number,
+        contact your admin to request the change.
+      </p>
+
+      <!-- Viewing Your Settings -->
+      <h2 id="viewing-settings">Viewing Your Extension Settings</h2>
+      <p>To see your current extension settings:</p>
+      <ol>
+        <li>Log into the New Phone web app.</li>
+        <li>Click <strong>Your Extension</strong> in the left sidebar, or navigate to your profile area.</li>
+        <li>You will see a summary page showing your extension number, current status, and all configurable options.</li>
+      </ol>
+      <p>
+        The settings page is divided into two sections: settings you can change yourself, and read-only
+        information that only your administrator can modify.
+      </p>
+
+      <!-- Features You Control -->
+      <h2 id="features-you-control">Features You Can Control</h2>
+      <p>
+        The following settings are available for you to change at any time. Adjustments take effect
+        immediately &mdash; there is no need to save or restart anything.
+      </p>
+
+      <h3 id="dnd">Do Not Disturb (DND)</h3>
+      <p>
+        When Do Not Disturb is turned on, incoming calls to your extension will not ring your phone.
+        Instead, callers are sent directly to your voicemail (if enabled) or hear a busy signal.
+      </p>
+      <p>To toggle Do Not Disturb:</p>
+      <ol>
+        <li>Go to your extension settings page.</li>
+        <li>Find the <strong>Do Not Disturb</strong> toggle.</li>
+        <li>Click the toggle to turn DND on or off.</li>
+      </ol>
+
+      <div class="callout">
+        <div class="callout-title">Tip</div>
+        Turn on Do Not Disturb when you are in a meeting, on lunch, or need uninterrupted focus time.
+        Remember to turn it off when you are available again, or you will miss calls.
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Important</div>
+        Do Not Disturb affects <strong>all</strong> your registered devices &mdash; your desk phone,
+        the web softphone, and any mobile app. When DND is on, nothing rings.
+      </div>
+
+      <h3 id="call-forwarding">Call Forwarding</h3>
+      <p>
+        Call forwarding sends your incoming calls to a different number. This is useful when you are
+        working remotely, traveling, or want calls to ring your mobile phone instead of your desk.
+      </p>
+      <p>To set up call forwarding:</p>
+      <ol>
+        <li>Go to your extension settings page.</li>
+        <li>Find the <strong>Call Forwarding</strong> section.</li>
+        <li>Enter the phone number you want calls forwarded to. This can be an external number (like your cell phone) or another internal extension.</li>
+        <li>Choose when forwarding should activate:
+          <ul>
+            <li><strong>Always</strong> &mdash; All calls are immediately forwarded.</li>
+            <li><strong>On busy</strong> &mdash; Calls are forwarded only when you are already on a call.</li>
+            <li><strong>On no answer</strong> &mdash; Calls are forwarded if you do not pick up within a set number of rings.</li>
+          </ul>
+        </li>
+        <li>Click <strong>Save</strong> to apply your changes.</li>
+      </ol>
+      <p>To disable call forwarding, clear the forwarding number and save.</p>
+
+      <div class="callout">
+        <div class="callout-title">Tip</div>
+        If you forward to an external number (like a cell phone), make sure you include the full
+        number with area code. Your administrator may restrict forwarding to external numbers based
+        on your calling permissions.
+      </div>
+
+      <h3 id="call-waiting">Call Waiting</h3>
+      <p>
+        Call waiting controls what happens when a second call comes in while you are already on a call.
+        When enabled, you will hear a beep notifying you of the incoming call, and you can choose to
+        put the current call on hold and answer the new one.
+      </p>
+      <p>To toggle call waiting:</p>
+      <ol>
+        <li>Go to your extension settings page.</li>
+        <li>Find the <strong>Call Waiting</strong> toggle.</li>
+        <li>Click the toggle to turn it on or off.</li>
+      </ol>
+      <p>
+        When call waiting is <strong>off</strong>, callers who try to reach you while you are on
+        another call will hear a busy signal or be sent to your voicemail.
+      </p>
+
+      <h3 id="voicemail-link">Voicemail</h3>
+      <p>
+        Your voicemail settings are managed on a dedicated page. From the extension settings page, click
+        the <strong>Manage Voicemail</strong> link to jump to your <a href="voicemail.html">Voicemail</a>
+        settings, where you can change your greeting, PIN, and notification preferences.
+      </p>
+
+      <!-- Admin-Only Settings -->
+      <h2 id="admin-only">Settings Only Your Admin Can Change</h2>
+      <p>
+        The following settings are visible on your extension page for your reference, but only your
+        administrator can modify them. If you need any of these changed, contact your admin.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>What It Means</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Extension Number</strong></td>
+              <td>Your internal dialing number (e.g., 150). Assigned by your admin.</td>
+            </tr>
+            <tr>
+              <td><strong>Outbound Caller ID</strong></td>
+              <td>The phone number that external parties see when you call them. Typically set to your company's main number or a direct line.</td>
+            </tr>
+            <tr>
+              <td><strong>Class of Service</strong></td>
+              <td>Defines your calling permissions &mdash; whether you can make local, long-distance, or international calls.</td>
+            </tr>
+            <tr>
+              <td><strong>Call Recording</strong></td>
+              <td>Whether your calls are recorded. Recording policies are set at the organizational level.</td>
+            </tr>
+            <tr>
+              <td><strong>E911 Location</strong></td>
+              <td>The physical address associated with your extension for emergency services. Must be kept accurate by your admin.</td>
+            </tr>
+            <tr>
+              <td><strong>Ring Groups &amp; Queues</strong></td>
+              <td>Which ring groups and call queues your extension belongs to. Managed by your admin.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Caller ID -->
+      <h2 id="caller-id">Understanding Your Caller ID</h2>
+      <p>Your caller ID may appear differently depending on who you are calling:</p>
+      <ul>
+        <li><strong>Internal calls</strong> (to other extensions) &mdash; The recipient sees your name and extension number.</li>
+        <li><strong>External calls</strong> (to outside numbers) &mdash; The recipient sees the outbound caller ID number configured by your administrator. This is typically your company's main phone number or a direct inward dial (DID) number assigned to you.</li>
+      </ul>
+      <p>
+        You cannot change your outbound caller ID yourself. If the wrong number is showing up when you
+        make external calls, let your administrator know.
+      </p>
+
+      <!-- Device Registration -->
+      <h2 id="device-registration">Device Registration Status</h2>
+      <p>
+        Your extension settings page shows how many devices are currently registered (connected) to your
+        extension. A device is anything that can ring when someone calls you:
+      </p>
+      <ul>
+        <li><strong>Desk phone</strong> &mdash; A physical IP phone on your desk.</li>
+        <li><strong>Web softphone</strong> &mdash; The browser-based phone in the New Phone web app.</li>
+        <li><strong>Mobile app</strong> &mdash; The New Phone app on your smartphone (when available).</li>
+      </ul>
+      <p>
+        When someone dials your extension, all registered devices ring simultaneously by default. If you
+        see an unexpected number of registrations, or if a device you expect to ring is not ringing,
+        contact your administrator for help.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Tip</div>
+        If your desk phone shows "No Service" or is not registered, try unplugging the network cable
+        and plugging it back in. If that does not resolve it, your administrator can check the phone's
+        provisioning status remotely.
+      </div>
+
+      <!-- See Also -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="voicemail.html">Voicemail</a> &mdash; Set your greeting, check messages, and manage your mailbox</li>
+          <li><a href="softphone.html">Web Softphone</a> &mdash; Make calls from your browser</li>
+          <li><a href="call-history.html">Call History</a> &mdash; Review your recent calls</li>
+        </ul>
+      </div>
+
+      <!-- Prev / Next -->
+      <div class="page-nav">
+        <a href="login.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Logging In</span>
+        </a>
+        <a href="voicemail.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Voicemail</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Page TOC -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#what-is-your-extension">Your Extension Number</a></li>
+      <li><a href="#viewing-settings">Viewing Settings</a></li>
+      <li><a href="#features-you-control">Features You Control</a></li>
+      <li><a href="#admin-only">Admin-Only Settings</a></li>
+      <li><a href="#caller-id">Caller ID</a></li>
+      <li><a href="#device-registration">Device Registration</a></li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tenant Management - New Phone Platform Admin Manual</title>
+  <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search manual..." aria-label="Search manual">
+      <div id="search-results"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html" class="active">Tenants</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Coming Soon</div>
+        <div class="sidebar-group-items">
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9788;</button>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <button class="hamburger" id="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+
+  <!-- Page TOC -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#permissions">Who Can Manage Tenants</a></li>
+      <li><a href="#creating">Creating a Tenant</a></li>
+      <li><a href="#create-fields">Create Field Reference</a></li>
+      <li><a href="#editing">Editing a Tenant</a></li>
+      <li><a href="#response-fields">Response Fields</a></li>
+      <li><a href="#deactivating">Deactivating vs Deleting</a></li>
+      <li><a href="#rls">Row-Level Security</a></li>
+      <li><a href="#sip-domain">SIP Domain Configuration</a></li>
+      <li><a href="#isolation-diagram">Isolation Diagram</a></li>
+      <li><a href="#examples">Examples</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="tenants.html">MSP</a>
+        <span class="sep">/</span>
+        <span>Tenants</span>
+      </div>
+
+      <h1>Tenant Management <span class="badge badge-role">MSP Only</span></h1>
+      <p class="page-subtitle">Create and manage isolated customer environments in the multi-tenant PBX platform.</p>
+
+      <!-- Overview -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        A <strong>tenant</strong> represents an isolated customer environment within the New Phone Platform.
+        Each tenant has its own extensions, call routing, users, recordings, and configuration.
+        Tenants are the foundation of the platform's multi-tenant architecture, allowing a single
+        deployment to serve many independent organizations without any data leakage between them.
+      </p>
+      <p>
+        Managed Service Providers (MSPs) use tenants to onboard customer organizations. Each tenant
+        receives a unique identifier, an optional custom domain, and a dedicated SIP domain. All
+        telephony resources, user accounts, and call data are scoped to the tenant boundary.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">MSP-Only Feature</div>
+        Tenant management is restricted to MSP-level roles. Tenant administrators and users
+        cannot create, modify, or view other tenants. They operate exclusively within their
+        own tenant boundary.
+      </div>
+
+      <!-- Permissions -->
+      <h2 id="permissions">Who Can Manage Tenants</h2>
+      <p>Only the following roles have access to tenant management:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Role</th><th>Create</th><th>Edit</th><th>Deactivate</th><th>View All</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>msp_super_admin</code></td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">Yes</td>
+            </tr>
+            <tr>
+              <td><code>msp_tech</code></td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">Yes</td>
+            </tr>
+            <tr>
+              <td><code>tenant_admin</code></td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+            </tr>
+            <tr>
+              <td><code>tenant_manager</code></td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+            </tr>
+            <tr>
+              <td><code>tenant_user</code></td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Creating a Tenant -->
+      <h2 id="creating">Creating a Tenant</h2>
+      <p>
+        To create a new tenant, submit a <code>POST</code> request to <code>/api/v1/tenants</code>
+        with a JSON body matching the <code>TenantCreate</code> schema. At minimum, you must provide
+        a <code>name</code> and <code>slug</code>.
+      </p>
+
+      <ol class="steps">
+        <li>Navigate to <strong>MSP &gt; Tenants</strong> in the admin interface.</li>
+        <li>Click <strong>Create Tenant</strong>.</li>
+        <li>Fill in the required fields: <code>name</code> and <code>slug</code>.</li>
+        <li>Optionally configure <code>domain</code>, <code>sip_domain</code>, music-on-hold, and notes.</li>
+        <li>Click <strong>Save</strong>. The tenant is created and immediately active.</li>
+      </ol>
+
+      <h3 id="create-fields">TenantCreate Field Reference</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Required</th><th>Constraints</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td>string</td>
+              <td>Yes</td>
+              <td>1&ndash;255 characters</td>
+              <td>Company display name shown in the UI and reports.</td>
+            </tr>
+            <tr>
+              <td><code>slug</code></td>
+              <td>string</td>
+              <td>Yes</td>
+              <td>1&ndash;63 chars, pattern: <code>^[a-z0-9][a-z0-9-]*$</code></td>
+              <td>URL-safe identifier used in API paths and subdomain routing. Must start with a letter or digit, followed by lowercase letters, digits, or hyphens.</td>
+            </tr>
+            <tr>
+              <td><code>domain</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>Custom domain for the tenant (e.g., <code>pbx.acmecorp.com</code>).</td>
+            </tr>
+            <tr>
+              <td><code>sip_domain</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>SIP domain for phone registrations and routing. If omitted, defaults to <code>&lt;slug&gt;.sip.newphone.io</code>.</td>
+            </tr>
+            <tr>
+              <td><code>default_moh_prompt_id</code></td>
+              <td>UUID</td>
+              <td>No</td>
+              <td>Valid audio prompt ID</td>
+              <td>Default music-on-hold prompt for the tenant. Can be overridden per queue or ring group.</td>
+            </tr>
+            <tr>
+              <td><code>notes</code></td>
+              <td>string</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>Internal notes visible only to MSP staff. Useful for account notes, contract details, or special instructions.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Editing a Tenant -->
+      <h2 id="editing">Editing a Tenant</h2>
+      <p>
+        To update an existing tenant, send a <code>PATCH</code> request to
+        <code>/api/v1/tenants/{tenant_id}</code> with a JSON body matching the
+        <code>TenantUpdate</code> schema. All fields are optional; only the fields you
+        include will be modified.
+      </p>
+      <p>
+        The <code>TenantUpdate</code> schema accepts all fields from <code>TenantCreate</code>
+        (each optional) plus an additional <code>is_active</code> boolean field for enabling
+        or disabling the tenant.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Changing the Slug</div>
+        Updating a tenant's <code>slug</code> will affect API paths and any subdomain-based
+        routing. Coordinate slug changes with DNS and SIP configuration to avoid service disruption.
+      </div>
+
+      <!-- Response Fields -->
+      <h2 id="response-fields">Tenant Response Fields</h2>
+      <p>All tenant API responses return the following fields:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>UUID</td><td>Primary key for the tenant record.</td></tr>
+            <tr><td><code>tenant_id</code></td><td>UUID</td><td>Tenant identifier used for RLS scoping and cross-service references.</td></tr>
+            <tr><td><code>name</code></td><td>string</td><td>Display name of the tenant.</td></tr>
+            <tr><td><code>slug</code></td><td>string</td><td>URL-safe identifier.</td></tr>
+            <tr><td><code>domain</code></td><td>string | null</td><td>Custom domain, if configured.</td></tr>
+            <tr><td><code>sip_domain</code></td><td>string | null</td><td>SIP domain for phone registrations.</td></tr>
+            <tr><td><code>default_moh_prompt_id</code></td><td>UUID | null</td><td>Default music-on-hold prompt.</td></tr>
+            <tr><td><code>notes</code></td><td>string | null</td><td>Internal MSP notes.</td></tr>
+            <tr><td><code>is_active</code></td><td>boolean</td><td><code>true</code> if the tenant is active and operational.</td></tr>
+            <tr><td><code>created_at</code></td><td>datetime</td><td>Timestamp when the tenant was created (UTC).</td></tr>
+            <tr><td><code>updated_at</code></td><td>datetime</td><td>Timestamp of the last modification (UTC).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Deactivating vs Deleting -->
+      <h2 id="deactivating">Deactivating vs Deleting Tenants</h2>
+      <p>
+        The platform uses <strong>soft deletion</strong> via the <code>is_active</code> flag
+        rather than permanent deletion. This preserves call records, recordings, and audit
+        trails for compliance purposes.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Action</th><th>Effect</th><th>Reversible</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Deactivate</strong> (<code>is_active: false</code>)</td>
+              <td>All phone registrations are dropped. Users cannot log in. Inbound calls receive a not-in-service treatment. All data is preserved.</td>
+              <td>Yes &mdash; set <code>is_active: true</code> to restore.</td>
+            </tr>
+            <tr>
+              <td><strong>Hard delete</strong></td>
+              <td>Not available through the API. Data retention policies and compliance requirements prohibit permanent deletion without a formal data purge process.</td>
+              <td>N/A</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout success">
+        <div class="callout-title">Best Practice</div>
+        When offboarding a customer, deactivate the tenant first and allow a retention period
+        (typically 90 days) before initiating any data purge procedures.
+      </div>
+
+      <!-- Row-Level Security -->
+      <h2 id="rls">Row-Level Security</h2>
+      <p>
+        Tenant isolation is enforced at the database level using PostgreSQL
+        <strong>Row-Level Security (RLS)</strong>. Every table that contains tenant-scoped
+        data includes a <code>tenant_id</code> column, and RLS policies ensure that queries
+        can only access rows belonging to the current tenant.
+      </p>
+      <h4>How It Works</h4>
+      <ul>
+        <li>The API application connects to PostgreSQL as the <code>new_phone_app</code> role, which has RLS enforced.</li>
+        <li>At the start of each database transaction, the API sets <code>SET LOCAL app.current_tenant = '&lt;tenant_id&gt;'</code>.</li>
+        <li>RLS policies on every tenant-scoped table filter rows where <code>tenant_id = current_setting('app.current_tenant')::uuid</code>.</li>
+        <li>The <code>SET LOCAL</code> scope ensures the setting is automatically cleared when the transaction ends, preventing any cross-tenant leakage through connection pooling.</li>
+      </ul>
+      <p>
+        Migrations and administrative operations use the <code>new_phone_admin</code> role,
+        which bypasses RLS. This two-role pattern ensures that application code can never
+        accidentally access another tenant's data, even if there is a bug in the API layer.
+      </p>
+
+      <!-- SIP Domain Configuration -->
+      <h2 id="sip-domain">SIP Domain Configuration</h2>
+      <p>
+        Each tenant can have a dedicated SIP domain used for phone registration and call routing.
+        The SIP domain determines how phones authenticate and where calls are directed.
+      </p>
+      <h4>Default Behavior</h4>
+      <p>
+        If <code>sip_domain</code> is not explicitly set during tenant creation, the platform
+        generates one automatically using the pattern <code>&lt;slug&gt;.sip.newphone.io</code>.
+        For example, a tenant with slug <code>acme-corp</code> would receive the SIP domain
+        <code>acme-corp.sip.newphone.io</code>.
+      </p>
+      <h4>Custom SIP Domains</h4>
+      <p>
+        To use a custom SIP domain, set the <code>sip_domain</code> field and configure the
+        appropriate DNS records (SRV and A/AAAA) to point to the platform's SIP proxy. All
+        SIP connections require TLS; unencrypted SIP is not supported.
+      </p>
+
+      <!-- Isolation Diagram -->
+      <h2 id="isolation-diagram">Tenant Isolation Diagram</h2>
+      <div class="diagram">+------------------------------------------------------+
+|                  New Phone Platform                  |
+|                                                      |
+|  +------------------+    +------------------+        |
+|  |   Tenant: Acme   |    |  Tenant: Globex  |        |
+|  |                   |    |                   |       |
+|  |  Extensions       |    |  Extensions       |      |
+|  |  Users            |    |  Users            |      |
+|  |  Call Routes      |    |  Call Routes      |      |
+|  |  Recordings       |    |  Recordings       |      |
+|  |  CDR / Logs       |    |  CDR / Logs       |      |
+|  +--------+----------+    +--------+----------+      |
+|           |                        |                 |
+|  +--------v------------------------v----------+      |
+|  |          PostgreSQL Database               |      |
+|  |                                            |      |
+|  |  RLS Policy:                               |      |
+|  |  tenant_id = current_setting(              |      |
+|  |    'app.current_tenant')::uuid             |      |
+|  |                                            |      |
+|  |  Acme rows  |  Globex rows  |  (hidden)    |      |
+|  +--------------------------------------------+      |
++------------------------------------------------------+</div>
+
+      <!-- Examples -->
+      <h2 id="examples">Examples</h2>
+
+      <h3>Create a Tenant</h3>
+<pre><code>POST /api/v1/tenants
+Content-Type: application/json
+Authorization: Bearer &lt;msp_token&gt;
+
+{
+  "name": "Acme Corporation",
+  "slug": "acme-corp",
+  "domain": "pbx.acmecorp.com",
+  "sip_domain": "acme-corp.sip.newphone.io",
+  "notes": "Contract #4521 - 50 seats"
+}</code></pre>
+
+      <h3>Update a Tenant</h3>
+<pre><code>PATCH /api/v1/tenants/&lt;tenant_id&gt;
+Content-Type: application/json
+Authorization: Bearer &lt;msp_token&gt;
+
+{
+  "name": "Acme Corp (Renamed)",
+  "notes": "Upgraded to 100 seats - Jan 2026"
+}</code></pre>
+
+      <h3>Deactivate a Tenant</h3>
+<pre><code>PATCH /api/v1/tenants/&lt;tenant_id&gt;
+Content-Type: application/json
+Authorization: Bearer &lt;msp_token&gt;
+
+{
+  "is_active": false
+}</code></pre>
+
+      <!-- See Also -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="users.html">User Management</a> &mdash; manage users within a tenant</li>
+          <li><a href="rbac.html">Roles &amp; Permissions</a> &mdash; understand the five-role RBAC model</li>
+          <li><a href="auth.html">Authentication</a> &mdash; SSO and login configuration per tenant</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; track tenant-level configuration changes</li>
+          <li><a href="sip-trunks.html">SIP Trunks</a> &mdash; configure trunk connectivity per tenant</li>
+        </ul>
+      </div>
+
+      <!-- Prev / Next -->
+      <div class="page-nav">
+        <a href="rbac.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Roles &amp; Permissions</span>
+        </a>
+        <a href="dashboard.html" style="text-align:right;">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Dashboard</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+<script src="../js/nav.js"></script>
+</body>
+</html>

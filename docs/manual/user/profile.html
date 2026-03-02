@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Profile — New Phone User Guide</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="" width="28" height="28">
+      <div>
+        <span class="logo-text">New Phone</span>
+        <span class="logo-sub">User Guide</span>
+      </div>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+          <a href="login.html">Logging In</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Your Phone</div>
+        <div class="sidebar-group-items">
+          <a href="your-extension.html">Your Extension</a>
+          <a href="voicemail.html">Voicemail</a>
+          <a href="call-history.html">Call History</a>
+          <a href="softphone.html">Web Softphone</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Application</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="profile.html" class="active">Your Profile</a>
+          <a href="keyboard-shortcuts.html">Shortcuts</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="../index.html" style="font-size:13px;color:var(--text-muted)">Manual Home</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="../index.html">Manual</a>
+        <span class="sep">/</span>
+        <a href="index.html">User Guide</a>
+        <span class="sep">/</span>
+        <span>Your Profile</span>
+      </div>
+
+      <h1>Your Profile</h1>
+      <p class="page-subtitle">View and update your personal information, change your password, and manage your security settings.</p>
+
+      <!-- Accessing Your Profile -->
+      <h2 id="accessing">Accessing Your Profile</h2>
+      <p>
+        To open your profile settings, click on your name or avatar in the top-right corner of
+        the application and select <strong>Profile</strong> from the dropdown menu. You can also
+        navigate there using the keyboard shortcut <kbd>G</kbd> then <kbd>P</kbd>.
+      </p>
+      <p>
+        The profile page shows your current account information and provides forms to update
+        the settings you are allowed to change.
+      </p>
+
+      <!-- Viewing Your Profile -->
+      <h2 id="viewing">Viewing Your Profile</h2>
+      <p>
+        The top section of the profile page displays your current account details in a
+        read-only summary:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Full name</strong></td>
+              <td>Your first and last name as it appears in the system. This name is shown in the directory, caller ID for internal calls, and voicemail greetings.</td>
+            </tr>
+            <tr>
+              <td><strong>Email address</strong></td>
+              <td>Your email used for login and notifications. Voicemail-to-email and other alerts are sent here.</td>
+            </tr>
+            <tr>
+              <td><strong>Extension</strong></td>
+              <td>Your assigned phone extension number (read-only). Set by your administrator.</td>
+            </tr>
+            <tr>
+              <td><strong>Role</strong></td>
+              <td>Your permission level in the system (read-only). Common roles include User, Operator, and Manager.</td>
+            </tr>
+            <tr>
+              <td><strong>Organization</strong></td>
+              <td>The tenant (company) your account belongs to (read-only).</td>
+            </tr>
+            <tr>
+              <td><strong>Last login</strong></td>
+              <td>The date and time of your most recent login to the application.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Changing Your Name -->
+      <h2 id="change-name">Changing Your Name</h2>
+      <p>Your name appears in the company directory and internal caller ID.</p>
+      <ol>
+        <li>Find the <strong>Name</strong> section and click <strong>Edit</strong>.</li>
+        <li>Update your first name, last name, or both.</li>
+        <li>Click <strong>Save</strong> to apply the changes.</li>
+      </ol>
+      <p>The change takes effect immediately across the application.</p>
+
+      <div class="callout">
+        <div class="callout-title">Name Display</div>
+        Your name is used for internal caller ID. External callers see the caller ID
+        configured on your outbound route, which is controlled by your administrator.
+      </div>
+
+      <!-- Changing Your Email -->
+      <h2 id="change-email">Changing Your Email</h2>
+      <p>
+        Your email address is used for logging in and receiving notifications such as
+        voicemail-to-email alerts and missed call summaries.
+      </p>
+      <ol>
+        <li>On the profile page, find the <strong>Email</strong> section.</li>
+        <li>Click <strong>Edit</strong> next to your email address.</li>
+        <li>Enter your new email address.</li>
+        <li>Enter your current password to confirm the change.</li>
+        <li>Click <strong>Save</strong>.</li>
+      </ol>
+
+      <div class="callout warning">
+        <div class="callout-title">Email Change Affects Login</div>
+        After changing your email, you must use the new email address to log in. Your old
+        email address will no longer work for authentication. Make sure you have access to
+        the new email address before making this change.
+      </div>
+
+      <!-- Changing Your Password -->
+      <h2 id="change-password">Changing Your Password</h2>
+      <p>
+        You should change your password periodically and any time you suspect it may have been
+        compromised. To change your password:
+      </p>
+      <ol>
+        <li>On the profile page, find the <strong>Password</strong> section.</li>
+        <li>Click <strong>Change Password</strong>.</li>
+        <li>Enter your <strong>current password</strong> in the first field. This confirms your identity.</li>
+        <li>Enter your <strong>new password</strong> in the second field.</li>
+        <li>Enter the new password again in the <strong>confirm password</strong> field to make sure you typed it correctly.</li>
+        <li>Click <strong>Save</strong>.</li>
+      </ol>
+
+      <h3 id="password-rules">Password Requirements</h3>
+      <p>Your new password must meet these requirements:</p>
+      <ul>
+        <li>At least 8 characters long</li>
+        <li>No more than 128 characters long</li>
+        <li>Cannot be the same as your current password</li>
+      </ul>
+      <p>
+        For the strongest security, use a unique password that you do not use on other websites.
+        Consider using a password manager to generate and store strong passwords.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Sessions After Password Change</div>
+        When you change your password, all of your other active sessions (other browsers,
+        devices) will be signed out. You will need to log in again on those devices using
+        your new password.
+      </div>
+
+      <!-- MFA Settings -->
+      <h2 id="mfa">Multi-Factor Authentication (MFA)</h2>
+      <p>
+        Multi-factor authentication adds an extra layer of security to your account by
+        requiring a code from an authenticator app in addition to your password when you
+        log in.
+      </p>
+
+      <h3 id="mfa-enable">Enabling MFA</h3>
+      <ol>
+        <li>In the <strong>Security</strong> section, click <strong>Enable MFA</strong>.</li>
+        <li>Scan the QR code with your authenticator app (Google Authenticator, Microsoft Authenticator, or Authy).</li>
+        <li>Enter the 6-digit code from the app and click <strong>Verify and Enable</strong>.</li>
+      </ol>
+      <p>
+        Once enabled, you will need a code from your authenticator app every time you log in.
+        See the <a href="login.html">Logging In</a> page for the MFA login flow.
+      </p>
+
+      <h3 id="mfa-disable">Disabling MFA</h3>
+      <ol>
+        <li>In the <strong>Security</strong> section, click <strong>Disable MFA</strong>.</li>
+        <li>Enter your current password and a valid authenticator code to confirm.</li>
+      </ol>
+
+      <div class="callout warning">
+        <div class="callout-title">MFA May Be Required</div>
+        Your administrator may require MFA for all accounts. If MFA is mandatory for your
+        organization, you will not see the option to disable it. Contact your administrator
+        if you have questions about MFA requirements.
+      </div>
+
+      <h3 id="mfa-lost-device">Lost Your Authenticator Device?</h3>
+      <p>
+        If you lose access to your authenticator app, contact your administrator to have MFA
+        reset so you can log in and set it up again with your new device.
+      </p>
+
+      <!-- What You Cannot Change -->
+      <h2 id="admin-controlled">What You Cannot Change</h2>
+      <p>
+        Some account settings are controlled by your administrator and cannot be modified from
+        your profile page. These include:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Why It Is Locked</th>
+              <th>Who Can Change It</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Role</strong></td>
+              <td>Your permission level determines what you can access in the system. Changing roles requires administrative authorization.</td>
+              <td>Your administrator</td>
+            </tr>
+            <tr>
+              <td><strong>Organization / Tenant</strong></td>
+              <td>Your account is tied to a specific company (tenant). Moving accounts between tenants is an administrative operation.</td>
+              <td>MSP administrator</td>
+            </tr>
+            <tr>
+              <td><strong>Extension number</strong></td>
+              <td>Extension assignments are managed by administrators to ensure proper call routing and avoid conflicts.</td>
+              <td>Your administrator</td>
+            </tr>
+            <tr>
+              <td><strong>Caller ID (external)</strong></td>
+              <td>The caller ID shown on outbound calls is configured at the route level and tied to your phone numbers.</td>
+              <td>Your administrator</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        If you need any of these changed, contact your administrator or IT support team.
+      </p>
+
+      <!-- Last Login Information -->
+      <h2 id="last-login">Last Login Information</h2>
+      <p>
+        The bottom of your profile page shows your most recent login date, time, and method.
+        This helps you verify that no one else has accessed your account.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Suspicious Activity</div>
+        If you see unfamiliar login activity, change your password immediately, enable MFA
+        if it is not already on, and notify your administrator.
+      </div>
+
+      <!-- See Also -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="login.html">Logging In</a> &mdash; How to log in, including the MFA flow</li>
+          <li><a href="your-extension.html">Your Extension</a> &mdash; View your extension settings</li>
+          <li><a href="dashboard.html">Dashboard</a> &mdash; Your home screen and activity summary</li>
+          <li><a href="keyboard-shortcuts.html">Keyboard Shortcuts</a> &mdash; Navigate quickly with key combinations</li>
+        </ul>
+      </div>
+
+      <!-- Prev / Next -->
+      <div class="page-nav">
+        <a href="dashboard.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Dashboard</span>
+        </a>
+        <a href="keyboard-shortcuts.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Keyboard Shortcuts</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Page TOC -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#accessing">Accessing Your Profile</a></li>
+      <li><a href="#viewing">Viewing Your Profile</a></li>
+      <li><a href="#change-name">Changing Your Name</a></li>
+      <li><a href="#change-email">Changing Your Email</a></li>
+      <li><a href="#change-password">Changing Your Password</a></li>
+      <li><a href="#mfa">Multi-Factor Authentication</a></li>
+      <li><a href="#admin-controlled">What You Cannot Change</a></li>
+      <li><a href="#last-login">Last Login Information</a></li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

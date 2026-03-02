@@ -1,0 +1,27 @@
+skips:
+  - B101  # assert used (fine in tests)
+  - B311  # random (not for crypto)
+tests:
+  - B102  # exec
+  - B103  # set_bad_file_permissions
+  - B104  # hardcoded_bind_all_interfaces
+  - B105  # hardcoded_password_string
+  - B106  # hardcoded_password_funcarg
+  - B107  # hardcoded_password_default
+  - B108  # hardcoded_tmp_directory
+  - B110  # try_except_pass
+  - B201  # flask_debug_true
+  - B501  # request_with_no_cert_validation
+  - B502  # ssl_with_bad_version
+  - B503  # ssl_with_bad_defaults
+  - B504  # ssl_with_no_version
+  - B506  # yaml_load
+  - B507  # ssh_no_host_key_verification
+  - B601  # paramiko_calls
+  - B602  # subprocess_popen_with_shell_equals_true
+  - B608  # hardcoded_sql_expressions
+  - B609  # wildcard_injection
+  - B701  # jinja2_autoescape_false
+exclude_dirs:
+  - tests
+  - .venv

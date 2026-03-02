@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DID Management &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html" class="active">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="sip-trunks.html">Connectivity</a>
+        <span class="sep">/</span>
+        <span>DIDs</span>
+      </div>
+
+      <h1>DID Management</h1>
+      <p class="page-subtitle">Manage Direct Inward Dial phone numbers assigned to your tenant, including E.164 formatting, provider tracking, and E911 designation.</p>
+
+      <!-- ── Overview ────────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        DIDs (Direct Inward Dial numbers) are the phone numbers assigned to a tenant on the
+        New Phone Platform. Each DID represents an externally reachable number that can
+        receive calls from the public telephone network (PSTN). DIDs are the entry points
+        for inbound call routing &mdash; when someone dials one of your numbers, the
+        platform matches it to an <a href="inbound-routes.html">Inbound Route</a> and
+        delivers the call to the configured destination.
+      </p>
+      <p>
+        All phone numbers in the system must be stored in <strong>E.164 format</strong>,
+        the international standard for phone number formatting. This ensures consistent
+        handling across providers, regions, and features like caller ID, SMS, and E911.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">What Is E.164?</div>
+        E.164 is the ITU-T standard for international telephone numbering. Numbers start
+        with a <code>+</code> followed by the country code and subscriber number, with no
+        spaces, dashes, or parentheses. For example, a US number is formatted as
+        <code>+15551234567</code> (country code 1, then the 10-digit number).
+      </div>
+
+      <!-- ── Adding DIDs ─────────────────────────────────────────────────── -->
+      <h2 id="adding-dids">Adding DIDs</h2>
+      <p>Follow these steps to add a new DID to your tenant.</p>
+      <ol>
+        <li>Navigate to <strong>Connectivity &gt; DIDs</strong> in the admin panel.</li>
+        <li>Click <strong>Add DID</strong>.</li>
+        <li>Enter the phone number in <strong>E.164 format</strong> (e.g., <code>+15551234567</code>).</li>
+        <li>Select the <strong>Provider</strong> that supplies this number.</li>
+        <li>Optionally enter the <strong>Provider SID</strong> (the provider's unique identifier
+            for this number, useful for API reconciliation).</li>
+        <li>Set the initial <strong>Status</strong> (defaults to <code>ACTIVE</code>).</li>
+        <li>If this number is designated for emergency calls, enable <strong>Emergency DID</strong>.</li>
+        <li>Click <strong>Save</strong>.</li>
+      </ol>
+      <p>
+        After saving, the DID will appear in your number inventory. To make the DID
+        functional, you must create an <a href="inbound-routes.html">Inbound Route</a>
+        that maps this number to a destination (extension, ring group, IVR, queue, etc.).
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Bulk Import</div>
+        If you are adding many numbers at once (e.g., during initial setup or a porting
+        event), use the API's batch endpoint to create multiple DIDs in a single request.
+        The web UI currently supports one-at-a-time creation.
+      </div>
+
+      <!-- ── Field Reference ─────────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="fields-create">DIDCreate (Request)</h3>
+      <p>Fields used when creating or updating a DID.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>number</code></td>
+              <td><code>string</code> (1&ndash;20)</td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Phone number in E.164 format. Pattern: <code>^\+\d{1,19}$</code></td>
+            </tr>
+            <tr>
+              <td><code>provider</code></td>
+              <td><code>enum</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>One of: <code>CLEARLYIP</code>, <code>TWILIO</code>, <code>INTERNAL</code>, <code>OTHER</code></td>
+            </tr>
+            <tr>
+              <td><code>provider_sid</code></td>
+              <td><code>string</code> (max 255)</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>Provider's unique identifier for this number (e.g., Twilio SID)</td>
+            </tr>
+            <tr>
+              <td><code>status</code></td>
+              <td><code>enum</code></td>
+              <td>No</td>
+              <td><code>ACTIVE</code></td>
+              <td>One of: <code>ACTIVE</code>, <code>INACTIVE</code>, <code>PENDING</code>, <code>PORTED_OUT</code></td>
+            </tr>
+            <tr>
+              <td><code>is_emergency</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>false</code></td>
+              <td>Whether this DID is designated for E911 emergency calling</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-response">DIDResponse (API Response)</h3>
+      <p>The API returns all create fields plus the following system-managed fields.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the DID record</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Tenant that owns this DID (set automatically)</td>
+            </tr>
+            <tr>
+              <td><code>number</code></td>
+              <td><code>string</code></td>
+              <td>Phone number in E.164 format</td>
+            </tr>
+            <tr>
+              <td><code>provider</code></td>
+              <td><code>enum</code></td>
+              <td>Provider that supplies this number</td>
+            </tr>
+            <tr>
+              <td><code>provider_sid</code></td>
+              <td><code>string</code></td>
+              <td>Provider's identifier for this number</td>
+            </tr>
+            <tr>
+              <td><code>status</code></td>
+              <td><code>enum</code></td>
+              <td>Current lifecycle status of the DID</td>
+            </tr>
+            <tr>
+              <td><code>is_emergency</code></td>
+              <td><code>boolean</code></td>
+              <td>Whether the DID is designated for E911</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Whether the DID is currently enabled in the system</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the DID was added</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── E.164 Format ────────────────────────────────────────────────── -->
+      <h2 id="e164-format">E.164 Format</h2>
+      <p>
+        All phone numbers in the platform use E.164 format. The format requires a leading
+        <code>+</code> followed by the country code and subscriber number, with no
+        separators. The validation pattern is <code>^\+\d{1,19}$</code>, allowing 1 to 19
+        digits after the <code>+</code>.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Country</th>
+              <th>Example (Formatted)</th>
+              <th>E.164</th>
+              <th>Country Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>United States</td>
+              <td>(555) 123-4567</td>
+              <td><code>+15551234567</code></td>
+              <td>+1</td>
+            </tr>
+            <tr>
+              <td>United Kingdom</td>
+              <td>020 7123 4567</td>
+              <td><code>+442071234567</code></td>
+              <td>+44</td>
+            </tr>
+            <tr>
+              <td>Australia</td>
+              <td>(02) 1234 5678</td>
+              <td><code>+61212345678</code></td>
+              <td>+61</td>
+            </tr>
+            <tr>
+              <td>Germany</td>
+              <td>030 12345678</td>
+              <td><code>+493012345678</code></td>
+              <td>+49</td>
+            </tr>
+            <tr>
+              <td>Canada</td>
+              <td>(416) 555-7890</td>
+              <td><code>+14165557890</code></td>
+              <td>+1</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Validation Is Strict</div>
+        The API rejects numbers that do not match the E.164 pattern. Common mistakes
+        include omitting the <code>+</code> prefix, including spaces or dashes, or using
+        a leading zero after the country code. The web UI formats the number automatically
+        when you enter digits, but API consumers must provide the exact E.164 string.
+      </div>
+
+      <!-- ── DID Providers ───────────────────────────────────────────────── -->
+      <h2 id="providers">DID Providers</h2>
+      <p>
+        Each DID is tagged with a <code>provider</code> value that identifies where the
+        number originates. This is used for inventory management, billing reconciliation,
+        and provider-specific feature handling (e.g., SMS capabilities).
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Provider</th>
+              <th>Description</th>
+              <th>Typical Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>CLEARLYIP</code></td>
+              <td>Numbers provided through ClearlyIP Trunking</td>
+              <td>Primary provider for most MSP deployments. Supports voice, SMS/MMS, and E911.</td>
+            </tr>
+            <tr>
+              <td><code>TWILIO</code></td>
+              <td>Numbers provided through Twilio</td>
+              <td>Secondary provider or primary for tenants needing Twilio-specific features. Supports voice, SMS/MMS.</td>
+            </tr>
+            <tr>
+              <td><code>INTERNAL</code></td>
+              <td>Numbers used for internal routing only</td>
+              <td>Virtual numbers not connected to the PSTN. Useful for inter-tenant routing or test environments.</td>
+            </tr>
+            <tr>
+              <td><code>OTHER</code></td>
+              <td>Numbers from providers not listed above</td>
+              <td>Catch-all for third-party or regional providers. Manually manage these numbers.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The <code>provider_sid</code> field stores the provider's unique identifier for the
+        number. For Twilio, this is the Twilio SID (e.g., <code>PN...</code>). For
+        ClearlyIP, this is the number ID from the ClearlyIP portal. This value is used for
+        API-level reconciliation between the platform and the provider.
+      </p>
+
+      <!-- ── Status Lifecycle ────────────────────────────────────────────── -->
+      <h2 id="status-lifecycle">DID Status Lifecycle</h2>
+      <p>
+        Each DID has a <code>status</code> that tracks its current state in the number
+        lifecycle. Status transitions reflect real-world events like provisioning, porting,
+        and decommissioning.
+      </p>
+
+      <div class="diagram">PENDING ──&gt; ACTIVE ──&gt; INACTIVE
+                  │                │
+                  │                └──&gt; (re-activate) ──&gt; ACTIVE
+                  │
+                  └──&gt; PORTED_OUT (terminal)</div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Meaning</th>
+              <th>Can Receive Calls?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>PENDING</code></td>
+              <td>
+                Number has been ordered or is in the process of being ported in. Not
+                yet active on the provider side. Use this status during provisioning or
+                while awaiting port completion.
+              </td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td><code>ACTIVE</code></td>
+              <td>
+                Number is live and can receive inbound calls. This is the normal
+                operating status for all production DIDs.
+              </td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <td><code>INACTIVE</code></td>
+              <td>
+                Number has been temporarily taken out of service. The number remains
+                assigned to the tenant but will not route calls. Can be re-activated.
+              </td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td><code>PORTED_OUT</code></td>
+              <td>
+                Number has been ported to another provider or carrier. This is a
+                terminal status &mdash; the number is no longer under the tenant's
+                control. Retained for historical reference.
+              </td>
+              <td>No</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Status vs. is_active</div>
+        The <code>status</code> field tracks the business lifecycle of the number, while
+        <code>is_active</code> is a system-level toggle. A number must have
+        <code>status = ACTIVE</code> <strong>and</strong> <code>is_active = true</code>
+        to receive calls. Setting <code>is_active = false</code> is a quick way to
+        disable a number without changing its lifecycle status.
+      </div>
+
+      <!-- ── Emergency DIDs ──────────────────────────────────────────────── -->
+      <h2 id="emergency-dids">Emergency DIDs (E911)</h2>
+      <p>
+        DIDs marked with <code>is_emergency = true</code> are designated for Enhanced 911
+        (E911) service. When a user dials 911 from an extension associated with an emergency
+        DID, the system routes the call through the E911 infrastructure and transmits the
+        caller's registered location information (PIDF-LO) to the Public Safety Answering
+        Point (PSAP).
+      </p>
+      <ul>
+        <li>At least one DID per tenant should be designated as an emergency DID</li>
+        <li>Emergency DIDs must be associated with a provider that supports E911
+            (<code>CLEARLYIP</code> and <code>TWILIO</code> both support it)</li>
+        <li>Location information is configured per-extension, not per-DID &mdash; the DID
+            determines which number is sent as the callback number to the PSAP</li>
+        <li>The platform uses PIDF-LO (Presence Information Data Format &mdash; Location
+            Object) to transmit granular location data including building, floor, and room</li>
+        <li>Regulatory compliance requires that E911 location data be kept current for all
+            extensions, especially for remote workers</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">E911 Compliance Is Critical</div>
+        Kari's Law and RAY BAUM's Act require multi-line telephone systems to support
+        direct 911 dialing, notification to a designated security contact, and dispatchable
+        location information. Ensure that every physical location has at least one emergency
+        DID configured and that extension location data is accurate.
+      </div>
+
+      <!-- ── Inbound Routes ──────────────────────────────────────────────── -->
+      <h2 id="inbound-routes">Linking DIDs to Inbound Routes</h2>
+      <p>
+        A DID by itself is just a number in your inventory. To make it functional, you must
+        create an <a href="inbound-routes.html">Inbound Route</a> that tells the platform
+        what to do when a call arrives on that number.
+      </p>
+      <p>
+        The typical workflow is:
+      </p>
+      <ol>
+        <li>Add the DID to your tenant (this page)</li>
+        <li>Navigate to <a href="inbound-routes.html">Connectivity &gt; Inbound Routes</a></li>
+        <li>Create a new inbound route and select this DID as the match pattern</li>
+        <li>Choose a destination: extension, ring group, queue, IVR menu, conference, or
+            voicemail</li>
+        <li>Optionally configure time-based routing using
+            <a href="time-conditions.html">Time Conditions</a> and
+            <a href="holiday-calendars.html">Holiday Calendars</a></li>
+      </ol>
+      <p>
+        DIDs without an inbound route will not route calls &mdash; incoming calls to
+        unrouted numbers receive a SIP 404 (Not Found) response.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">One DID, Multiple Routes</div>
+        You can create multiple inbound routes for the same DID with different time
+        conditions. For example, route calls to a ring group during business hours and
+        to a voicemail box after hours. See
+        <a href="inbound-routes.html">Inbound Routes</a> for details.
+      </div>
+
+      <!-- ── Number Porting ──────────────────────────────────────────────── -->
+      <h2 id="number-porting">Number Porting <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        Number porting allows you to transfer existing phone numbers from another carrier
+        to the New Phone Platform. The porting process is managed through the admin panel
+        and coordinates with the winning and losing carriers to complete the transfer.
+      </p>
+      <ul>
+        <li>Submit a port request with the numbers to transfer and the current carrier's
+            account information</li>
+        <li>Track port status through the admin panel (submitted, FOC received, scheduled,
+            completed, rejected)</li>
+        <li>DIDs are created with <code>status = PENDING</code> during the port and
+            automatically transition to <code>ACTIVE</code> upon completion</li>
+        <li>Port-out notifications alert administrators when a number is being ported away</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Feature Not Yet Available</div>
+        The number porting workflow is planned for a future release. Currently, DIDs must
+        be manually added to the platform after they are provisioned with your provider.
+        Contact your MSP administrator for porting assistance.
+      </div>
+
+      <!-- ── Self-Service Ordering ───────────────────────────────────────── -->
+      <h2 id="self-service-ordering">Self-Service Number Ordering <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        Self-service ordering will allow tenant administrators to search for and purchase
+        new phone numbers directly from the admin panel, without contacting the MSP.
+      </p>
+      <ul>
+        <li>Search available numbers by area code, city, or prefix</li>
+        <li>Preview number availability from connected providers in real time</li>
+        <li>One-click provisioning &mdash; the number is purchased from the provider and
+            added as an <code>ACTIVE</code> DID automatically</li>
+        <li>Optional approval workflows for MSPs that want to control number acquisition</li>
+        <li>Cost estimates displayed before purchase</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Feature Not Yet Available</div>
+        Self-service number ordering is planned for a future release. Currently, number
+        ordering is handled through the provider's portal, and DIDs are manually added to
+        the platform.
+      </div>
+
+      <!-- ── See Also ────────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="sip-trunks.html">SIP Trunks</a> &mdash; Configure the trunk connections that carry DID traffic</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Route incoming calls on DIDs to destinations</li>
+          <li><a href="outbound-routes.html">Outbound Routes</a> &mdash; Control which DID is used for outbound caller ID</li>
+          <li><a href="caller-id-rules.html">Caller ID Rules</a> &mdash; Override and manage caller ID presentation</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Assign E911 location information per extension</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; Review DID changes and provisioning events</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ─────────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="sip-trunks.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">SIP Trunks</span>
+        </a>
+        <a href="inbound-routes.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Inbound Routes</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#adding-dids">Adding DIDs</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#e164-format">E.164 Format</a></li>
+      <li><a href="#providers">DID Providers</a></li>
+      <li><a href="#status-lifecycle">Status Lifecycle</a></li>
+      <li><a href="#emergency-dids">Emergency DIDs (E911)</a></li>
+      <li><a href="#inbound-routes">Linking DIDs to Inbound Routes</a></li>
+      <li><a href="#number-porting">Number Porting</a></li>
+      <li><a href="#self-service-ordering">Self-Service Ordering</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

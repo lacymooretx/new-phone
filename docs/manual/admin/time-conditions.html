@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Conditions &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html" class="active">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="time-conditions.html">System</a>
+        <span class="sep">/</span>
+        <span>Time Conditions</span>
+      </div>
+
+      <h1>Time Conditions</h1>
+      <p class="page-subtitle">Route calls differently based on time of day, day of week, date ranges, and holiday calendars. Define business hours, after-hours, and emergency overrides.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Time conditions control how incoming calls are routed based on the current date and time.
+        Each time condition defines a set of rules that determine whether the current moment falls
+        within "business hours" (match) or "after hours" (no-match), and routes calls to the
+        appropriate destination accordingly.
+      </p>
+      <p>
+        Common uses include routing calls to a ring group during working hours and to voicemail or
+        an after-hours IVR outside of business hours. Time conditions can also be linked to
+        holiday calendars so that recognized holidays automatically override normal business-hour rules.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Inbound Route Integration</div>
+        Time conditions are typically used as destinations in inbound routes. When a call arrives,
+        the inbound route sends it to a time condition, which evaluates the current time and forwards
+        the call to either the match or no-match destination.
+      </div>
+
+      <!-- ── Creating ─────────────────────────────────────────────────── -->
+      <h2 id="creating">Creating Time Conditions</h2>
+      <p>
+        To create a time condition, navigate to <strong>System &gt; Time Conditions</strong> and
+        click <strong>Add Time Condition</strong>. Provide a descriptive name, configure one or more
+        rules, and set the match and no-match destinations.
+      </p>
+      <p>
+        A time condition with no rules will always evaluate to no-match. At minimum, you should
+        define a day-of-week rule and a time-of-day rule to represent standard business hours.
+      </p>
+
+      <!-- ── Field Reference ──────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="fields-main">TimeConditionCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>Descriptive name (1&ndash;255 characters). Example: "Main Office Hours"</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td>Optional longer description of the time condition's purpose</td>
+            </tr>
+            <tr>
+              <td><code>timezone</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td>IANA timezone identifier. Default: <code>"America/New_York"</code></td>
+            </tr>
+            <tr>
+              <td><code>rules</code></td>
+              <td><code>list[TimeConditionRule]</code></td>
+              <td>No</td>
+              <td>List of rules that must all match for the condition to evaluate as "match"</td>
+            </tr>
+            <tr>
+              <td><code>match_destination_type</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>Destination type when rules match (e.g., ring_group, ivr, queue, extension, voicemail)</td>
+            </tr>
+            <tr>
+              <td><code>match_destination_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td>ID of the match destination resource</td>
+            </tr>
+            <tr>
+              <td><code>nomatch_destination_type</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>Destination type when rules do not match (after-hours routing)</td>
+            </tr>
+            <tr>
+              <td><code>nomatch_destination_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td>ID of the no-match destination resource</td>
+            </tr>
+            <tr>
+              <td><code>holiday_calendar_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td>Linked holiday calendar. Holidays override normal rules and force no-match</td>
+            </tr>
+            <tr>
+              <td><code>enabled</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td>Whether the time condition is active. Default: <code>true</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-rule">TimeConditionRule Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>type</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>One of: <code>day_of_week</code>, <code>time_of_day</code>, <code>specific_date</code>, <code>date_range</code></td>
+            </tr>
+            <tr>
+              <td><code>days</code></td>
+              <td><code>list[int]</code></td>
+              <td>Conditional</td>
+              <td>Required for <code>day_of_week</code>. Days of week: 1=Monday through 7=Sunday</td>
+            </tr>
+            <tr>
+              <td><code>start_time</code></td>
+              <td><code>string</code></td>
+              <td>Conditional</td>
+              <td>Required for <code>time_of_day</code> and <code>date_range</code>. Format: <code>HH:MM</code></td>
+            </tr>
+            <tr>
+              <td><code>end_time</code></td>
+              <td><code>string</code></td>
+              <td>Conditional</td>
+              <td>Required for <code>time_of_day</code> and <code>date_range</code>. Format: <code>HH:MM</code></td>
+            </tr>
+            <tr>
+              <td><code>start_date</code></td>
+              <td><code>string</code></td>
+              <td>Conditional</td>
+              <td>Required for <code>specific_date</code> and <code>date_range</code>. Format: <code>YYYY-MM-DD</code></td>
+            </tr>
+            <tr>
+              <td><code>end_date</code></td>
+              <td><code>string</code></td>
+              <td>Conditional</td>
+              <td>Required for <code>date_range</code>. Format: <code>YYYY-MM-DD</code></td>
+            </tr>
+            <tr>
+              <td><code>invert</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td>Negate the rule result. Default: <code>false</code></td>
+            </tr>
+            <tr>
+              <td><code>label</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td>Optional description for this rule (e.g., "Weekdays only")</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-update">TimeConditionUpdate Additional Fields</h3>
+      <p>The update schema includes all fields from <code>TimeConditionCreate</code> (all optional), plus:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>manual_override</code></td>
+              <td><code>string</code></td>
+              <td>Force a specific result: <code>"match"</code> or <code>"nomatch"</code>. Set to <code>null</code> to clear</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-response">Response Fields</h3>
+      <p>The response includes all create fields plus the following system-managed fields:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the time condition</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Owning tenant (set automatically from auth context)</td>
+            </tr>
+            <tr>
+              <td><code>manual_override</code></td>
+              <td><code>string | null</code></td>
+              <td>Current manual override state, if any</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Current evaluation result (match = true, no-match = false)</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the time condition was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Rule Types ───────────────────────────────────────────────── -->
+      <h2 id="rule-types">Rule Types Explained</h2>
+
+      <h3 id="rule-day-of-week">day_of_week</h3>
+      <p>
+        Matches when the current day falls within the specified list of days. Days are numbered
+        1 (Monday) through 7 (Sunday), following the ISO 8601 standard.
+      </p>
+      <pre><code>{
+  "type": "day_of_week",
+  "days": [1, 2, 3, 4, 5],
+  "label": "Weekdays (Mon-Fri)"
+}</code></pre>
+
+      <h3 id="rule-time-of-day">time_of_day</h3>
+      <p>
+        Matches when the current time (in the configured timezone) falls between
+        <code>start_time</code> and <code>end_time</code>. Times use 24-hour format.
+      </p>
+      <pre><code>{
+  "type": "time_of_day",
+  "start_time": "08:00",
+  "end_time": "17:00",
+  "label": "Business hours (8 AM - 5 PM)"
+}</code></pre>
+
+      <h3 id="rule-specific-date">specific_date</h3>
+      <p>
+        Matches when the current date is exactly the specified date. Useful for one-off events
+        like office closures or special schedules. Uses <code>start_date</code> only.
+      </p>
+      <pre><code>{
+  "type": "specific_date",
+  "start_date": "2026-12-24",
+  "label": "Christmas Eve closure"
+}</code></pre>
+
+      <h3 id="rule-date-range">date_range</h3>
+      <p>
+        Matches when the current date falls within a range (inclusive) and optionally the current
+        time falls within a time window. Useful for seasonal schedules or temporary changes.
+      </p>
+      <pre><code>{
+  "type": "date_range",
+  "start_date": "2026-06-01",
+  "end_date": "2026-08-31",
+  "start_time": "08:00",
+  "end_time": "16:00",
+  "label": "Summer hours (Jun-Aug, 8 AM - 4 PM)"
+}</code></pre>
+
+      <!-- ── Evaluation Logic ─────────────────────────────────────────── -->
+      <h2 id="evaluation-logic">Rule Evaluation Logic</h2>
+      <p>
+        Time conditions use <strong>AND logic</strong> across all rules. Every rule in the list
+        must evaluate to true for the overall condition to produce a "match" result. If any single
+        rule fails, the condition evaluates to "no-match."
+      </p>
+      <p>
+        This AND behavior makes it natural to combine a day-of-week rule with a time-of-day rule:
+        both must be true simultaneously, meaning the call must arrive on the right day <em>and</em>
+        at the right time.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Inverted Rules</div>
+        When a rule has <code>"invert": true</code>, its result is negated before being combined
+        with the other rules. For example, a <code>day_of_week</code> rule for Saturday and Sunday
+        with <code>invert: true</code> effectively means "not Saturday and not Sunday" &mdash;
+        which matches on weekdays only.
+      </div>
+
+      <!-- ── Match vs No-Match ────────────────────────────────────────── -->
+      <h2 id="destinations">Match vs No-Match Destinations</h2>
+      <p>
+        Every time condition requires two destinations:
+      </p>
+      <ul>
+        <li><strong>Match destination</strong> &mdash; Where calls are routed when all rules evaluate to true (business hours). Typically a ring group, queue, or IVR.</li>
+        <li><strong>No-match destination</strong> &mdash; Where calls are routed when any rule fails (after hours). Typically a voicemail box, after-hours IVR, or announcement.</li>
+      </ul>
+      <p>
+        Destination types include: <code>extension</code>, <code>ring_group</code>,
+        <code>queue</code>, <code>ivr</code>, <code>voicemail</code>,
+        <code>conference</code>, <code>announcement</code>, and <code>time_condition</code>
+        (for chaining).
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Chaining Time Conditions</div>
+        You can set a time condition's destination to another time condition. This allows
+        complex routing logic, such as checking business hours first and then checking for
+        a lunch-hour schedule within those hours.
+      </div>
+
+      <!-- ── Holiday Integration ──────────────────────────────────────── -->
+      <h2 id="holiday-integration">Holiday Calendar Integration</h2>
+      <p>
+        When a holiday calendar is linked to a time condition, the system checks the calendar
+        <strong>before</strong> evaluating the time rules. If the current date and time fall
+        within a holiday entry, the time condition immediately evaluates to <strong>no-match</strong>,
+        bypassing all rules.
+      </p>
+      <p>
+        This means calls on holidays are automatically routed to the after-hours destination
+        without requiring manual intervention. See <a href="holiday-calendars.html">Holiday Calendars</a>
+        for details on creating and managing calendars.
+      </p>
+
+      <!-- ── Manual Override ──────────────────────────────────────────── -->
+      <h2 id="manual-override">Manual Override</h2>
+      <p>
+        The <code>manual_override</code> field allows administrators to force a time condition
+        to a specific state, regardless of the current rules. This is useful for emergency
+        situations, such as office closures due to weather or unexpected events.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Override Value</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>"match"</code></td>
+              <td>Force business-hours routing regardless of time/day. Calls go to match destination.</td>
+            </tr>
+            <tr>
+              <td><code>"nomatch"</code></td>
+              <td>Force after-hours routing regardless of time/day. Calls go to no-match destination.</td>
+            </tr>
+            <tr>
+              <td><code>null</code></td>
+              <td>Normal operation. Rules are evaluated as configured.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Remember to Clear Overrides</div>
+        Manual overrides persist until explicitly cleared. After an emergency passes, update
+        the time condition and set <code>manual_override</code> to <code>null</code> to restore
+        normal rule-based evaluation.
+      </div>
+
+      <!-- ── Timezone Handling ────────────────────────────────────────── -->
+      <h2 id="timezone-handling">Timezone Handling</h2>
+      <p>
+        Each time condition has its own timezone setting. All rule evaluations use the configured
+        timezone to determine the current local time. The timezone must be a valid IANA timezone
+        identifier.
+      </p>
+      <p>Common timezone values:</p>
+      <ul>
+        <li><code>America/New_York</code> &mdash; Eastern Time</li>
+        <li><code>America/Chicago</code> &mdash; Central Time</li>
+        <li><code>America/Denver</code> &mdash; Mountain Time</li>
+        <li><code>America/Los_Angeles</code> &mdash; Pacific Time</li>
+        <li><code>America/Phoenix</code> &mdash; Arizona (no DST)</li>
+        <li><code>Pacific/Honolulu</code> &mdash; Hawaii</li>
+        <li><code>Europe/London</code> &mdash; UK</li>
+      </ul>
+      <p>
+        Daylight Saving Time transitions are handled automatically. The system uses the IANA
+        timezone database, which is updated regularly. When DST transitions occur, rule evaluation
+        shifts accordingly without any manual changes.
+      </p>
+
+      <!-- ── Evaluation Flow Diagram ──────────────────────────────────── -->
+      <h2 id="evaluation-flow">Evaluation Flow</h2>
+      <p>The following diagram shows how a time condition evaluates an incoming call.</p>
+
+      <div class="diagram">Incoming Call
+  |
+  v
+[Manual Override Set?]
+  |              |
+  YES            NO
+  |              |
+  v              v
+Route to       [Holiday Calendar Linked?]
+override         |              |
+destination      YES            NO
+                 |              |
+                 v              v
+             [Today is      [Evaluate Rules]
+              a holiday?]      |          |
+              |        |       ALL        ANY
+              YES      NO     MATCH     FAIL
+              |        |       |          |
+              v        v       v          v
+           NO-MATCH  [Evaluate  MATCH   NO-MATCH
+           dest.      Rules]   dest.    dest.
+                       |   |
+                      ALL  ANY
+                     MATCH FAIL
+                       |    |
+                       v    v
+                     MATCH NO-MATCH
+                     dest. dest.</div>
+
+      <!-- ── Examples ─────────────────────────────────────────────────── -->
+      <h2 id="examples">Common Examples</h2>
+
+      <h3 id="example-business-hours">Standard Business Hours (Monday&ndash;Friday, 8 AM&ndash;5 PM)</h3>
+      <pre><code>{
+  "name": "Main Office Hours",
+  "timezone": "America/New_York",
+  "rules": [
+    {
+      "type": "day_of_week",
+      "days": [1, 2, 3, 4, 5],
+      "label": "Weekdays"
+    },
+    {
+      "type": "time_of_day",
+      "start_time": "08:00",
+      "end_time": "17:00",
+      "label": "8 AM to 5 PM"
+    }
+  ],
+  "match_destination_type": "ring_group",
+  "match_destination_id": "uuid-of-main-ring-group",
+  "nomatch_destination_type": "voicemail",
+  "nomatch_destination_id": "uuid-of-main-voicemail",
+  "holiday_calendar_id": "uuid-of-us-holidays"
+}</code></pre>
+      <p>
+        Calls during weekdays between 8 AM and 5 PM Eastern go to the main ring group.
+        All other times (evenings, weekends, and US holidays) route to voicemail.
+      </p>
+
+      <h3 id="example-weekend">Weekend-Only Routing</h3>
+      <pre><code>{
+  "name": "Weekend Support",
+  "timezone": "America/Chicago",
+  "rules": [
+    {
+      "type": "day_of_week",
+      "days": [6, 7],
+      "label": "Saturday and Sunday"
+    },
+    {
+      "type": "time_of_day",
+      "start_time": "10:00",
+      "end_time": "14:00",
+      "label": "10 AM to 2 PM"
+    }
+  ],
+  "match_destination_type": "queue",
+  "match_destination_id": "uuid-of-weekend-queue",
+  "nomatch_destination_type": "announcement",
+  "nomatch_destination_id": "uuid-of-closed-announcement"
+}</code></pre>
+
+      <h3 id="example-holiday">Holiday Routing with Calendar</h3>
+      <p>
+        Link a holiday calendar to your business-hours time condition. On recognized holidays,
+        calls skip the normal rules and route directly to the no-match (after-hours) destination.
+        No per-holiday configuration is needed in the time condition itself.
+      </p>
+      <pre><code>{
+  "name": "Reception Hours",
+  "timezone": "America/New_York",
+  "rules": [
+    { "type": "day_of_week", "days": [1, 2, 3, 4, 5] },
+    { "type": "time_of_day", "start_time": "09:00", "end_time": "17:30" }
+  ],
+  "match_destination_type": "ivr",
+  "match_destination_id": "uuid-of-main-ivr",
+  "nomatch_destination_type": "ivr",
+  "nomatch_destination_id": "uuid-of-afterhours-ivr",
+  "holiday_calendar_id": "uuid-of-company-holidays"
+}</code></pre>
+
+      <!-- ── See Also ─────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="holiday-calendars.html">Holiday Calendars</a> &mdash; Create and manage holiday calendars for time condition overrides</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Route incoming calls through time conditions</li>
+          <li><a href="ivr-menus.html">IVR Menus</a> &mdash; Build auto-attendant menus for business-hours and after-hours</li>
+          <li><a href="ring-groups.html">Ring Groups</a> &mdash; Common match destination for business-hours routing</li>
+          <li><a href="queues.html">Queues</a> &mdash; Route matched calls to agent queues</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="audio-prompts.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Audio Prompts</span>
+        </a>
+        <a href="holiday-calendars.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Holiday Calendars</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#creating">Creating Time Conditions</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#rule-types">Rule Types Explained</a></li>
+      <li><a href="#evaluation-logic">Rule Evaluation Logic</a></li>
+      <li><a href="#destinations">Match vs No-Match</a></li>
+      <li><a href="#holiday-integration">Holiday Calendar Integration</a></li>
+      <li><a href="#manual-override">Manual Override</a></li>
+      <li><a href="#timezone-handling">Timezone Handling</a></li>
+      <li><a href="#evaluation-flow">Evaluation Flow</a></li>
+      <li><a href="#examples">Common Examples</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

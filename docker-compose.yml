@@ -1,0 +1,293 @@
+name: new-phone
+
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: new_phone
+      POSTGRES_USER: new_phone_admin
+      POSTGRES_PASSWORD: ${NP_DB_ADMIN_PASSWORD:-change_me_admin}
+    ports:
+      - "${NP_DB_HOST_PORT:-5434}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U new_phone_admin -d new_phone"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-bookworm
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${NP_MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${NP_MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  freeswitch:
+    build:
+      context: ./freeswitch
+      dockerfile: Dockerfile
+    ports:
+      - "5061:5061/tcp"   # SIP TLS
+      - "5066:5066/tcp"   # WS (WebRTC SIP.js — dev)
+      - "7443:7443/tcp"   # WSS (WebRTC SIP.js — production)
+      - "${NP_FS_ESL_HOST_PORT:-8022}:8021/tcp"   # ESL
+    volumes:
+      - fs_data:/var/lib/freeswitch
+      - recordings:/recordings
+      - ./freeswitch/conf/autoload_configs/event_socket.conf.xml:/custom-conf/autoload_configs/event_socket.conf.xml:ro
+      - ./freeswitch/conf/autoload_configs/xml_curl.conf.xml:/custom-conf/autoload_configs/xml_curl.conf.xml:ro
+      - ./freeswitch/conf/autoload_configs/modules.conf.xml:/custom-conf/autoload_configs/modules.conf.xml:ro
+      - ./freeswitch/conf/sip_profiles/tls.xml:/custom-conf/sip_profiles/tls.xml:ro
+      - ./freeswitch/tls:/custom-tls:ro
+    healthcheck:
+      test: ["CMD", "fs_cli", "-x", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      NP_DB_HOST: postgres
+      NP_DB_PORT: 5432
+      NP_DB_NAME: new_phone
+      NP_DB_ADMIN_USER: new_phone_admin
+      NP_DB_ADMIN_PASSWORD: ${NP_DB_ADMIN_PASSWORD:-change_me_admin}
+      NP_DB_APP_USER: new_phone_app
+      NP_DB_APP_PASSWORD: ${NP_DB_APP_PASSWORD:-change_me_app}
+      NP_REDIS_URL: redis://redis:6379/0
+      NP_FREESWITCH_HOST: freeswitch
+      NP_FREESWITCH_ESL_PORT: 8021
+      NP_FREESWITCH_ESL_PASSWORD: ClueCon
+      NP_JWT_SECRET_KEY: ${NP_JWT_SECRET_KEY:-dev-secret-change-in-production}
+      NP_TRUNK_ENCRYPTION_KEY: ${NP_TRUNK_ENCRYPTION_KEY:-eL7ZsVVoigMgzhT5RAhg7Z1kpGxgbuXkL0s1pKck0oA=}
+      NP_MINIO_ENDPOINT: minio:9000
+      NP_MINIO_ACCESS_KEY: ${NP_MINIO_ACCESS_KEY:-minioadmin}
+      NP_MINIO_SECRET_KEY: ${NP_MINIO_SECRET_KEY:-minioadmin}
+      NP_MINIO_BUCKET: recordings
+      NP_MINIO_SECURE: "false"
+      NP_SMTP_HOST: mailhog
+      NP_SMTP_PORT: 1025
+      NP_SMTP_USER: ""
+      NP_SMTP_PASSWORD: ""
+      NP_SMTP_FROM_ADDRESS: voicemail@newphone.local
+      NP_SMTP_ATTACH_AUDIO: "true"
+      NP_DEBUG: ${NP_DEBUG:-true}
+      NP_LOG_LEVEL: ${NP_LOG_LEVEL:-DEBUG}
+    volumes:
+      - recordings:/recordings
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; r=httpx.get('http://localhost:8000/api/v1/health'); r.raise_for_status()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  ai-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile
+    ports:
+      - "${NP_AI_WS_HOST_PORT:-8090}:8090"
+      - "${NP_AI_API_HOST_PORT:-8091}:8091"
+    environment:
+      NP_AI_DB_HOST: postgres
+      NP_AI_DB_PORT: 5432
+      NP_AI_DB_NAME: new_phone
+      NP_AI_DB_ADMIN_USER: new_phone_admin
+      NP_AI_DB_ADMIN_PASSWORD: ${NP_DB_ADMIN_PASSWORD:-change_me_admin}
+      NP_AI_REDIS_URL: redis://redis:6379/0
+      NP_AI_ENCRYPTION_KEY: ${NP_TRUNK_ENCRYPTION_KEY:-eL7ZsVVoigMgzhT5RAhg7Z1kpGxgbuXkL0s1pKck0oA=}
+      NP_AI_API_BASE_URL: http://api:8000
+      NP_AI_LOG_LEVEL: ${NP_LOG_LEVEL:-DEBUG}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8091/health').raise_for_status()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # --- Monitoring stack ---
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts:/etc/prometheus/alerts:ro
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${NP_GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${NP_GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.58.0
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://new_phone_admin:${NP_DB_ADMIN_PASSWORD:-change_me_admin}@postgres:5432/new_phone?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pg_data:
+    name: new_phone_pg_data
+  redis_data:
+    name: new_phone_redis_data
+  fs_data:
+    name: new_phone_fs_data
+  minio_data:
+    name: new_phone_minio_data
+  recordings:
+    name: new_phone_recordings
+  prometheus_data:
+    name: new_phone_prometheus_data
+  grafana_data:
+    name: new_phone_grafana_data
+
+networks:
+  default:
+    name: new_phone_net

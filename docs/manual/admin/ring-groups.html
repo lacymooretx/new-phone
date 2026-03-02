@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ring Groups &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html" class="active">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="extensions.html">Telephony</a>
+        <span class="sep">/</span>
+        <span>Ring Groups</span>
+      </div>
+
+      <h1>Ring Groups</h1>
+      <p class="page-subtitle">Ring multiple extensions simultaneously, sequentially, or in round-robin order so the first available person answers the call.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        A ring group is a collection of extensions that ring together when the group is called.
+        Unlike queues, ring groups do not place callers on hold with music and announcements.
+        They simply ring the configured extensions using the chosen strategy and, if nobody
+        answers within the ring time, send the call to a failover destination.
+      </p>
+      <p>
+        Ring groups are ideal for small teams where any member can handle the call, and formal
+        call center features (agent login, statistics, tiered routing) are not needed. Each ring
+        group has its own dial number, so it can be called directly from other extensions or
+        assigned as the destination of an inbound route or IVR menu option.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Ring Group vs Queue</div>
+        Use a ring group for informal "ring everyone" scenarios (front desk, small sales team).
+        Use a <a href="queues.html">queue</a> when you need hold music, position announcements,
+        agent status tracking, and reporting.
+      </div>
+
+      <!-- ── Ring Strategies ───────────────────────────────────────────── -->
+      <h2 id="ring-strategies">Ring Strategies</h2>
+      <p>
+        The ring strategy determines the order and manner in which member extensions are rung.
+        Choose the strategy that best fits how your team operates.
+      </p>
+
+      <h3 id="strategy-simultaneous">Simultaneous</h3>
+      <p>
+        All member extensions ring at the same time. The first person to pick up gets the call;
+        all other phones stop ringing. This is the default strategy and the most common choice.
+      </p>
+      <div class="diagram">Incoming call &#8594; Ring Group (SIMULTANEOUS)
+  &#9474;
+  &#9500;&#9472; Ext 101 &#9742; RING
+  &#9500;&#9472; Ext 102 &#9742; RING     &#8594; First to answer gets the call
+  &#9500;&#9472; Ext 103 &#9742; RING
+  &#9474;
+  &#9492;&#9472; ring_time expires (25s) &#8594; Failover destination</div>
+
+      <h3 id="strategy-sequential">Sequential</h3>
+      <p>
+        Extensions are rung one at a time in member order. Each extension rings for
+        <code>ring_time_per_member</code> seconds before the next one is tried. If busy members
+        are skipped (<code>skip_busy: true</code>), the system moves to the next available
+        member immediately.
+      </p>
+      <div class="diagram">Incoming call &#8594; Ring Group (SEQUENTIAL)
+  &#9474;
+  &#9500;&#9472; Ext 101 &#9742; RING (15s) &#8594; no answer
+  &#9500;&#9472; Ext 102 &#9742; BUSY &#8594; skip (skip_busy: true)
+  &#9500;&#9472; Ext 103 &#9742; RING (15s) &#8594; no answer
+  &#9474;
+  &#9492;&#9472; All members tried &#8594; Failover destination</div>
+
+      <h3 id="strategy-round-robin">Round Robin</h3>
+      <p>
+        Similar to sequential, but the starting member rotates with each call. The first call
+        starts with member 1, the second call starts with member 2, and so on. This distributes
+        calls evenly across the team over time.
+      </p>
+      <div class="diagram">Call #1 &#8594; Start at Ext 101 &#8594; 101, 102, 103
+Call #2 &#8594; Start at Ext 102 &#8594; 102, 103, 101
+Call #3 &#8594; Start at Ext 103 &#8594; 103, 101, 102
+Call #4 &#8594; Start at Ext 101 &#8594; 101, 102, 103  (cycle repeats)</div>
+
+      <!-- ── Creating Ring Groups ──────────────────────────────────────── -->
+      <h2 id="creating">Creating a Ring Group</h2>
+      <p>
+        To create a ring group, submit a <code>POST</code> request with the group configuration
+        and an initial list of member extension IDs.
+      </p>
+      <pre><code>POST /api/v1/ring-groups
+
+{
+  "group_number": "600",
+  "name": "Front Desk",
+  "ring_strategy": "SIMULTANEOUS",
+  "ring_time": 25,
+  "skip_busy": true,
+  "cid_passthrough": true,
+  "confirm_calls": false,
+  "failover_dest_type": "VOICEMAIL",
+  "failover_dest_id": "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
+  "member_extension_ids": [
+    "11112222-3333-4444-5555-666677778888",
+    "22223333-4444-5555-6666-777788889999",
+    "33334444-5555-6666-7777-888899990000"
+  ]
+}</code></pre>
+
+      <!-- ── Field Reference ───────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="create-fields">RingGroupCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>group_number</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>The dial number for this group (1&ndash;20 characters). Example: <code>"600"</code>. Users dial this to reach the group.</td>
+            </tr>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Descriptive name for the ring group (1&ndash;255 characters)</td>
+            </tr>
+            <tr>
+              <td><code>ring_strategy</code></td>
+              <td><code>enum</code></td>
+              <td>No</td>
+              <td><code>SIMULTANEOUS</code></td>
+              <td>How members are rung: <code>SIMULTANEOUS</code>, <code>SEQUENTIAL</code>, or <code>ROUND_ROBIN</code></td>
+            </tr>
+            <tr>
+              <td><code>ring_time</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>25</code></td>
+              <td>Total ring time in seconds before failover (5&ndash;300). For simultaneous, this is how long all phones ring. For sequential/round-robin, this is the maximum total time across all members.</td>
+            </tr>
+            <tr>
+              <td><code>ring_time_per_member</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>15</code></td>
+              <td>Seconds to ring each member in sequential and round-robin strategies (5&ndash;120). Ignored for simultaneous.</td>
+            </tr>
+            <tr>
+              <td><code>skip_busy</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>Skip members who are currently on a call. When false, busy members' phones will receive a call-waiting signal.</td>
+            </tr>
+            <tr>
+              <td><code>cid_passthrough</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>When true, the original external caller ID is displayed on ringing phones. When false, the ring group name and number are displayed instead.</td>
+            </tr>
+            <tr>
+              <td><code>confirm_calls</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>false</code></td>
+              <td>Require the answering party to press 1 to accept the call. Prevents voicemail systems from "answering" the ring group call. See <a href="#call-confirmation">Call Confirmation</a>.</td>
+            </tr>
+            <tr>
+              <td><code>failover_dest_type</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Destination type if no member answers (max 20 characters). Accepts the same destination types as inbound routes: <code>EXTENSION</code>, <code>VOICEMAIL</code>, <code>QUEUE</code>, <code>IVR</code>, etc.</td>
+            </tr>
+            <tr>
+              <td><code>failover_dest_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>UUID of the failover destination object</td>
+            </tr>
+            <tr>
+              <td><code>moh_prompt_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Audio prompt played as music on hold while the caller waits (used during sequential/round-robin between members)</td>
+            </tr>
+            <tr>
+              <td><code>member_extension_ids</code></td>
+              <td><code>list[UUID]</code></td>
+              <td>No</td>
+              <td><code>[]</code></td>
+              <td>Ordered list of extension UUIDs. Order determines ring sequence for sequential and round-robin strategies.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="response-fields">Response Fields</h3>
+      <p>The API returns all create fields plus the following system-managed fields.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the ring group</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>The tenant that owns this ring group</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Whether the ring group is active and has at least one member</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the ring group was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Members in the response include both <code>extension_id</code> and <code>position</code>
+        fields, indicating each member's order in the group.
+      </p>
+
+      <!-- ── Member Management ─────────────────────────────────────────── -->
+      <h2 id="members">Member Management</h2>
+      <p>
+        Members are the extensions that will ring when the group is called. The order of the
+        <code>member_extension_ids</code> list determines the ring sequence for sequential and
+        round-robin strategies. For simultaneous ringing, order does not matter.
+      </p>
+
+      <h3 id="member-operations">Managing Members</h3>
+      <ul>
+        <li><strong>Add members</strong> &mdash; Include new extension IDs in the <code>member_extension_ids</code> list when updating the group.</li>
+        <li><strong>Remove members</strong> &mdash; Update the group with a <code>member_extension_ids</code> list that omits the extensions you want to remove.</li>
+        <li><strong>Reorder members</strong> &mdash; Change the order of IDs in the list. The first ID is position 1, the second is position 2, and so on.</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Extension Availability</div>
+        An extension can be a member of multiple ring groups. If the extension is already on a
+        call when a ring group fires, the <code>skip_busy</code> setting determines whether it
+        is skipped or receives a call-waiting notification.
+      </div>
+
+      <!-- ── Failover ──────────────────────────────────────────────────── -->
+      <h2 id="failover">Failover Destinations</h2>
+      <p>
+        When the ring time expires and no member has answered, the call is sent to the failover
+        destination. If no failover is configured, the caller hears a busy signal and the call
+        is dropped.
+      </p>
+
+      <h3 id="failover-options">Common Failover Configurations</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Failover Destination</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Voicemail</td>
+              <td>Caller leaves a message for the team. Most common failover.</td>
+            </tr>
+            <tr>
+              <td>Queue</td>
+              <td>Escalate to a formal queue with hold music and agents.</td>
+            </tr>
+            <tr>
+              <td>Another Ring Group</td>
+              <td>Cascade to a backup team if the primary team is unavailable.</td>
+            </tr>
+            <tr>
+              <td>IVR</td>
+              <td>Return the caller to a menu to choose an alternative option.</td>
+            </tr>
+            <tr>
+              <td>Extension</td>
+              <td>Send to a specific person (e.g., office manager) as a last resort.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Call Confirmation ─────────────────────────────────────────── -->
+      <h2 id="call-confirmation">Call Confirmation</h2>
+      <p>
+        When <code>confirm_calls</code> is enabled, the person who picks up hears a brief
+        prompt: "Press 1 to accept this call." If they press 1, the call is connected. If they
+        do not press a key (or press any other key), the system treats it as a non-answer and
+        moves to the next member or failover.
+      </p>
+      <p>This feature solves two problems:</p>
+      <ul>
+        <li>
+          <strong>Voicemail interception</strong> &mdash; When a ring group includes mobile
+          phones or extensions with voicemail, the voicemail system may "answer" the call before
+          a human does. Call confirmation ensures only a real person accepts the call.
+        </li>
+        <li>
+          <strong>Selective answering</strong> &mdash; Team members who are busy but not
+          marked as "on a call" (e.g., in a meeting) can decline by simply not pressing 1.
+        </li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Caller Experience</div>
+        When call confirmation is enabled, the caller hears continued ringing (or music on hold
+        if configured) while the answering party decides. This adds a few seconds of delay.
+        Only enable call confirmation when voicemail interception is a real problem.
+      </div>
+
+      <!-- ── CID Passthrough ──────────────────────────────────────────── -->
+      <h2 id="cid-passthrough">Caller ID Passthrough vs Override</h2>
+      <p>
+        The <code>cid_passthrough</code> setting controls what appears on the ringing phone's
+        display.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Phone Display</th>
+              <th>When to Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>true</code> (default)</td>
+              <td>Original caller's name and number (e.g., "Jane Smith 5551234567")</td>
+              <td>When team members need to see who is calling before answering</td>
+            </tr>
+            <tr>
+              <td><code>false</code></td>
+              <td>Ring group name and number (e.g., "Front Desk 600")</td>
+              <td>When team members need to know which group the call came through rather than who is calling</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Combine with CID Prefix</div>
+        For the best of both worlds, leave <code>cid_passthrough</code> enabled and use a CID
+        name prefix on the <a href="inbound-routes.html">inbound route</a> instead. This shows
+        both the caller's identity and which line rang (e.g., "Sales: Jane Smith").
+      </div>
+
+      <!-- ── Music on Hold ─────────────────────────────────────────────── -->
+      <h2 id="music-on-hold">Music on Hold</h2>
+      <p>
+        The <code>moh_prompt_id</code> field specifies an audio prompt to play while the caller
+        waits during sequential or round-robin ringing. Between member attempts, the caller
+        hears this audio instead of silence. For simultaneous ringing, the caller hears standard
+        ringback tone on all phones and MOH is not used.
+      </p>
+      <p>
+        If no MOH prompt is specified, the system default hold music is used. See
+        <a href="audio-prompts.html">Audio Prompts</a> to upload custom audio files.
+      </p>
+
+      <!-- ── Common Use Cases ──────────────────────────────────────────── -->
+      <h2 id="use-cases">Common Use Cases</h2>
+
+      <h3 id="use-case-sales">Sales Team</h3>
+      <p>
+        Three sales reps share a number. Calls ring all phones simultaneously. If nobody
+        answers in 20 seconds, the call goes to a shared sales voicemail box.
+      </p>
+      <pre><code>{
+  "group_number": "610",
+  "name": "Sales Team",
+  "ring_strategy": "SIMULTANEOUS",
+  "ring_time": 20,
+  "skip_busy": true,
+  "cid_passthrough": true,
+  "failover_dest_type": "VOICEMAIL",
+  "failover_dest_id": "...",
+  "member_extension_ids": ["ext-1-uuid", "ext-2-uuid", "ext-3-uuid"]
+}</code></pre>
+
+      <h3 id="use-case-support">Support Team (Fair Distribution)</h3>
+      <p>
+        Five support staff need calls distributed evenly. Round-robin ensures each person gets
+        roughly the same number of calls. If nobody answers, escalate to the support queue.
+      </p>
+      <pre><code>{
+  "group_number": "620",
+  "name": "Support Team",
+  "ring_strategy": "ROUND_ROBIN",
+  "ring_time": 60,
+  "ring_time_per_member": 15,
+  "skip_busy": true,
+  "cid_passthrough": true,
+  "confirm_calls": false,
+  "failover_dest_type": "QUEUE",
+  "failover_dest_id": "...",
+  "member_extension_ids": ["ext-a", "ext-b", "ext-c", "ext-d", "ext-e"]
+}</code></pre>
+
+      <h3 id="use-case-afterhours">After-Hours Escalation</h3>
+      <p>
+        An after-hours ring group calls the on-call manager first, then the backup manager.
+        Sequential strategy ensures the primary contact is tried first. Call confirmation
+        prevents the mobile voicemail from intercepting the call.
+      </p>
+      <pre><code>{
+  "group_number": "699",
+  "name": "After Hours On-Call",
+  "ring_strategy": "SEQUENTIAL",
+  "ring_time": 90,
+  "ring_time_per_member": 30,
+  "skip_busy": false,
+  "cid_passthrough": true,
+  "confirm_calls": true,
+  "failover_dest_type": "VOICEMAIL",
+  "failover_dest_id": "...",
+  "member_extension_ids": ["manager-uuid", "backup-uuid"]
+}</code></pre>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="queues.html">Queues</a> &mdash; Formal ACD queues with agent management and statistics</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Manage the extensions that are ring group members</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Route incoming calls to a ring group</li>
+          <li><a href="follow-me.html">Follow Me</a> &mdash; Per-extension find-me/follow-me rules</li>
+          <li><a href="audio-prompts.html">Audio Prompts</a> &mdash; Upload custom music on hold audio</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="extensions.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Extensions</span>
+        </a>
+        <a href="queues.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Queues</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#ring-strategies">Ring Strategies</a></li>
+      <li><a href="#creating">Creating a Ring Group</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#members">Member Management</a></li>
+      <li><a href="#failover">Failover Destinations</a></li>
+      <li><a href="#call-confirmation">Call Confirmation</a></li>
+      <li><a href="#cid-passthrough">Caller ID Passthrough</a></li>
+      <li><a href="#music-on-hold">Music on Hold</a></li>
+      <li><a href="#use-cases">Common Use Cases</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

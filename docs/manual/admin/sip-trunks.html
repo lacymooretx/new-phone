@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIP Trunk Configuration &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html" class="active">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="sip-trunks.html">Connectivity</a>
+        <span class="sep">/</span>
+        <span>SIP Trunks</span>
+      </div>
+
+      <h1>SIP Trunk Configuration</h1>
+      <p class="page-subtitle">Connect the PBX to PSTN providers using SIP trunks with mandatory TLS signaling and SRTP media encryption.</p>
+
+      <!-- ── Overview & Security ─────────────────────────────────────────── -->
+      <h2 id="overview">Overview &amp; Security</h2>
+      <p>
+        SIP trunks are the connections between the New Phone Platform and external telephony
+        providers (PSTN gateways). Each trunk defines how calls are routed to and from the
+        public telephone network, including authentication credentials, codec preferences,
+        and capacity limits.
+      </p>
+      <p>
+        By design, <strong>all SIP signaling is TLS-mandatory</strong> and <strong>all media
+        is SRTP-mandatory</strong>. Unencrypted SIP (UDP/TCP) and unencrypted RTP are not
+        permitted. This ensures that call setup metadata and voice media are protected in
+        transit at all times.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Encryption Is Non-Negotiable</div>
+        The platform enforces SIP over TLS and SRTP for all trunk connections. The
+        <code>transport</code> field defaults to <code>TLS</code> and should not be changed
+        to <code>TCP</code> or <code>UDP</code> unless you are operating in a lab
+        environment with full understanding of the security implications. Production
+        deployments must use TLS.
+      </div>
+
+      <div class="diagram">PBX ──[SIP TLS]──&gt; Provider (host:port)
+  │                    │
+  │  Auth: IP_ACL      │  Verify source IP
+  │  Auth: USERNAME     │  SIP REGISTER with credentials
+  │  Auth: MUTUAL_TLS   │  Client certificate exchange
+  │                    │
+  └──[SRTP]──media──&gt;  │</div>
+
+      <p>
+        The diagram above illustrates the three authentication modes available when
+        connecting to a provider. Regardless of which mode is chosen, both the signaling
+        path (SIP over TLS) and the media path (SRTP) are always encrypted.
+      </p>
+
+      <!-- ── Authentication Types ────────────────────────────────────────── -->
+      <h2 id="auth-types">Authentication Types</h2>
+      <p>
+        Each trunk must use one of three authentication methods. The method you choose
+        depends on what your provider supports and your security requirements.
+      </p>
+
+      <h3 id="auth-ip-acl">IP ACL (Access Control List)</h3>
+      <p>
+        IP-based authentication relies on a list of allowed IP addresses or CIDR ranges.
+        The provider trusts traffic from your PBX based solely on its source IP. No username
+        or password is exchanged during call setup.
+      </p>
+      <ul>
+        <li>Set <code>auth_type</code> to <code>IP_ACL</code></li>
+        <li>Populate the <code>ip_acl</code> field with allowed IPs or CIDR notation (e.g., <code>203.0.113.0/24</code>)</li>
+        <li>The <code>username</code> and <code>password</code> fields are not used</li>
+        <li>Best for static-IP deployments where both sides have predictable network addresses</li>
+      </ul>
+
+      <h3 id="auth-username-password">Username &amp; Password</h3>
+      <p>
+        Digest authentication using SIP REGISTER. The PBX sends credentials to the provider
+        to authenticate. This is the most common method offered by SIP trunk providers.
+      </p>
+      <ul>
+        <li>Set <code>auth_type</code> to <code>USERNAME_PASSWORD</code></li>
+        <li>Provide <code>username</code> and <code>password</code></li>
+        <li>The password is encrypted at rest in the database and is <strong>never</strong> returned by the API</li>
+        <li>The PBX will register with the provider at regular intervals to maintain the trunk</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Password Security</div>
+        Trunk passwords are encrypted in the database using AES-256. The API will never
+        include the <code>password</code> or <code>encrypted_password</code> fields in any
+        response. To change a password, submit a new value in an update request.
+      </div>
+
+      <h3 id="auth-mutual-tls">Mutual TLS</h3>
+      <p>
+        Both the PBX and the provider present TLS client certificates during the handshake.
+        This provides the strongest authentication because both sides cryptographically prove
+        their identity.
+      </p>
+      <ul>
+        <li>Set <code>auth_type</code> to <code>MUTUAL_TLS</code></li>
+        <li>Requires client certificate configuration on both the PBX and the provider</li>
+        <li>No <code>username</code>, <code>password</code>, or <code>ip_acl</code> fields are needed</li>
+        <li>Certificate management (issuance, renewal, revocation) is handled outside the trunk configuration</li>
+      </ul>
+
+      <!-- ── Creating a Trunk ────────────────────────────────────────────── -->
+      <h2 id="creating-a-trunk">Creating a Trunk</h2>
+      <p>Follow these steps to add a new SIP trunk to your tenant.</p>
+      <ol>
+        <li>Navigate to <strong>Connectivity &gt; SIP Trunks</strong> in the admin panel.</li>
+        <li>Click <strong>Add Trunk</strong>.</li>
+        <li>Enter a descriptive <strong>Name</strong> (e.g., "ClearlyIP Primary", "Twilio Outbound").</li>
+        <li>Select an <strong>Authentication Type</strong> from the dropdown.</li>
+        <li>Enter the provider's <strong>Host</strong> address (FQDN or IP).</li>
+        <li>Set the <strong>Port</strong> (default is <code>5061</code> for SIP TLS).</li>
+        <li>Fill in authentication-specific fields:
+          <ul>
+            <li><strong>IP ACL</strong>: Enter allowed IP addresses or CIDR ranges</li>
+            <li><strong>Username/Password</strong>: Enter the credentials provided by your carrier</li>
+            <li><strong>Mutual TLS</strong>: Ensure certificates are configured at the system level</li>
+          </ul>
+        </li>
+        <li>Configure <strong>Codec Preferences</strong> if your provider requires a specific order.</li>
+        <li>Set <strong>Max Channels</strong> to match your provider contract (default: 30).</li>
+        <li>Optionally select a <strong>Failover Trunk</strong> for automatic rerouting on failure.</li>
+        <li>Choose an <strong>Inbound Caller ID Mode</strong> (default: Passthrough).</li>
+        <li>Click <strong>Save</strong>.</li>
+      </ol>
+
+      <p>
+        After saving, the trunk will appear in the trunk list with a status indicator. The
+        PBX will begin registering with the provider (for Username/Password trunks) or
+        establishing the TLS connection. Monitor the status for confirmation that the trunk
+        is active.
+      </p>
+
+      <!-- ── Field Reference ─────────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="fields-create">SIPTrunkCreate (Request)</h3>
+      <p>Fields used when creating or updating a SIP trunk.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code> (1&ndash;255)</td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Human-readable name for the trunk</td>
+            </tr>
+            <tr>
+              <td><code>auth_type</code></td>
+              <td><code>enum</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>One of: <code>IP_ACL</code>, <code>USERNAME_PASSWORD</code>, <code>MUTUAL_TLS</code></td>
+            </tr>
+            <tr>
+              <td><code>host</code></td>
+              <td><code>string</code> (1&ndash;255)</td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Provider SIP server hostname or IP address</td>
+            </tr>
+            <tr>
+              <td><code>port</code></td>
+              <td><code>int</code> (1&ndash;65535)</td>
+              <td>No</td>
+              <td><code>5061</code></td>
+              <td>SIP port; defaults to 5061 (standard SIP TLS port)</td>
+            </tr>
+            <tr>
+              <td><code>username</code></td>
+              <td><code>string</code> (max 255)</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>SIP authentication username (for <code>USERNAME_PASSWORD</code> auth)</td>
+            </tr>
+            <tr>
+              <td><code>password</code></td>
+              <td><code>string</code> (max 255)</td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>SIP authentication password; encrypted in DB, <strong>never returned</strong> by the API</td>
+            </tr>
+            <tr>
+              <td><code>ip_acl</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>IP access control list for <code>IP_ACL</code> auth (comma-separated IPs or CIDR ranges)</td>
+            </tr>
+            <tr>
+              <td><code>codec_preferences</code></td>
+              <td><code>dict</code></td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>Ordered codec list (see <a href="#codec-configuration">Codec Configuration</a>)</td>
+            </tr>
+            <tr>
+              <td><code>max_channels</code></td>
+              <td><code>int</code> (1&ndash;9999)</td>
+              <td>No</td>
+              <td><code>30</code></td>
+              <td>Maximum number of concurrent calls on this trunk</td>
+            </tr>
+            <tr>
+              <td><code>transport</code></td>
+              <td><code>enum</code></td>
+              <td>No</td>
+              <td><code>TLS</code></td>
+              <td>One of: <code>TLS</code>, <code>TCP</code>, <code>UDP</code>. TLS is mandatory for production.</td>
+            </tr>
+            <tr>
+              <td><code>inbound_cid_mode</code></td>
+              <td><code>enum</code></td>
+              <td>No</td>
+              <td><code>PASSTHROUGH</code></td>
+              <td>How inbound caller ID is handled: <code>PASSTHROUGH</code>, <code>OVERRIDE</code>, <code>DETECT</code></td>
+            </tr>
+            <tr>
+              <td><code>failover_trunk_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>ID of the backup trunk to use on failure</td>
+            </tr>
+            <tr>
+              <td><code>notes</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td>&mdash;</td>
+              <td>Free-form notes for administrative use</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-response">SIPTrunkResponse (API Response)</h3>
+      <p>The API returns all create fields plus the following system-managed fields.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the trunk</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Tenant that owns this trunk (set automatically)</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Whether the trunk is currently enabled</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the trunk was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Sensitive Fields Omitted</div>
+        The <code>password</code> and <code>encrypted_password</code> fields are
+        <strong>never</strong> included in API responses. This is a deliberate security
+        measure. To verify or change a trunk password, submit a new value via the update
+        endpoint.
+      </div>
+
+      <!-- ── Codec Configuration ─────────────────────────────────────────── -->
+      <h2 id="codec-configuration">Codec Configuration</h2>
+      <p>
+        The <code>codec_preferences</code> field accepts a dictionary that defines the
+        ordered list of codecs the PBX should offer during call negotiation. The order
+        matters: codecs listed first are preferred.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Codec</th>
+              <th>Bandwidth</th>
+              <th>Typical Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>G.711 (PCMU/PCMA)</code></td>
+              <td>64 kbps</td>
+              <td>Standard toll quality; widely supported by all providers</td>
+            </tr>
+            <tr>
+              <td><code>G.722</code></td>
+              <td>64 kbps</td>
+              <td>Wideband HD audio; recommended for internal and modern trunks</td>
+            </tr>
+            <tr>
+              <td><code>G.729</code></td>
+              <td>8 kbps</td>
+              <td>Low-bandwidth; useful for constrained links (requires licensing)</td>
+            </tr>
+            <tr>
+              <td><code>Opus</code></td>
+              <td>6&ndash;510 kbps</td>
+              <td>Adaptive; ideal for WebRTC endpoints and variable-bandwidth paths</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        If <code>codec_preferences</code> is omitted, the PBX uses its global default codec
+        order. Most providers work well with G.711 (PCMU) as the primary codec. Consult your
+        provider's documentation for recommended settings.
+      </p>
+
+      <!-- ── Channel Limits ──────────────────────────────────────────────── -->
+      <h2 id="channel-limits">Channel Limits</h2>
+      <p>
+        The <code>max_channels</code> field controls how many concurrent calls can use
+        this trunk simultaneously. This value should match the capacity you have contracted
+        with your provider.
+      </p>
+      <ul>
+        <li><strong>Default:</strong> 30 concurrent channels</li>
+        <li><strong>Range:</strong> 1 to 9999</li>
+        <li>When the channel limit is reached, new outbound calls will fail over to the
+            failover trunk (if configured) or return a busy signal</li>
+        <li>Inbound calls that exceed the limit are rejected with a SIP 503 response</li>
+        <li>Monitor channel utilization in the <a href="dashboard.html">Dashboard</a> to
+            plan capacity upgrades</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Capacity Planning Tip</div>
+        A common rule of thumb is one channel per 3&ndash;4 extensions for typical office
+        use. High-volume call centers may need a 1:1 ratio or higher. Review your call
+        history reports in <a href="cdrs.html">Call History</a> to determine peak
+        concurrent call counts.
+      </div>
+
+      <!-- ── Inbound Caller ID Modes ─────────────────────────────────────── -->
+      <h2 id="inbound-cid-modes">Inbound Caller ID Modes</h2>
+      <p>
+        The <code>inbound_cid_mode</code> field controls how the platform handles the
+        caller ID information received from the provider on inbound calls.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>PASSTHROUGH</code></td>
+              <td>
+                The caller ID received from the provider is passed directly to the
+                endpoint without modification. This is the default and recommended
+                setting for most deployments.
+              </td>
+            </tr>
+            <tr>
+              <td><code>OVERRIDE</code></td>
+              <td>
+                The inbound caller ID is replaced with a value configured in the
+                <a href="caller-id-rules.html">Caller ID Rules</a>. Useful when you need
+                to normalize or rebrand incoming call presentation.
+              </td>
+            </tr>
+            <tr>
+              <td><code>DETECT</code></td>
+              <td>
+                The platform performs CNAM (Caller Name) lookup to enrich the caller ID
+                with a name when only a number is provided. This may add slight latency
+                to inbound call setup.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Trunk Failover ──────────────────────────────────────────────── -->
+      <h2 id="trunk-failover">Trunk Failover</h2>
+      <p>
+        The <code>failover_trunk_id</code> field links a trunk to a backup trunk. When the
+        primary trunk is unavailable or has reached its channel limit, calls are
+        automatically rerouted to the failover trunk.
+      </p>
+      <ul>
+        <li>Failover is triggered by: trunk registration failure, SIP timeout (no response),
+            SIP 503 (service unavailable), or channel limit exceeded</li>
+        <li>The failover trunk must be a separate, active trunk within the same tenant</li>
+        <li>Failover chains are supported (Trunk A fails to B, B fails to C) but circular
+            references are rejected by the API</li>
+        <li>Failover events are logged and visible in the <a href="audit-logs.html">Audit Logs</a></li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Recommended Setup</div>
+        For production reliability, configure at least two trunks from different providers
+        with failover linking. For example, set ClearlyIP as the primary trunk and Twilio
+        as the failover. This ensures PSTN connectivity survives a single provider outage.
+      </div>
+
+      <!-- ── Provider Examples ───────────────────────────────────────────── -->
+      <h2 id="provider-examples">Provider Configuration Examples</h2>
+      <p>
+        The following are general guidance notes for configuring trunks with commonly
+        used providers. Always refer to your provider's current documentation for the
+        most accurate settings.
+      </p>
+
+      <h3 id="provider-clearlyip">ClearlyIP</h3>
+      <ul>
+        <li><strong>Auth type:</strong> <code>IP_ACL</code> or <code>USERNAME_PASSWORD</code> (both supported)</li>
+        <li><strong>Host:</strong> Provided in your ClearlyIP portal (typically a regional SBC address)</li>
+        <li><strong>Port:</strong> <code>5061</code> (SIP TLS)</li>
+        <li><strong>Codecs:</strong> G.711 PCMU preferred; G.722 supported on most routes</li>
+        <li><strong>Notes:</strong> ClearlyIP provides DID management and SMS through the same trunk.
+            See <a href="dids.html">DIDs</a> for number configuration.</li>
+      </ul>
+
+      <h3 id="provider-twilio">Twilio Elastic SIP Trunking</h3>
+      <ul>
+        <li><strong>Auth type:</strong> <code>IP_ACL</code> or <code>USERNAME_PASSWORD</code></li>
+        <li><strong>Host:</strong> Your Twilio SIP domain (e.g., <code>your-trunk.pstn.twilio.com</code>)</li>
+        <li><strong>Port:</strong> <code>5061</code> (SIP TLS)</li>
+        <li><strong>Codecs:</strong> G.711 PCMU/PCMA; Opus supported on select routes</li>
+        <li><strong>Notes:</strong> Configure your Twilio IP ACL or credential list in the Twilio
+            console to match the settings here. Twilio supports both origination (inbound)
+            and termination (outbound) on the same trunk.</li>
+      </ul>
+
+      <!-- ── Monitoring & Troubleshooting ────────────────────────────────── -->
+      <h2 id="monitoring">Monitoring &amp; Troubleshooting</h2>
+      <p>
+        Keeping trunks healthy is critical for uninterrupted PSTN connectivity. Use the
+        following tools and techniques to monitor and diagnose trunk issues.
+      </p>
+
+      <h3 id="monitoring-status">Trunk Status Indicators</h3>
+      <p>The trunk list in the admin panel shows a real-time status for each trunk:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Registered</strong></td>
+              <td>The trunk is authenticated with the provider and ready for calls</td>
+            </tr>
+            <tr>
+              <td><strong>Unregistered</strong></td>
+              <td>The trunk is not currently authenticated; check credentials or network</td>
+            </tr>
+            <tr>
+              <td><strong>Failed</strong></td>
+              <td>Registration or connection attempts have failed repeatedly</td>
+            </tr>
+            <tr>
+              <td><strong>Disabled</strong></td>
+              <td>The trunk has been manually deactivated (<code>is_active = false</code>)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="troubleshooting-checklist">Troubleshooting Checklist</h3>
+      <ol>
+        <li><strong>Trunk shows Unregistered:</strong>
+          <ul>
+            <li>Verify the <code>host</code> and <code>port</code> are correct</li>
+            <li>Confirm the provider account is active and not suspended</li>
+            <li>For <code>USERNAME_PASSWORD</code>: re-enter the password to rule out encryption issues</li>
+            <li>For <code>IP_ACL</code>: verify your PBX public IP matches the provider's whitelist</li>
+          </ul>
+        </li>
+        <li><strong>Calls fail with "403 Forbidden":</strong>
+          <ul>
+            <li>Authentication credentials may be incorrect</li>
+            <li>The provider may be rejecting your source IP</li>
+            <li>Check <a href="audit-logs.html">Audit Logs</a> for detailed SIP error codes</li>
+          </ul>
+        </li>
+        <li><strong>One-way audio or no audio:</strong>
+          <ul>
+            <li>Verify SRTP is negotiated (both sides must support it)</li>
+            <li>Check firewall rules for RTP port ranges (typically 16384&ndash;32768)</li>
+            <li>Ensure NAT traversal is configured correctly if the PBX is behind a firewall</li>
+          </ul>
+        </li>
+        <li><strong>Calls drop after 30 seconds:</strong>
+          <ul>
+            <li>This typically indicates a SIP session timer mismatch</li>
+            <li>Verify the provider supports SIP Session Timers (RFC 4028)</li>
+            <li>Check for NAT timeout issues on intermediate firewalls</li>
+          </ul>
+        </li>
+        <li><strong>Channel limit exceeded:</strong>
+          <ul>
+            <li>Increase <code>max_channels</code> if your provider contract supports more</li>
+            <li>Configure a failover trunk to absorb overflow traffic</li>
+            <li>Review <a href="cdrs.html">Call History</a> for peak usage patterns</li>
+          </ul>
+        </li>
+      </ol>
+
+      <div class="callout">
+        <div class="callout-title">SIP Traces</div>
+        For advanced troubleshooting, administrators with the <code>super_admin</code> role
+        can enable SIP trace capture on the FreeSWITCH engine. SIP traces show the full
+        signaling exchange and are invaluable for diagnosing registration, authentication,
+        and call routing issues. See <a href="admin-ops.html">Admin Ops</a> for details.
+      </div>
+
+      <!-- ── See Also ────────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="dids.html">DIDs</a> &mdash; Manage phone numbers associated with trunks</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Route incoming calls from trunks to destinations</li>
+          <li><a href="outbound-routes.html">Outbound Routes</a> &mdash; Define which trunk handles outgoing calls</li>
+          <li><a href="caller-id-rules.html">Caller ID Rules</a> &mdash; Configure caller ID override and CNAM settings</li>
+          <li><a href="dashboard.html">Dashboard</a> &mdash; Monitor trunk status and channel utilization</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; Review trunk events and SIP errors</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ─────────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="follow-me.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Follow Me</span>
+        </a>
+        <a href="dids.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">DIDs</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview &amp; Security</a></li>
+      <li><a href="#auth-types">Authentication Types</a></li>
+      <li><a href="#creating-a-trunk">Creating a Trunk</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#codec-configuration">Codec Configuration</a></li>
+      <li><a href="#channel-limits">Channel Limits</a></li>
+      <li><a href="#inbound-cid-modes">Inbound Caller ID Modes</a></li>
+      <li><a href="#trunk-failover">Trunk Failover</a></li>
+      <li><a href="#provider-examples">Provider Examples</a></li>
+      <li><a href="#monitoring">Monitoring &amp; Troubleshooting</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

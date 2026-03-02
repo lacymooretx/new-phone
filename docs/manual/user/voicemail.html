@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voicemail — New Phone User Guide</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="" width="28" height="28">
+      <div>
+        <span class="logo-text">New Phone</span>
+        <span class="logo-sub">User Guide</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+          <a href="login.html">Logging In</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Your Phone</div>
+        <div class="sidebar-group-items">
+          <a href="your-extension.html">Your Extension</a>
+          <a href="voicemail.html" class="active">Voicemail</a>
+          <a href="call-history.html">Call History</a>
+          <a href="softphone.html">Web Softphone</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Application</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="profile.html">Your Profile</a>
+          <a href="keyboard-shortcuts.html">Shortcuts</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="../index.html" style="font-size:13px;color:var(--text-muted)">Manual Home</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">&#127763;</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="../index.html">Manual</a>
+        <span class="sep">/</span>
+        <a href="index.html">User Guide</a>
+        <span class="sep">/</span>
+        <span>Voicemail</span>
+      </div>
+
+      <h1>Voicemail</h1>
+      <p class="page-subtitle">Listen to messages, manage your mailbox folders, set your greeting, and configure notifications.</p>
+
+      <!-- Checking Voicemail -->
+      <h2 id="checking-voicemail">Checking Your Voicemail</h2>
+      <p>
+        The easiest way to check your voicemail is through the New Phone web app. After logging in,
+        click <strong>Voicemail</strong> in the left sidebar to open your mailbox. You will see a list
+        of all your messages with the newest ones at the top.
+      </p>
+      <p>Each message in the list shows:</p>
+      <ul>
+        <li><strong>Caller</strong> &mdash; The name or number of the person who left the message.</li>
+        <li><strong>Date and time</strong> &mdash; When the message was left.</li>
+        <li><strong>Duration</strong> &mdash; How long the message is.</li>
+        <li><strong>Status</strong> &mdash; Whether the message is new (unread) or has been listened to.</li>
+        <li><strong>Folder</strong> &mdash; Which folder the message is currently in.</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Tip</div>
+        New (unread) messages are shown in bold. Once you play a message, it is automatically marked
+        as read and moved to the Old folder unless you move it elsewhere.
+      </div>
+
+      <!-- Listening to Messages -->
+      <h2 id="listening">Listening to Messages</h2>
+      <p>To play a voicemail message:</p>
+      <ol>
+        <li>Open the <strong>Voicemail</strong> page from the sidebar.</li>
+        <li>Find the message you want to listen to.</li>
+        <li>Click the <strong>Play</strong> button next to the message.</li>
+        <li>The message will play through your computer speakers or headphones.</li>
+      </ol>
+      <p>
+        You can pause, rewind, or fast-forward using the audio player controls. The player also shows
+        the current playback position and total duration.
+      </p>
+      <p>
+        If a message has been transcribed, you will also see a text version of the voicemail below
+        the audio player. Transcription accuracy depends on audio quality and the caller's speech clarity.
+      </p>
+
+      <!-- Message Folders -->
+      <h2 id="folders">Message Folders</h2>
+      <p>
+        Your voicemail is organized into folders to help you keep track of your messages. The default
+        folders are:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Folder</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Inbox</strong></td>
+              <td>New messages that you have not listened to yet.</td>
+            </tr>
+            <tr>
+              <td><strong>Old</strong></td>
+              <td>Messages you have already listened to. Messages move here automatically after playback.</td>
+            </tr>
+            <tr>
+              <td><strong>Work</strong></td>
+              <td>A folder for organizing work-related messages.</td>
+            </tr>
+            <tr>
+              <td><strong>Family</strong></td>
+              <td>A folder for personal or family messages.</td>
+            </tr>
+            <tr>
+              <td><strong>Friends</strong></td>
+              <td>A folder for messages from friends or non-work contacts.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Use the folder tabs at the top of the voicemail page to switch between folders. The number next
+        to each folder name shows how many messages it contains.
+      </p>
+
+      <!-- Moving Messages -->
+      <h2 id="moving-messages">Moving Messages Between Folders</h2>
+      <p>To organize your messages into different folders:</p>
+      <ol>
+        <li>Find the message you want to move.</li>
+        <li>Click the <strong>Move</strong> button (or use the dropdown menu next to the message).</li>
+        <li>Select the destination folder from the list.</li>
+        <li>The message will be moved immediately.</li>
+      </ol>
+      <p>
+        You can also select multiple messages at once using the checkboxes, then use the bulk action
+        menu to move them all to the same folder.
+      </p>
+
+      <!-- Read / Unread -->
+      <h2 id="read-unread">Marking Messages as Read or Unread</h2>
+      <p>
+        Messages are automatically marked as read when you play them. If you want to mark a message
+        as unread (so it appears bold and shows up in your new message count):
+      </p>
+      <ol>
+        <li>Find the message in your list.</li>
+        <li>Click the three-dot menu next to the message.</li>
+        <li>Select <strong>Mark as Unread</strong>.</li>
+      </ol>
+      <p>
+        This is useful when you listen to a message but want to come back to it later as a reminder.
+      </p>
+
+      <!-- Forwarding -->
+      <h2 id="forwarding">Forwarding a Message to Another Mailbox</h2>
+      <p>
+        If someone else should hear a voicemail, click <strong>Forward</strong> on the message,
+        enter the recipient's extension number, add an optional note, and click <strong>Send</strong>.
+        The recipient sees the forwarded message in their Inbox with your name as the forwarder.
+      </p>
+
+      <!-- Deleting -->
+      <h2 id="deleting">Deleting Messages</h2>
+      <p>
+        Click the <strong>Delete</strong> button (trash icon) on any message and confirm when prompted.
+        Deletion may be permanent depending on your organization's retention policy. If a message is
+        important, move it to a named folder instead.
+      </p>
+
+      <!-- Email Notifications -->
+      <h2 id="email-notifications">Email Notifications</h2>
+      <p>
+        New Phone can send you an email every time a new voicemail arrives, so you know about
+        messages even when you are not in the web app. Depending on configuration, the email may
+        include just a notification or the audio file as an attachment. If you are not receiving
+        notifications, ask your admin to enable them.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Tip</div>
+        If voicemail emails go to spam, add the notification sender address to your safe senders list.
+      </div>
+
+      <!-- Setting Your Greeting -->
+      <h2 id="greeting">Setting Your Greeting</h2>
+      <p>
+        Your voicemail greeting is the message callers hear before they leave a voicemail. If your
+        administrator allows it, you can record a custom greeting:
+      </p>
+      <ol>
+        <li>Go to the <strong>Voicemail</strong> page in the web app.</li>
+        <li>Click <strong>Settings</strong> or the gear icon.</li>
+        <li>Under <strong>Greeting</strong>, choose one of the following:
+          <ul>
+            <li><strong>Default</strong> &mdash; Uses the system greeting with your extension number.</li>
+            <li><strong>Name only</strong> &mdash; Plays your recorded name followed by the system prompt.</li>
+            <li><strong>Custom</strong> &mdash; Plays a fully custom greeting that you record.</li>
+          </ul>
+        </li>
+        <li>If you select <strong>Custom</strong>, click <strong>Record</strong> and speak your greeting. Click <strong>Stop</strong> when finished.</li>
+        <li>Play back the recording to make sure it sounds good.</li>
+        <li>Click <strong>Save</strong> to apply your new greeting.</li>
+      </ol>
+
+      <div class="callout">
+        <div class="callout-title">Tip for a good greeting</div>
+        Keep it brief and professional. Include your name and a simple instruction: "Hi, you've
+        reached [Name] at [Company]. I'm unable to take your call right now. Please leave a message
+        and I'll get back to you as soon as possible."
+      </div>
+
+      <!-- Changing Your PIN -->
+      <h2 id="changing-pin">Changing Your Voicemail PIN</h2>
+      <p>
+        Your voicemail PIN is used to access your mailbox from a desk phone. It is separate from your
+        web app password. To change your PIN:
+      </p>
+      <ol>
+        <li>Go to the <strong>Voicemail</strong> page and click <strong>Settings</strong>.</li>
+        <li>Under <strong>PIN</strong>, enter your new PIN (minimum 4 digits).</li>
+        <li>Click <strong>Save</strong>.</li>
+      </ol>
+      <p>Choose a PIN that is easy to remember but hard to guess. Avoid patterns like 1234 or 0000.</p>
+
+      <!-- Voicemail from Desk Phone -->
+      <h2 id="desk-phone">Checking Voicemail from Your Desk Phone</h2>
+      <p>
+        You can also check your voicemail directly from your desk phone without using the web app.
+        This is useful when you are at your desk and want to quickly listen to messages.
+      </p>
+      <ol>
+        <li>Pick up your desk phone handset or press the speakerphone button.</li>
+        <li>Dial <strong>*97</strong> (or press the dedicated voicemail button if your phone has one).</li>
+        <li>Enter your voicemail <strong>PIN</strong> when prompted, followed by the <strong>#</strong> key.</li>
+        <li>Follow the voice prompts to listen to, save, or delete messages:
+          <ul>
+            <li>Press <strong>1</strong> to listen to new messages.</li>
+            <li>Press <strong>2</strong> to listen to old messages.</li>
+            <li>Press <strong>0</strong> for mailbox options (greeting, PIN, name recording).</li>
+            <li>Press <strong>*</strong> to return to the main menu.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <p>
+        During playback: press <strong>1</strong> to replay, <strong>3</strong> to skip,
+        <strong>5</strong> to forward, <strong>7</strong> to delete, <strong>9</strong> to save,
+        <strong>*</strong> for the main menu, <strong>#</strong> to exit.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Tip</div>
+        The message waiting indicator (MWI) light on your desk phone turns on when you have new
+        voicemail. It turns off after you listen to all new messages.
+      </div>
+
+      <!-- See Also -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="your-extension.html">Your Extension</a> &mdash; Manage DND, forwarding, and other extension settings</li>
+          <li><a href="call-history.html">Call History</a> &mdash; See which calls went to voicemail</li>
+          <li><a href="softphone.html">Web Softphone</a> &mdash; Make calls from your browser</li>
+        </ul>
+      </div>
+
+      <!-- Prev / Next -->
+      <div class="page-nav">
+        <a href="your-extension.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Your Extension</span>
+        </a>
+        <a href="call-history.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Call History</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Page TOC -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#checking-voicemail">Checking Voicemail</a></li>
+      <li><a href="#listening">Listening to Messages</a></li>
+      <li><a href="#folders">Message Folders</a></li>
+      <li><a href="#moving-messages">Moving Messages</a></li>
+      <li><a href="#read-unread">Read / Unread</a></li>
+      <li><a href="#forwarding">Forwarding</a></li>
+      <li><a href="#deleting">Deleting Messages</a></li>
+      <li><a href="#email-notifications">Email Notifications</a></li>
+      <li><a href="#greeting">Setting Your Greeting</a></li>
+      <li><a href="#changing-pin">Changing Your PIN</a></li>
+      <li><a href="#desk-phone">From Your Desk Phone</a></li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

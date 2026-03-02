@@ -1,0 +1,50 @@
+[project]
+name = "new-phone-api"
+version = "0.1.0"
+description = "New Phone platform API"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+    "pydantic-settings>=2.7.0",
+    "redis[hiredis]>=5.2.0",
+    "python-jose[cryptography]>=3.3.0",
+    "bcrypt>=4.2.0",
+    "pydantic[email]>=2.0.0",
+    "pyotp>=2.9.0",
+    "qrcode[pil]>=8.0",
+    "structlog>=24.4.0",
+    "httpx>=0.28.0",
+    "python-multipart>=0.0.9",
+    "minio>=7.2.0",
+    "jinja2>=3.1.0",
+    "authlib>=1.4.0",
+    "pytz>=2025.2",
+    "prometheus-client>=0.21.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+    "ruff>=0.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/new_phone"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "unit: fast isolated tests (no external services)",
+    "integration: tests requiring running Docker stack",
+]

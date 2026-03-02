@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management - New Phone Platform Admin Manual</title>
+  <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search manual..." aria-label="Search manual">
+      <div id="search-results"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html" class="active">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Coming Soon</div>
+        <div class="sidebar-group-items">
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9788;</button>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <button class="hamburger" id="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+
+  <!-- Page TOC -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#permissions">Who Can Manage Users</a></li>
+      <li><a href="#creating">Creating a User</a></li>
+      <li><a href="#create-fields">Create Field Reference</a></li>
+      <li><a href="#editing">Editing a User</a></li>
+      <li><a href="#response-fields">Response Fields</a></li>
+      <li><a href="#roles">Assigning Roles</a></li>
+      <li><a href="#account-status">Enabling &amp; Disabling Accounts</a></li>
+      <li><a href="#mfa">MFA Status</a></li>
+      <li><a href="#passwords">Password Management</a></li>
+      <li><a href="#bulk">Bulk Operations</a></li>
+      <li><a href="#listing">Listing &amp; Filtering</a></li>
+      <li><a href="#examples">Examples</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="users.html">System</a>
+        <span class="sep">/</span>
+        <span>Users</span>
+      </div>
+
+      <h1>User Management</h1>
+      <p class="page-subtitle">Create, edit, and manage user accounts, roles, and access within the platform.</p>
+
+      <!-- Overview -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Users are the people who log in to the New Phone Platform. Every user belongs to
+        exactly one tenant and is assigned a role that controls what they can see and do.
+        User accounts are separate from extensions; a user may or may not have an associated
+        phone extension depending on their role and responsibilities.
+      </p>
+      <p>
+        The platform supports five roles across two tiers: <strong>MSP roles</strong>
+        (for service provider staff) and <strong>tenant roles</strong> (for customer
+        organization staff). The role assigned to a user determines their permissions
+        throughout the entire system.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">MSP vs Tenant Roles</div>
+        <p>
+          <strong>MSP roles</strong> (<code>msp_super_admin</code>, <code>msp_tech</code>)
+          can manage all tenants and have cross-tenant visibility. They are intended for
+          service provider staff only.
+        </p>
+        <p>
+          <strong>Tenant roles</strong> (<code>tenant_admin</code>, <code>tenant_manager</code>,
+          <code>tenant_user</code>) are scoped to a single tenant. They cannot see or
+          affect other tenants. Tenant admins manage their own organization; tenant users
+          access only their own resources.
+        </p>
+      </div>
+
+      <!-- Permissions -->
+      <h2 id="permissions">Who Can Manage Users</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Role</th><th>Create Users</th><th>Edit Users</th><th>Assign Roles</th><th>Deactivate</th><th>Scope</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>msp_super_admin</code></td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">All roles</td>
+              <td class="rbac-check">Yes</td>
+              <td>All tenants</td>
+            </tr>
+            <tr>
+              <td><code>msp_tech</code></td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">All roles</td>
+              <td class="rbac-check">Yes</td>
+              <td>All tenants</td>
+            </tr>
+            <tr>
+              <td><code>tenant_admin</code></td>
+              <td class="rbac-check">Yes</td>
+              <td class="rbac-check">Yes</td>
+              <td>Tenant roles only</td>
+              <td class="rbac-check">Yes</td>
+              <td>Own tenant</td>
+            </tr>
+            <tr>
+              <td><code>tenant_manager</code></td>
+              <td>With <code>manage_users</code></td>
+              <td>With <code>manage_users</code></td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+              <td>Own tenant</td>
+            </tr>
+            <tr>
+              <td><code>tenant_user</code></td>
+              <td class="rbac-no">&mdash;</td>
+              <td>Own profile only</td>
+              <td class="rbac-no">&mdash;</td>
+              <td class="rbac-no">&mdash;</td>
+              <td>Self</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Role Escalation Prevention</div>
+        Tenant administrators cannot assign MSP-level roles. A <code>tenant_admin</code> can
+        only assign <code>tenant_admin</code>, <code>tenant_manager</code>, or <code>tenant_user</code>
+        roles within their own tenant. Only MSP roles can create or promote users to MSP roles.
+      </div>
+
+      <!-- Creating a User -->
+      <h2 id="creating">Creating a User</h2>
+      <p>
+        To create a new user, submit a <code>POST</code> request to <code>/api/v1/users</code>
+        with a JSON body matching the <code>UserCreate</code> schema.
+      </p>
+
+      <ol class="steps">
+        <li>Navigate to <strong>System &gt; Users</strong> in the admin interface.</li>
+        <li>Click <strong>Add User</strong>.</li>
+        <li>Fill in the required fields: email, password, first name, and last name.</li>
+        <li>Select a role from the dropdown. The default is <code>tenant_user</code>.</li>
+        <li>Click <strong>Save</strong>. The user account is created and active immediately.</li>
+      </ol>
+
+      <h3 id="create-fields">UserCreate Field Reference</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Required</th><th>Constraints</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>email</code></td>
+              <td>string</td>
+              <td>Yes</td>
+              <td>Max 320 characters, valid email format</td>
+              <td>Login email address. Must be unique within the tenant.</td>
+            </tr>
+            <tr>
+              <td><code>password</code></td>
+              <td>string</td>
+              <td>Yes</td>
+              <td>8&ndash;128 characters</td>
+              <td>Initial password. Hashed with bcrypt before storage. The user should change this on first login.</td>
+            </tr>
+            <tr>
+              <td><code>first_name</code></td>
+              <td>string</td>
+              <td>Yes</td>
+              <td>1&ndash;100 characters</td>
+              <td>User's first name, displayed in the UI and directory.</td>
+            </tr>
+            <tr>
+              <td><code>last_name</code></td>
+              <td>string</td>
+              <td>Yes</td>
+              <td>1&ndash;100 characters</td>
+              <td>User's last name, displayed in the UI and directory.</td>
+            </tr>
+            <tr>
+              <td><code>role</code></td>
+              <td>UserRole enum</td>
+              <td>No</td>
+              <td>Default: <code>tenant_user</code></td>
+              <td>One of: <code>msp_super_admin</code>, <code>msp_tech</code>, <code>tenant_admin</code>, <code>tenant_manager</code>, <code>tenant_user</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Editing a User -->
+      <h2 id="editing">Editing a User</h2>
+      <p>
+        To update an existing user, send a <code>PATCH</code> request to
+        <code>/api/v1/users/{user_id}</code> with a JSON body matching the
+        <code>UserUpdate</code> schema. All fields are optional; only included
+        fields will be modified.
+      </p>
+      <p>The <code>UserUpdate</code> schema accepts:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>email</code></td><td>string</td><td>Update the user's email address.</td></tr>
+            <tr><td><code>first_name</code></td><td>string</td><td>Update first name.</td></tr>
+            <tr><td><code>last_name</code></td><td>string</td><td>Update last name.</td></tr>
+            <tr><td><code>role</code></td><td>UserRole enum</td><td>Change the user's role (subject to escalation rules).</td></tr>
+            <tr><td><code>is_active</code></td><td>boolean</td><td>Enable or disable the account.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Response Fields -->
+      <h2 id="response-fields">User Response Fields</h2>
+      <p>All user API responses return the following fields:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>UUID</td><td>Primary key for the user record.</td></tr>
+            <tr><td><code>tenant_id</code></td><td>UUID</td><td>The tenant this user belongs to.</td></tr>
+            <tr><td><code>email</code></td><td>string</td><td>Login email address.</td></tr>
+            <tr><td><code>first_name</code></td><td>string</td><td>First name.</td></tr>
+            <tr><td><code>last_name</code></td><td>string</td><td>Last name.</td></tr>
+            <tr><td><code>role</code></td><td>string</td><td>Current role assignment.</td></tr>
+            <tr><td><code>is_active</code></td><td>boolean</td><td><code>true</code> if the account is enabled.</td></tr>
+            <tr><td><code>mfa_enabled</code></td><td>boolean</td><td><code>true</code> if the user has enrolled in multi-factor authentication.</td></tr>
+            <tr><td><code>last_login_at</code></td><td>datetime | null</td><td>Timestamp of the user's most recent login (UTC). Null if they have never logged in.</td></tr>
+            <tr><td><code>created_at</code></td><td>datetime</td><td>Timestamp when the account was created (UTC).</td></tr>
+            <tr><td><code>updated_at</code></td><td>datetime</td><td>Timestamp of the last account modification (UTC).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Assigning Roles -->
+      <h2 id="roles">Assigning Roles</h2>
+      <p>
+        The platform uses a five-role RBAC model. Roles are assigned at user creation and can
+        be changed later via the <code>UserUpdate</code> endpoint or the admin UI.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Role</th><th>Tier</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>msp_super_admin</code></td>
+              <td><span class="badge badge-role">MSP</span></td>
+              <td>Full platform access. Can manage all tenants, users, and system configuration.</td>
+            </tr>
+            <tr>
+              <td><code>msp_tech</code></td>
+              <td><span class="badge badge-role">MSP</span></td>
+              <td>Technical operations across all tenants. Can configure telephony, trunks, and troubleshoot.</td>
+            </tr>
+            <tr>
+              <td><code>tenant_admin</code></td>
+              <td>Tenant</td>
+              <td>Full administration within their tenant. Manages users, extensions, routing, and settings.</td>
+            </tr>
+            <tr>
+              <td><code>tenant_manager</code></td>
+              <td>Tenant</td>
+              <td>Operational management with configurable permissions. Can manage queues, reports, and optionally users.</td>
+            </tr>
+            <tr>
+              <td><code>tenant_user</code></td>
+              <td>Tenant</td>
+              <td>Standard user. Can access their own extension, voicemail, call history, and softphone.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        For a full breakdown of permissions per role, see <a href="rbac.html">Roles &amp; Permissions</a>.
+      </p>
+
+      <!-- Account Status -->
+      <h2 id="account-status">Enabling &amp; Disabling Accounts</h2>
+      <p>
+        User accounts have an <code>is_active</code> flag that controls login access.
+        Disabling an account is a soft action that preserves all user data and associations.
+      </p>
+      <ul>
+        <li><strong>Active</strong> (<code>is_active: true</code>) &mdash; the user can log in and use the platform normally.</li>
+        <li><strong>Disabled</strong> (<code>is_active: false</code>) &mdash; the user cannot log in. Active sessions are invalidated. Their extension (if any) remains configured but the user cannot access the softphone or web UI.</li>
+      </ul>
+      <p>
+        To re-enable a disabled account, set <code>is_active: true</code> via the update endpoint
+        or toggle the status in the admin UI.
+      </p>
+
+      <!-- MFA -->
+      <h2 id="mfa">MFA Status</h2>
+      <p>
+        The <code>mfa_enabled</code> field on user records indicates whether the user has
+        completed MFA enrollment. MFA is configured per-user; administrators can view MFA
+        status but cannot enroll on behalf of a user.
+      </p>
+      <ul>
+        <li><code>mfa_enabled: true</code> &mdash; the user has enrolled a TOTP authenticator, WebAuthn device, or SMS fallback.</li>
+        <li><code>mfa_enabled: false</code> &mdash; the user has not yet set up MFA. If your tenant policy requires MFA, the user will be prompted on their next login.</li>
+      </ul>
+      <p>
+        For details on MFA methods, enrollment flows, and tenant-level enforcement policies,
+        see <a href="mfa.html">Multi-Factor Authentication</a>.
+      </p>
+
+      <!-- Passwords -->
+      <h2 id="passwords">Password Management</h2>
+      <p>
+        Administrators set the initial password when creating a user. Passwords are hashed
+        with bcrypt before storage; the platform never stores or displays plaintext passwords.
+      </p>
+      <h4>Password Rules</h4>
+      <ul>
+        <li>Minimum 8 characters, maximum 128 characters.</li>
+        <li>The platform does not currently enforce complexity rules (uppercase, symbols, etc.), but this may be configurable in a future release.</li>
+        <li>Users change their own password through the profile settings page or the <code>POST /api/v1/auth/change-password</code> endpoint.</li>
+        <li>Administrators cannot view existing passwords. To reset a forgotten password, an admin can issue a password reset or create a new temporary password.</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">SSO Users</div>
+        Users who authenticate via Microsoft Entra ID or Google Workspace SSO do not use
+        platform-managed passwords. Their password field is not applicable, and authentication
+        is delegated to the identity provider. See <a href="auth.html">Authentication</a> for SSO setup.
+      </div>
+
+      <!-- Bulk Operations -->
+      <h2 id="bulk">Bulk User Operations</h2>
+      <p>
+        For onboarding larger organizations, the platform supports bulk operations through
+        the API. Common bulk workflows include:
+      </p>
+      <ul>
+        <li><strong>Bulk create</strong> &mdash; submit an array of <code>UserCreate</code> objects to <code>POST /api/v1/users/bulk</code>. Each user is validated independently; failures for individual records do not roll back the entire batch.</li>
+        <li><strong>Bulk deactivate</strong> &mdash; submit an array of user IDs to <code>POST /api/v1/users/bulk-deactivate</code>. Useful when offboarding a department or group.</li>
+        <li><strong>CSV import</strong> &mdash; the admin UI provides a CSV import tool under <strong>System &gt; Users &gt; Import</strong>. Upload a CSV with columns: <code>email</code>, <code>first_name</code>, <code>last_name</code>, <code>role</code>, <code>password</code>.</li>
+      </ul>
+
+      <!-- Listing & Filtering -->
+      <h2 id="listing">Listing &amp; Filtering Users</h2>
+      <p>
+        Retrieve users with <code>GET /api/v1/users</code>. The endpoint supports
+        pagination and filtering via query parameters:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>page</code></td><td>integer</td><td>Page number (default: 1).</td></tr>
+            <tr><td><code>per_page</code></td><td>integer</td><td>Results per page (default: 25, max: 100).</td></tr>
+            <tr><td><code>role</code></td><td>string</td><td>Filter by role (e.g., <code>?role=tenant_admin</code>).</td></tr>
+            <tr><td><code>is_active</code></td><td>boolean</td><td>Filter by account status (<code>true</code> or <code>false</code>).</td></tr>
+            <tr><td><code>search</code></td><td>string</td><td>Search across email, first name, and last name.</td></tr>
+            <tr><td><code>sort</code></td><td>string</td><td>Sort field: <code>email</code>, <code>last_name</code>, <code>created_at</code>, <code>last_login_at</code>.</td></tr>
+            <tr><td><code>order</code></td><td>string</td><td>Sort direction: <code>asc</code> or <code>desc</code> (default: <code>asc</code>).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Examples -->
+      <h2 id="examples">Examples</h2>
+
+      <h3>Create a User</h3>
+<pre><code>POST /api/v1/users
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+
+{
+  "email": "jane.doe@acmecorp.com",
+  "password": "SecurePass123!",
+  "first_name": "Jane",
+  "last_name": "Doe",
+  "role": "tenant_admin"
+}</code></pre>
+
+      <h3>Update a User</h3>
+<pre><code>PATCH /api/v1/users/&lt;user_id&gt;
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+
+{
+  "role": "tenant_manager",
+  "last_name": "Smith"
+}</code></pre>
+
+      <h3>Disable an Account</h3>
+<pre><code>PATCH /api/v1/users/&lt;user_id&gt;
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+
+{
+  "is_active": false
+}</code></pre>
+
+      <h3>List Active Tenant Admins</h3>
+<pre><code>GET /api/v1/users?role=tenant_admin&amp;is_active=true&amp;sort=last_name&amp;order=asc
+Authorization: Bearer &lt;token&gt;</code></pre>
+
+      <!-- See Also -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="rbac.html">Roles &amp; Permissions</a> &mdash; detailed RBAC matrix and permission definitions</li>
+          <li><a href="auth.html">Authentication</a> &mdash; SSO configuration, login flows, and session management</li>
+          <li><a href="mfa.html">Multi-Factor Authentication</a> &mdash; MFA methods, enrollment, and enforcement</li>
+          <li><a href="tenants.html">Tenant Management</a> &mdash; create and manage tenants (MSP only)</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; associate phone extensions with user accounts</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; track user account changes and login events</li>
+        </ul>
+      </div>
+
+      <!-- Prev / Next -->
+      <div class="page-nav">
+        <a href="voicemail.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Voicemail</span>
+        </a>
+        <a href="audio-prompts.html" style="text-align:right;">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Audio Prompts</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+<script src="../js/nav.js"></script>
+</body>
+</html>

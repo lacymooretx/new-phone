@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started &mdash; Admin &mdash; New Phone Platform</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <button id="hamburger" class="hamburger" aria-label="Toggle menu">&#9776;</button>
+
+  <div class="layout">
+
+    <!-- ── Sidebar ─────────────────────────────────────────────────── -->
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <img src="../images/favicon.svg" alt="">
+        <div>
+          <span class="logo-text">New Phone Platform</span>
+          <span class="logo-sub">Administrator Manual</span>
+        </div>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+        <div id="search-results"></div>
+      </div>
+      <div class="sidebar-nav">
+
+        <!-- Dashboard (unlabeled group) -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-items">
+            <a href="index.html" class="active">Getting Started</a>
+            <a href="dashboard.html">Dashboard</a>
+          </div>
+        </div>
+
+        <!-- Telephony -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-label">Telephony</div>
+          <div class="sidebar-group-items">
+            <a href="extensions.html">Extensions</a>
+            <a href="ring-groups.html">Ring Groups</a>
+            <a href="queues.html">Queues</a>
+            <a href="ivr-menus.html">IVR Menus</a>
+            <a href="conferences.html">Conferences</a>
+            <a href="page-groups.html">Paging</a>
+            <a href="follow-me.html">Follow Me</a>
+          </div>
+        </div>
+
+        <!-- Connectivity -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-label">Connectivity</div>
+          <div class="sidebar-group-items">
+            <a href="sip-trunks.html">SIP Trunks</a>
+            <a href="dids.html">DIDs</a>
+            <a href="inbound-routes.html">Inbound Routes</a>
+            <a href="outbound-routes.html">Outbound Routes</a>
+          </div>
+        </div>
+
+        <!-- Reports -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-label">Reports</div>
+          <div class="sidebar-group-items">
+            <a href="cdrs.html">Call History</a>
+            <a href="recordings.html">Recordings</a>
+            <a href="voicemail.html">Voicemail</a>
+          </div>
+        </div>
+
+        <!-- System -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-label">System</div>
+          <div class="sidebar-group-items">
+            <a href="users.html">Users</a>
+            <a href="audio-prompts.html">Audio Prompts</a>
+            <a href="time-conditions.html">Time Conditions</a>
+            <a href="holiday-calendars.html">Holiday Calendars</a>
+            <a href="caller-id-rules.html">Caller ID Rules</a>
+            <a href="audit-logs.html">Audit Logs</a>
+            <a href="admin-ops.html">Settings</a>
+          </div>
+        </div>
+
+        <!-- MSP -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-label">MSP</div>
+          <div class="sidebar-group-items">
+            <a href="tenants.html">Tenants</a>
+          </div>
+        </div>
+
+        <!-- Extras -->
+        <div class="sidebar-group">
+          <div class="sidebar-group-label">More</div>
+          <div class="sidebar-group-items">
+            <a href="admin-ops.html">Admin Ops</a>
+            <a href="webrtc-softphone.html">WebRTC Softphone</a>
+            <a href="ui-guide.html">UI Guide</a>
+            <a href="coming-soon.html">Coming Soon</a>
+          </div>
+        </div>
+
+      </div>
+      <div class="sidebar-footer">
+        <a href="../index.html" style="font-size:13px;">&#8592; Manual Home</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+      </div>
+    </nav>
+
+    <!-- ── Main Content ────────────────────────────────────────────── -->
+    <main class="content">
+      <div class="content-inner">
+
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+          <a href="../index.html">Manual</a>
+          <span class="sep">/</span>
+          <a href="index.html">Admin</a>
+          <span class="sep">/</span>
+          <span>Getting Started</span>
+        </div>
+
+        <h1>Getting Started</h1>
+        <p class="page-subtitle">Set up your New Phone Platform instance from first login to first call.</p>
+
+        <!-- Overview -->
+        <h2 id="overview">Platform Overview</h2>
+        <p>
+          The New Phone Platform is a multi-tenant, API-first PBX built for managed service providers. It replaces legacy systems like FreePBX and Asterisk with a modern, containerized architecture that separates the control plane from the media plane.
+        </p>
+        <p>
+          The control plane runs on FastAPI (Python) and handles all configuration, authentication, and business logic. The media plane runs on FreeSWITCH and handles call processing, conferencing, and audio. A Rust-based SIP proxy sits in front, enforcing TLS on all signaling and SRTP on all media.
+        </p>
+        <p>
+          Every tenant is isolated at the database level using PostgreSQL Row-Level Security. A single deployment can serve approximately 50 tenants, each with their own extensions, trunks, routing rules, and users.
+        </p>
+
+        <div class="callout">
+          <div class="callout-title">Security by Default</div>
+          All SIP signaling uses TLS and all media uses SRTP. Unencrypted SIP (UDP/TCP) and unencrypted RTP are not supported and cannot be enabled. This is a deliberate design choice.
+        </div>
+
+        <!-- Quick Start -->
+        <h2 id="quickstart">Quick Start Checklist</h2>
+        <p>Follow these steps in order to go from a fresh deployment to a working phone system. Each step links to the detailed documentation page.</p>
+
+        <ol class="steps">
+          <li>
+            <strong>Log in to the web interface</strong><br>
+            Navigate to your instance URL and sign in with the MSP super admin credentials created during deployment. If SSO is configured, use your Microsoft Entra ID or Google Workspace account.
+            <br><a href="dashboard.html">Dashboard overview &rarr;</a>
+          </li>
+          <li>
+            <strong>Create a tenant</strong><br>
+            Go to <strong>MSP &gt; Tenants</strong> and create your first tenant. Provide a name, domain, and timezone. The tenant is the isolation boundary for all configuration.
+            <br><a href="tenants.html">Tenant management &rarr;</a>
+          </li>
+          <li>
+            <strong>Add users</strong><br>
+            Switch into the tenant context and navigate to <strong>System &gt; Users</strong>. Create user accounts for the tenant admin and staff. Assign appropriate roles.
+            <br><a href="users.html">User management &rarr;</a>
+          </li>
+          <li>
+            <strong>Create extensions</strong><br>
+            Go to <strong>Telephony &gt; Extensions</strong> and create SIP extensions. Each extension needs a number (e.g. 1001), a display name, and is assigned to a user. Extension credentials are auto-generated.
+            <br><a href="extensions.html">Extension configuration &rarr;</a>
+          </li>
+          <li>
+            <strong>Configure a SIP trunk</strong><br>
+            Navigate to <strong>Connectivity &gt; SIP Trunks</strong> and add a trunk to your SIP provider (ClearlyIP, Twilio, or another carrier). Enter the provider's SIP host, authentication credentials, and codec preferences.
+            <br><a href="sip-trunks.html">SIP trunk setup &rarr;</a>
+          </li>
+          <li>
+            <strong>Add DID numbers</strong><br>
+            Under <strong>Connectivity &gt; DIDs</strong>, add your phone numbers. Associate each DID with the SIP trunk it arrives on. DIDs are assigned to inbound routes in the next step.
+            <br><a href="dids.html">DID management &rarr;</a>
+          </li>
+          <li>
+            <strong>Create inbound and outbound routes</strong><br>
+            Set up <strong>Inbound Routes</strong> to direct incoming calls from each DID to an extension, ring group, queue, or IVR. Create <strong>Outbound Routes</strong> to define how dialed numbers are matched and sent out through trunks.
+            <br><a href="inbound-routes.html">Inbound routes &rarr;</a> &middot; <a href="outbound-routes.html">Outbound routes &rarr;</a>
+          </li>
+          <li>
+            <strong>Test calls</strong><br>
+            Register a SIP phone or use the <a href="webrtc-softphone.html">WebRTC softphone</a> to make internal calls between extensions. Then make an outbound call through the trunk to verify external connectivity. Check <a href="cdrs.html">Call History</a> to confirm CDRs are being generated.
+          </li>
+        </ol>
+
+        <div class="callout success">
+          <div class="callout-title">You are up and running</div>
+          Once you complete these steps, your tenant has working inbound and outbound calling. Continue configuring ring groups, queues, IVR menus, voicemail, and other features as needed.
+        </div>
+
+        <!-- Key Sections -->
+        <h2 id="key-sections">Key Sections</h2>
+        <div class="card-grid">
+          <div class="card">
+            <a href="extensions.html">
+              <h3>Extensions</h3>
+              <p>Create and manage SIP extensions, set caller ID, voicemail, and call forwarding.</p>
+            </a>
+          </div>
+          <div class="card">
+            <a href="ring-groups.html">
+              <h3>Ring Groups</h3>
+              <p>Group extensions to ring simultaneously or in sequence for team-based call handling.</p>
+            </a>
+          </div>
+          <div class="card">
+            <a href="queues.html">
+              <h3>Queues</h3>
+              <p>ACD queues with ring strategies, agent login/logout, wrap-up time, and real-time stats.</p>
+            </a>
+          </div>
+          <div class="card">
+            <a href="ivr-menus.html">
+              <h3>IVR Menus</h3>
+              <p>Build auto-attendant menus with DTMF routing, time-based branching, and custom prompts.</p>
+            </a>
+          </div>
+          <div class="card">
+            <a href="sip-trunks.html">
+              <h3>SIP Trunks</h3>
+              <p>Connect to ClearlyIP, Twilio, or any standards-based SIP provider.</p>
+            </a>
+          </div>
+          <div class="card">
+            <a href="users.html">
+              <h3>Users &amp; Roles</h3>
+              <p>User accounts, role-based access control, MFA, and SSO configuration.</p>
+            </a>
+          </div>
+          <div class="card">
+            <a href="tenants.html">
+              <h3>Tenants</h3>
+              <p>Create and manage isolated tenant environments with their own configuration.</p>
+            </a>
+          </div>
+          <div class="card">
+            <a href="admin-ops.html">
+              <h3>Admin Ops</h3>
+              <p>System maintenance, health checks, backup procedures, and troubleshooting.</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- System Requirements -->
+        <h2 id="requirements">System Requirements</h2>
+        <p>The platform runs entirely in Docker containers. The following are minimum requirements for a production deployment serving up to 50 tenants.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Minimum</th>
+                <th>Recommended</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CPU</td>
+                <td>4 cores</td>
+                <td>8+ cores</td>
+              </tr>
+              <tr>
+                <td>RAM</td>
+                <td>8 GB</td>
+                <td>16+ GB</td>
+              </tr>
+              <tr>
+                <td>Storage</td>
+                <td>100 GB SSD</td>
+                <td>500 GB+ NVMe (recordings)</td>
+              </tr>
+              <tr>
+                <td>OS</td>
+                <td>Linux (any distro with Docker)</td>
+                <td>Ubuntu 22.04+ / Debian 12+</td>
+              </tr>
+              <tr>
+                <td>Docker</td>
+                <td>Docker Engine 24+</td>
+                <td>Docker Engine 25+</td>
+              </tr>
+              <tr>
+                <td>Docker Compose</td>
+                <td>v2.20+</td>
+                <td>v2.24+</td>
+              </tr>
+              <tr>
+                <td>Network</td>
+                <td>Public IP, ports 443, 5061, 10000-20000/UDP</td>
+                <td>Dedicated host, low-latency link</td>
+              </tr>
+              <tr>
+                <td>TLS Certificate</td>
+                <td>Valid certificate for SIP domain</td>
+                <td>Wildcard or SAN cert</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warning">
+          <div class="callout-title">Port Requirements</div>
+          SIP TLS uses port 5061. The RTP media range (10000-20000 UDP) must be open and directly reachable. NAT traversal is handled by the Rust SIP proxy, but the RTP ports must not be blocked by a firewall.
+        </div>
+
+        <!-- Roles -->
+        <h2 id="roles">Role Overview</h2>
+        <p>
+          The platform uses a five-role RBAC model. Roles are hierarchical: higher roles inherit all permissions of lower roles. Each user is assigned exactly one role.
+        </p>
+
+        <div class="table-wrap">
+          <table class="rbac-matrix">
+            <thead>
+              <tr>
+                <th style="text-align:left;">Role</th>
+                <th>Scope</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:left;"><code>msp_super_admin</code></td>
+                <td>Global</td>
+                <td>Full access to all tenants and all system settings. Can create and delete tenants, manage MSP-level users, and access all administrative functions across the entire platform.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left;"><code>msp_tech</code></td>
+                <td>Global</td>
+                <td>Technical access across all tenants. Can configure trunks, extensions, routing, and telephony features for any tenant. Cannot create or delete tenants or manage MSP-level users.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left;"><code>tenant_admin</code></td>
+                <td>Single Tenant</td>
+                <td>Full administrative access within one tenant. Can manage users, extensions, trunks, routing, queues, IVR, and all tenant-level settings. Cannot access other tenants or MSP functions.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left;"><code>tenant_manager</code></td>
+                <td>Single Tenant</td>
+                <td>Manages day-to-day telephony within one tenant. Can view and edit extensions, ring groups, queues, and call reports. Cannot manage users, trunks, or tenant settings.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left;"><code>tenant_user</code></td>
+                <td>Single Tenant</td>
+                <td>End-user access only. Can view their own extension settings, voicemail, call history, and use the WebRTC softphone. Cannot modify system configuration.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          For details on per-feature permission mappings and how to assign roles, see <a href="users.html">Users &amp; Roles</a>.
+        </p>
+
+        <!-- Authentication -->
+        <h2 id="authentication">Authentication</h2>
+        <p>The platform supports three authentication methods. All methods enforce multi-factor authentication.</p>
+
+        <h3>Email + Password with MFA</h3>
+        <p>
+          Traditional login with email and password. After password verification, users must complete a second factor: TOTP (authenticator app), WebAuthn (hardware key or biometrics), or SMS fallback. MFA enrollment is mandatory on first login.
+        </p>
+
+        <h3>Microsoft Entra ID SSO</h3>
+        <p>
+          OpenID Connect integration with Microsoft Entra ID (formerly Azure AD). Users authenticate through Microsoft's login flow and are automatically provisioned in the platform on first sign-in. Configure the Entra ID application in <a href="auth.html">Authentication</a>.
+        </p>
+
+        <h3>Google Workspace SSO</h3>
+        <p>
+          OpenID Connect integration with Google Workspace. Users authenticate through Google's login flow. Requires configuring an OAuth 2.0 client in Google Cloud Console. Configure in <a href="auth.html">Authentication</a>.
+        </p>
+
+        <!-- What's Next -->
+        <h2 id="next-steps">What's Next</h2>
+        <p>After completing the quick start checklist, explore these areas to build out your phone system:</p>
+        <ul>
+          <li><a href="ring-groups.html">Ring Groups</a> &mdash; group extensions for team-based ringing</li>
+          <li><a href="queues.html">Queues</a> &mdash; set up call center queues with ACD</li>
+          <li><a href="ivr-menus.html">IVR Menus</a> &mdash; build auto-attendant menus</li>
+          <li><a href="follow-me.html">Follow Me</a> &mdash; configure find-me / follow-me forwarding</li>
+          <li><a href="time-conditions.html">Time Conditions</a> &mdash; route calls based on business hours</li>
+          <li><a href="holiday-calendars.html">Holiday Calendars</a> &mdash; define holidays for after-hours routing</li>
+          <li><a href="recordings.html">Recordings</a> &mdash; configure call recording policies</li>
+          <li><a href="voicemail.html">Voicemail</a> &mdash; set up voicemail boxes and email notifications</li>
+          <li><a href="webrtc-softphone.html">WebRTC Softphone</a> &mdash; make calls directly from the browser</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; review all administrative actions</li>
+        </ul>
+
+        <!-- See Also -->
+        <div class="see-also">
+          <h3>See Also</h3>
+          <ul>
+            <li><a href="../user/index.html">User Guide &mdash; Getting Started</a></li>
+            <li><a href="admin-ops.html">Admin Ops &mdash; Backup, Restore, and Maintenance</a></li>
+            <li><a href="ui-guide.html">UI Guide &mdash; Navigating the Web Interface</a></li>
+          </ul>
+        </div>
+
+        <!-- Prev/Next -->
+        <div class="page-nav">
+          <a href="../index.html">
+            <span class="nav-label">&larr; Previous</span>
+            <span class="nav-title">Manual Home</span>
+          </a>
+          <a href="dashboard.html" style="text-align:right;">
+            <span class="nav-label">Next &rarr;</span>
+            <span class="nav-title">Dashboard</span>
+          </a>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ── Page TOC (right rail) ───────────────────────────────────── -->
+    <aside class="page-toc">
+      <div class="toc-title">On This Page</div>
+      <ul>
+        <li><a href="#overview">Platform Overview</a></li>
+        <li><a href="#quickstart">Quick Start Checklist</a></li>
+        <li><a href="#key-sections">Key Sections</a></li>
+        <li><a href="#requirements">System Requirements</a></li>
+        <li><a href="#roles">Role Overview</a></li>
+        <li><a href="#authentication">Authentication</a></li>
+        <li><a href="#next-steps">What's Next</a></li>
+      </ul>
+    </aside>
+
+  </div>
+
+  <script src="../js/nav.js"></script>
+</body>
+</html>

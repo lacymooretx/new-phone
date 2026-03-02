@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Guide — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html" class="active">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="dashboard.html">Interface</a>
+        <span class="sep">/</span>
+        <span>Dashboard</span>
+      </div>
+
+      <h1>Dashboard Guide</h1>
+      <p class="page-subtitle">Real-time system overview showing call activity, extension status, queue health, and system metrics at a glance.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        The Dashboard is the first page administrators see after logging in. It provides a
+        real-time snapshot of the entire phone system, consolidating key metrics into a single
+        view. From active call counts to system health indicators, the dashboard gives you
+        immediate situational awareness of your telephony environment.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Tenant-Scoped View</div>
+        The dashboard displays data scoped to the current tenant. MSP administrators can switch
+        between tenants using the tenant selector in the top navigation bar to view metrics
+        for each customer individually. A global MSP overview dashboard is planned for a
+        future release.
+      </div>
+
+      <!-- ── Dashboard Layout ─────────────────────────────────────────── -->
+      <h2 id="layout">Dashboard Layout</h2>
+      <p>
+        The dashboard is organized into widget cards arranged in a responsive grid. Each card
+        focuses on a specific aspect of the system and updates in real time via WebSocket
+        connections.
+      </p>
+
+      <h3 id="layout-sections">Widget Sections</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Section</th>
+              <th>Position</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Call Activity</td>
+              <td>Top row, left</td>
+              <td>Active calls, total calls today, average duration</td>
+            </tr>
+            <tr>
+              <td>Extension Status</td>
+              <td>Top row, right</td>
+              <td>Registration counts by state</td>
+            </tr>
+            <tr>
+              <td>Queue Statistics</td>
+              <td>Middle row, left</td>
+              <td>Queue health and agent availability</td>
+            </tr>
+            <tr>
+              <td>System Health</td>
+              <td>Middle row, right</td>
+              <td>Subsystem status indicators</td>
+            </tr>
+            <tr>
+              <td>Recent Calls</td>
+              <td>Bottom row, left</td>
+              <td>Latest call activity feed</td>
+            </tr>
+            <tr>
+              <td>Voicemail Summary</td>
+              <td>Bottom row, right</td>
+              <td>Unread and total voicemail counts</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Call Activity ────────────────────────────────────────────── -->
+      <h2 id="call-activity">Call Activity Metrics</h2>
+      <p>
+        The Call Activity widget shows real-time and daily call statistics. These metrics
+        are derived from FreeSWITCH channel data and CDR records.
+      </p>
+
+      <h3 id="call-metrics">Metrics Displayed</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Source</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Active Calls</strong></td>
+              <td>FreeSWITCH (real-time)</td>
+              <td>Number of calls currently in progress across all extensions, queues, and trunks</td>
+            </tr>
+            <tr>
+              <td><strong>Calls Today</strong></td>
+              <td>CDR database</td>
+              <td>Total inbound and outbound calls since midnight (tenant local time)</td>
+            </tr>
+            <tr>
+              <td><strong>Avg Duration</strong></td>
+              <td>CDR database</td>
+              <td>Average call duration for today's completed calls, displayed in minutes and seconds</td>
+            </tr>
+            <tr>
+              <td><strong>Missed Calls</strong></td>
+              <td>CDR database</td>
+              <td>Calls that rang but were not answered, went to voicemail, or were abandoned in queue</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The active calls count updates every 2 seconds via WebSocket push. Daily aggregates
+        (calls today, average duration, missed calls) refresh every 30 seconds.
+      </p>
+
+      <!-- ── Extension Status ─────────────────────────────────────────── -->
+      <h2 id="extension-status">Extension Status Overview</h2>
+      <p>
+        The Extension Status widget provides a breakdown of all extensions in the tenant,
+        grouped by their current registration and availability state.
+      </p>
+
+      <h3 id="extension-states">Extension States</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>Indicator</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Registered</td>
+              <td><span style="color:#22c55e">Green</span></td>
+              <td>Phone is online and available to receive calls</td>
+            </tr>
+            <tr>
+              <td>On a Call</td>
+              <td><span style="color:#3b82f6">Blue</span></td>
+              <td>Phone is registered and currently on an active call</td>
+            </tr>
+            <tr>
+              <td>Ringing</td>
+              <td><span style="color:#f59e0b">Amber</span></td>
+              <td>Phone is currently ringing with an incoming call</td>
+            </tr>
+            <tr>
+              <td>DND</td>
+              <td><span style="color:#ef4444">Red</span></td>
+              <td>Phone is registered but Do Not Disturb is enabled</td>
+            </tr>
+            <tr>
+              <td>Offline</td>
+              <td><span style="color:#6b7280">Gray</span></td>
+              <td>Phone is not registered (powered off, network issue, or unprovisioned)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The widget shows a count for each state and a visual bar chart representing the
+        proportion. Click any state label to filter the Extensions page to show only
+        extensions in that state.
+      </p>
+
+      <!-- ── Queue Statistics ─────────────────────────────────────────── -->
+      <h2 id="queue-statistics">Queue Statistics</h2>
+      <p>
+        The Queue Statistics widget gives a high-level view of call queue health across
+        all queues in the tenant. Detailed per-queue metrics are available on the
+        <a href="queues.html">Queues</a> page.
+      </p>
+
+      <h3 id="queue-metrics">Metrics Displayed</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Callers Waiting</strong></td>
+              <td>Total number of callers currently waiting in all queues combined</td>
+            </tr>
+            <tr>
+              <td><strong>Available Agents</strong></td>
+              <td>Number of queue agents logged in and available to take calls</td>
+            </tr>
+            <tr>
+              <td><strong>Longest Wait</strong></td>
+              <td>Duration of the caller who has been waiting the longest, across all queues</td>
+            </tr>
+            <tr>
+              <td><strong>Avg Wait Time</strong></td>
+              <td>Average time callers spent in queue before being answered (today)</td>
+            </tr>
+            <tr>
+              <td><strong>Abandoned</strong></td>
+              <td>Number of callers who hung up while waiting in queue (today)</td>
+            </tr>
+            <tr>
+              <td><strong>SLA %</strong></td>
+              <td>Percentage of calls answered within the configured SLA threshold (e.g., 80% in 20 seconds)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Queue Alert</div>
+        When the longest wait time exceeds the configured SLA threshold, the Callers Waiting
+        metric changes to a red alert state. This visual cue helps administrators quickly
+        identify when queue service levels are degraded.
+      </div>
+
+      <!-- ── System Health ────────────────────────────────────────────── -->
+      <h2 id="system-health">System Health Indicators</h2>
+      <p>
+        The System Health widget displays the status of each core platform subsystem. It
+        queries the <code>/api/v1/health</code> endpoint and presents the results as colored
+        status indicators.
+      </p>
+
+      <h3 id="health-indicators">Status Indicators</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Subsystem</th>
+              <th>Healthy</th>
+              <th>Degraded</th>
+              <th>Down</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>API</strong></td>
+              <td>Responding normally</td>
+              <td>High latency (&gt; 1s P95)</td>
+              <td>Not responding</td>
+            </tr>
+            <tr>
+              <td><strong>FreeSWITCH</strong></td>
+              <td>ESL connection ok</td>
+              <td>High channel count (&gt; 80% capacity)</td>
+              <td>ESL connection refused</td>
+            </tr>
+            <tr>
+              <td><strong>PostgreSQL</strong></td>
+              <td>Queries responding</td>
+              <td>High connection pool usage</td>
+              <td>Connection refused</td>
+            </tr>
+            <tr>
+              <td><strong>Redis</strong></td>
+              <td>PING succeeds</td>
+              <td>High memory usage</td>
+              <td>Connection refused</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Each subsystem shows a green, amber, or red dot. Hovering over a subsystem reveals
+        additional details such as response time and last check timestamp. The health check
+        runs every 15 seconds.
+      </p>
+
+      <!-- ── Recent Call Activity ─────────────────────────────────────── -->
+      <h2 id="recent-calls">Recent Call Activity</h2>
+      <p>
+        The Recent Calls widget shows a live feed of the last 20 calls. Each entry displays
+        the caller, callee, direction (inbound/outbound/internal), duration, and outcome
+        (answered, missed, voicemail).
+      </p>
+      <ul>
+        <li><strong>Inbound</strong> calls show the external caller number and the destination extension or queue</li>
+        <li><strong>Outbound</strong> calls show the originating extension and the dialed number</li>
+        <li><strong>Internal</strong> calls show both extension numbers</li>
+      </ul>
+      <p>
+        Click any call entry to navigate to the full CDR detail view, which includes call flow
+        steps, recording playback (if available), and disposition codes.
+      </p>
+
+      <!-- ── Voicemail Summary ────────────────────────────────────────── -->
+      <h2 id="voicemail-summary">Voicemail Summary</h2>
+      <p>
+        The Voicemail Summary widget shows aggregate voicemail statistics for the tenant.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>New Messages</strong></td>
+              <td>Total unread voicemails across all mailboxes in the tenant</td>
+            </tr>
+            <tr>
+              <td><strong>Total Messages</strong></td>
+              <td>All voicemails (read + unread) across all mailboxes</td>
+            </tr>
+            <tr>
+              <td><strong>Storage Used</strong></td>
+              <td>Approximate storage consumption for voicemail audio files</td>
+            </tr>
+            <tr>
+              <td><strong>Mailboxes with New</strong></td>
+              <td>Number of individual mailboxes that have at least one unread message</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The widget includes a link to the full <a href="voicemail.html">Voicemail</a>
+        management page for detailed message browsing and playback.
+      </p>
+
+      <!-- ── Customizing ──────────────────────────────────────────────── -->
+      <h2 id="customization">Customizing the Dashboard <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        A future release will allow administrators to customize the dashboard layout,
+        including the ability to rearrange widgets, choose which metrics are displayed,
+        add custom widgets, and save per-user dashboard preferences.
+      </p>
+      <ul>
+        <li>Drag-and-drop widget rearrangement</li>
+        <li>Widget visibility toggles</li>
+        <li>Custom date range selectors for aggregate metrics</li>
+        <li>Saved dashboard presets per user role</li>
+        <li>Full-screen mode for wall-mounted displays</li>
+      </ul>
+
+      <!-- ── Auto-Refresh ─────────────────────────────────────────────── -->
+      <h2 id="auto-refresh">Auto-Refresh Behavior</h2>
+      <p>
+        The dashboard uses a combination of WebSocket push and polling to keep data current.
+        Different widgets refresh at different intervals based on how time-sensitive their
+        data is.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Widget</th>
+              <th>Update Method</th>
+              <th>Interval</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Active Calls</td>
+              <td>WebSocket push</td>
+              <td>~2 seconds</td>
+            </tr>
+            <tr>
+              <td>Extension Status</td>
+              <td>WebSocket push</td>
+              <td>~2 seconds (on state change)</td>
+            </tr>
+            <tr>
+              <td>Queue Statistics</td>
+              <td>WebSocket push</td>
+              <td>~5 seconds</td>
+            </tr>
+            <tr>
+              <td>System Health</td>
+              <td>Polling</td>
+              <td>15 seconds</td>
+            </tr>
+            <tr>
+              <td>Recent Calls</td>
+              <td>WebSocket push</td>
+              <td>On each new call event</td>
+            </tr>
+            <tr>
+              <td>Voicemail Summary</td>
+              <td>Polling</td>
+              <td>60 seconds</td>
+            </tr>
+            <tr>
+              <td>Calls Today / Avg Duration</td>
+              <td>Polling</td>
+              <td>30 seconds</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">WebSocket Connection</div>
+        If the WebSocket connection drops (network interruption, server restart), the dashboard
+        automatically falls back to polling and attempts to reconnect. A yellow "Reconnecting..."
+        indicator appears in the top right corner of the dashboard during reconnection attempts.
+      </div>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="admin-ops.html">Admin Operations</a> &mdash; System maintenance and health check details</li>
+          <li><a href="queues.html">Queues</a> &mdash; Detailed queue configuration and per-queue metrics</li>
+          <li><a href="cdrs.html">Call History</a> &mdash; Full CDR browsing and search</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Extension management and registration status</li>
+          <li><a href="voicemail.html">Voicemail</a> &mdash; Voicemail message management</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="tenants.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Tenants</span>
+        </a>
+        <a href="webrtc-softphone.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">WebRTC Softphone</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#layout">Dashboard Layout</a></li>
+      <li><a href="#call-activity">Call Activity Metrics</a></li>
+      <li><a href="#extension-status">Extension Status</a></li>
+      <li><a href="#queue-statistics">Queue Statistics</a></li>
+      <li><a href="#system-health">System Health</a></li>
+      <li><a href="#recent-calls">Recent Call Activity</a></li>
+      <li><a href="#voicemail-summary">Voicemail Summary</a></li>
+      <li><a href="#customization">Customizing the Dashboard</a></li>
+      <li><a href="#auto-refresh">Auto-Refresh Behavior</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

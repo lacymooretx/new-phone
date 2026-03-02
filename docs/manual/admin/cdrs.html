@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Call Detail Records — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html" class="active">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="cdrs.html">Reports</a>
+        <span class="sep">/</span>
+        <span>Call History</span>
+      </div>
+
+      <h1>Call Detail Records</h1>
+      <p class="page-subtitle">Every call that passes through the platform generates a Call Detail Record (CDR). Use CDRs to analyze call volume, troubleshoot issues, track agent performance, and produce billing reports.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        A Call Detail Record is created automatically for every call that enters, leaves, or occurs
+        within the platform. CDRs capture the full lifecycle of a call from the moment it begins
+        ringing until the final hangup. They are immutable once written &mdash; no user or
+        administrator can modify a CDR after it has been recorded.
+      </p>
+      <p>
+        CDRs serve as the authoritative source for call history, billing calculations, compliance
+        auditing, and performance analysis. Each CDR is scoped to a single tenant and respects
+        Row-Level Security, meaning users can only see records belonging to their own tenant.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Automatic Creation</div>
+        CDRs are generated by the platform automatically at the conclusion of every call. There is no
+        manual step required. Even calls that fail to connect (busy, no answer, network failure) produce
+        a CDR so that every attempt is accounted for.
+      </div>
+
+      <!-- ── CDR Field Reference ─────────────────────────────────────── -->
+      <h2 id="field-reference">CDR Field Reference</h2>
+      <p>The following table describes every field returned in a <code>CDRResponse</code> object.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for this CDR record</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>The tenant this call belongs to (enforced by RLS)</td>
+            </tr>
+            <tr>
+              <td><code>call_id</code></td>
+              <td><code>string</code></td>
+              <td>Unique call identifier assigned by FreeSWITCH at call creation. Used to correlate CDRs with recordings, events, and logs.</td>
+            </tr>
+            <tr>
+              <td><code>direction</code></td>
+              <td><code>enum</code></td>
+              <td>Call direction: <code>INBOUND</code>, <code>OUTBOUND</code>, or <code>INTERNAL</code></td>
+            </tr>
+            <tr>
+              <td><code>caller_number</code></td>
+              <td><code>string</code></td>
+              <td>The originating phone number or extension number of the caller</td>
+            </tr>
+            <tr>
+              <td><code>caller_name</code></td>
+              <td><code>string</code></td>
+              <td>Caller ID name as presented by the originating party or trunk</td>
+            </tr>
+            <tr>
+              <td><code>called_number</code></td>
+              <td><code>string</code></td>
+              <td>The destination number or extension that was dialed</td>
+            </tr>
+            <tr>
+              <td><code>extension_id</code></td>
+              <td><code>UUID | null</code></td>
+              <td>The extension involved in the call, if applicable. Null for trunk-to-trunk or system-generated calls.</td>
+            </tr>
+            <tr>
+              <td><code>did_id</code></td>
+              <td><code>UUID | null</code></td>
+              <td>The DID (phone number) used for inbound calls. Null for outbound and internal calls.</td>
+            </tr>
+            <tr>
+              <td><code>trunk_id</code></td>
+              <td><code>UUID | null</code></td>
+              <td>The SIP trunk used for the call. Null for internal extension-to-extension calls.</td>
+            </tr>
+            <tr>
+              <td><code>ring_group_id</code></td>
+              <td><code>UUID | null</code></td>
+              <td>The ring group that handled the call, if any. Null when the call did not route through a ring group.</td>
+            </tr>
+            <tr>
+              <td><code>disposition</code></td>
+              <td><code>enum</code></td>
+              <td>Final outcome of the call: <code>ANSWERED</code>, <code>NO_ANSWER</code>, <code>BUSY</code>, <code>FAILED</code>, <code>VOICEMAIL</code>, or <code>CANCELLED</code></td>
+            </tr>
+            <tr>
+              <td><code>hangup_cause</code></td>
+              <td><code>string | null</code></td>
+              <td>The SIP/Q.850 hangup cause code. Provides detailed technical reason for call termination. See <a href="#sip-hangup-causes">SIP Hangup Causes</a>.</td>
+            </tr>
+            <tr>
+              <td><code>duration_seconds</code></td>
+              <td><code>integer</code></td>
+              <td>Total elapsed time of the call in seconds, from start to end (includes ringing time)</td>
+            </tr>
+            <tr>
+              <td><code>billable_seconds</code></td>
+              <td><code>integer</code></td>
+              <td>Billable duration after the grace period. Zero for unanswered calls. See <a href="#duration-fields">Duration Fields</a>.</td>
+            </tr>
+            <tr>
+              <td><code>ring_seconds</code></td>
+              <td><code>integer</code></td>
+              <td>Time in seconds from the call start until the call was answered (or ended if not answered)</td>
+            </tr>
+            <tr>
+              <td><code>start_time</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the call was initiated (ISO 8601, UTC)</td>
+            </tr>
+            <tr>
+              <td><code>answer_time</code></td>
+              <td><code>datetime | null</code></td>
+              <td>Timestamp when the call was answered. Null if the call was never answered.</td>
+            </tr>
+            <tr>
+              <td><code>end_time</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the call ended (ISO 8601, UTC)</td>
+            </tr>
+            <tr>
+              <td><code>has_recording</code></td>
+              <td><code>boolean</code></td>
+              <td>Whether a call recording exists for this CDR. When <code>true</code>, use the Recordings API to retrieve it.</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the CDR was written to the database</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Direction Types ─────────────────────────────────────────── -->
+      <h2 id="direction-types">Direction Types</h2>
+      <p>
+        Every CDR is classified by the direction of the call. The direction is determined automatically
+        based on how the call entered or was initiated within the platform.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Direction</th>
+              <th>Description</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>INBOUND</code></td>
+              <td>A call that arrived from the PSTN via a SIP trunk and was routed to an internal destination (extension, queue, ring group, IVR, or voicemail).</td>
+              <td>An external customer calls your main office number.</td>
+            </tr>
+            <tr>
+              <td><code>OUTBOUND</code></td>
+              <td>A call that originated from an internal extension and was sent out to the PSTN via a SIP trunk.</td>
+              <td>An employee dials a customer's cell phone from their desk phone.</td>
+            </tr>
+            <tr>
+              <td><code>INTERNAL</code></td>
+              <td>A call between two extensions within the same tenant. These calls never touch a SIP trunk and incur no carrier charges.</td>
+              <td>Extension 101 calls extension 205 for an internal discussion.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Trunk and DID Context</div>
+        For <code>INBOUND</code> calls, the <code>trunk_id</code> and <code>did_id</code> fields
+        identify which SIP trunk and DID number received the call. For <code>OUTBOUND</code> calls,
+        <code>trunk_id</code> identifies the trunk used for egress. For <code>INTERNAL</code> calls,
+        both fields are null.
+      </div>
+
+      <!-- ── Disposition Types ───────────────────────────────────────── -->
+      <h2 id="disposition-types">Disposition Types</h2>
+      <p>
+        The disposition indicates the final outcome of the call. It is set when the call terminates and
+        reflects what happened from the caller's perspective.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Disposition</th>
+              <th>Description</th>
+              <th>Typical Scenario</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>ANSWERED</code></td>
+              <td>The call was picked up by a human or system and a conversation (or connection) occurred. The <code>answer_time</code> field will be populated, and <code>billable_seconds</code> will be greater than zero.</td>
+              <td>A support agent answers a customer call.</td>
+            </tr>
+            <tr>
+              <td><code>NO_ANSWER</code></td>
+              <td>The call rang but nobody picked up before the ring timeout expired. The call was not forwarded to voicemail.</td>
+              <td>An extension rings for 30 seconds with no pickup and no voicemail configured.</td>
+            </tr>
+            <tr>
+              <td><code>BUSY</code></td>
+              <td>The destination returned a busy signal, typically because all lines were occupied or the device rejected the call with a 486 response.</td>
+              <td>A single-line device is already on a call when another call arrives.</td>
+            </tr>
+            <tr>
+              <td><code>FAILED</code></td>
+              <td>The call could not be completed due to a network or system error. This includes routing failures, trunk capacity issues, and SIP protocol errors.</td>
+              <td>An outbound call fails because the SIP trunk is unreachable.</td>
+            </tr>
+            <tr>
+              <td><code>VOICEMAIL</code></td>
+              <td>The call was forwarded to voicemail and the caller left a message (or the voicemail system answered). The <code>answer_time</code> reflects when the voicemail system picked up.</td>
+              <td>No one answers and the call forwards to voicemail after the ring timeout.</td>
+            </tr>
+            <tr>
+              <td><code>CANCELLED</code></td>
+              <td>The caller hung up before the call was answered or before it finished ringing. The call was abandoned by the originator.</td>
+              <td>A customer in a queue hangs up after waiting 45 seconds.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Duration Fields ─────────────────────────────────────────── -->
+      <h2 id="duration-fields">Duration Fields</h2>
+      <p>
+        CDRs track three separate duration measurements. Understanding the difference is important
+        for billing accuracy and performance analysis.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Start Point</th>
+              <th>End Point</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>duration_seconds</code></td>
+              <td><code>start_time</code></td>
+              <td><code>end_time</code></td>
+              <td>Total elapsed time, including ringing. Useful for understanding total call lifecycle and agent availability impact.</td>
+            </tr>
+            <tr>
+              <td><code>billable_seconds</code></td>
+              <td><code>answer_time</code> + grace period</td>
+              <td><code>end_time</code></td>
+              <td>Duration used for billing after the carrier grace period. Zero for unanswered calls. Used in cost calculations and trunk usage reports.</td>
+            </tr>
+            <tr>
+              <td><code>ring_seconds</code></td>
+              <td><code>start_time</code></td>
+              <td><code>answer_time</code> (or <code>end_time</code> if unanswered)</td>
+              <td>How long the phone rang before being answered. Key metric for queue SLA tracking and response time analysis.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The <strong>grace period</strong> is a configurable window (typically 6 seconds) at the
+        beginning of an answered call during which no billing accrues. This accounts for the brief
+        connection time before a real conversation begins. If a call is answered and hangs up within
+        the grace period, <code>billable_seconds</code> will be zero even though the call was
+        technically answered.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Duration Calculation</div>
+        <code>duration_seconds</code> always equals <code>ring_seconds</code> + talk time. For
+        unanswered calls, <code>duration_seconds</code> equals <code>ring_seconds</code> since there
+        was no talk time. The <code>billable_seconds</code> value is always less than or equal to the
+        talk time portion.
+      </div>
+
+      <!-- ── Filtering and Searching ─────────────────────────────────── -->
+      <h2 id="filtering">Filtering and Searching</h2>
+      <p>
+        The CDR list endpoint accepts a set of filter parameters to narrow results. All filters are
+        optional and can be combined. When multiple filters are provided, they are applied with AND
+        logic &mdash; only records matching all specified criteria are returned.
+      </p>
+
+      <h3 id="cdr-filter">CDRFilter Parameters</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>date_from</code></td>
+              <td><code>datetime</code></td>
+              <td><em>none</em></td>
+              <td>Return only CDRs with <code>start_time</code> on or after this timestamp (ISO 8601, UTC)</td>
+            </tr>
+            <tr>
+              <td><code>date_to</code></td>
+              <td><code>datetime</code></td>
+              <td><em>none</em></td>
+              <td>Return only CDRs with <code>start_time</code> on or before this timestamp (ISO 8601, UTC)</td>
+            </tr>
+            <tr>
+              <td><code>extension_id</code></td>
+              <td><code>UUID</code></td>
+              <td><em>none</em></td>
+              <td>Filter by a specific extension involved in the call</td>
+            </tr>
+            <tr>
+              <td><code>direction</code></td>
+              <td><code>CDRDirection</code></td>
+              <td><em>none</em></td>
+              <td>Filter by call direction: <code>INBOUND</code>, <code>OUTBOUND</code>, or <code>INTERNAL</code></td>
+            </tr>
+            <tr>
+              <td><code>disposition</code></td>
+              <td><code>CDRDisposition</code></td>
+              <td><em>none</em></td>
+              <td>Filter by call outcome: <code>ANSWERED</code>, <code>NO_ANSWER</code>, <code>BUSY</code>, <code>FAILED</code>, <code>VOICEMAIL</code>, or <code>CANCELLED</code></td>
+            </tr>
+            <tr>
+              <td><code>limit</code></td>
+              <td><code>integer</code></td>
+              <td><code>50</code></td>
+              <td>Maximum number of records to return per request (1&ndash;1000)</td>
+            </tr>
+            <tr>
+              <td><code>offset</code></td>
+              <td><code>integer</code></td>
+              <td><code>0</code></td>
+              <td>Number of records to skip before returning results (for pagination)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="filter-examples">Common Filter Combinations</h3>
+      <ul>
+        <li><strong>All missed calls today</strong> &mdash; Set <code>date_from</code> to today's midnight, <code>disposition</code> to <code>NO_ANSWER</code></li>
+        <li><strong>Outbound calls for a specific extension</strong> &mdash; Set <code>extension_id</code> and <code>direction</code> to <code>OUTBOUND</code></li>
+        <li><strong>Failed calls this week</strong> &mdash; Set <code>date_from</code> to the start of the week, <code>disposition</code> to <code>FAILED</code></li>
+        <li><strong>All inbound calls to voicemail</strong> &mdash; Set <code>direction</code> to <code>INBOUND</code> and <code>disposition</code> to <code>VOICEMAIL</code></li>
+      </ul>
+
+      <!-- ── Pagination ──────────────────────────────────────────────── -->
+      <h2 id="pagination">Pagination</h2>
+      <p>
+        CDR results are paginated using <code>limit</code> and <code>offset</code> parameters. This
+        is an offset-based pagination model suitable for browsing through call history.
+      </p>
+      <ul>
+        <li><strong>First page</strong>: <code>limit=50&amp;offset=0</code> (default)</li>
+        <li><strong>Second page</strong>: <code>limit=50&amp;offset=50</code></li>
+        <li><strong>Third page</strong>: <code>limit=50&amp;offset=100</code></li>
+      </ul>
+      <p>
+        The maximum value for <code>limit</code> is 1000 records per request. For large datasets,
+        consider using date range filters to narrow the result set before paginating, which improves
+        query performance significantly.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Offset Pagination Caveat</div>
+        Offset-based pagination can produce inconsistent results if new CDRs are created between
+        page requests (since new records shift offsets). For real-time monitoring, use the dashboard
+        live view instead. For bulk exports, use the export endpoint with fixed date ranges.
+      </div>
+
+      <!-- ── Linking to Recordings ───────────────────────────────────── -->
+      <h2 id="recordings-link">Linking to Recordings</h2>
+      <p>
+        The <code>has_recording</code> boolean field on each CDR indicates whether a call recording
+        exists for that call. When this field is <code>true</code>, you can use the <code>call_id</code>
+        from the CDR to look up the corresponding recording via the Recordings API.
+      </p>
+      <ul>
+        <li>Filter recordings by <code>cdr_id</code> to find the exact recording for a specific CDR</li>
+        <li>Filter recordings by <code>call_id</code> to find all recordings associated with a call (useful if a call was transferred and produced multiple recording segments)</li>
+        <li>The recording's <code>duration_seconds</code> may differ slightly from the CDR's <code>billable_seconds</code> due to recording start/stop timing</li>
+      </ul>
+
+      <p>
+        See the <a href="recordings.html">Recordings</a> page for details on playback, storage,
+        and signed URL generation.
+      </p>
+
+      <!-- ── SIP Hangup Causes ───────────────────────────────────────── -->
+      <h2 id="sip-hangup-causes">SIP Hangup Causes</h2>
+      <p>
+        The <code>hangup_cause</code> field contains the technical reason why a call ended. These
+        codes follow the ITU-T Q.850 standard and are mapped from SIP response codes by FreeSWITCH.
+        This field is invaluable for troubleshooting failed or abnormally terminated calls.
+      </p>
+
+      <h3 id="common-hangup-causes">Common Hangup Causes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cause Code</th>
+              <th>Name</th>
+              <th>SIP Code</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>16</td>
+              <td><code>NORMAL_CLEARING</code></td>
+              <td>200 BYE</td>
+              <td>Normal call hangup. One party ended the call gracefully. This is the expected cause for most completed calls.</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td><code>USER_BUSY</code></td>
+              <td>486</td>
+              <td>The destination returned a busy indication. The called device was occupied or rejected the call.</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td><code>NO_USER_RESPONSE</code></td>
+              <td>408</td>
+              <td>The destination did not respond within the timeout period. The device may be offline or unreachable.</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td><code>NO_ANSWER</code></td>
+              <td>480</td>
+              <td>The destination rang but was not answered before the ring timeout expired.</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td><code>CALL_REJECTED</code></td>
+              <td>403</td>
+              <td>The call was explicitly rejected by the destination or an intermediary. May indicate a permissions issue or call barring.</td>
+            </tr>
+            <tr>
+              <td>27</td>
+              <td><code>DESTINATION_OUT_OF_ORDER</code></td>
+              <td>502</td>
+              <td>The destination endpoint is malfunctioning or unreachable. Common when a SIP trunk is down.</td>
+            </tr>
+            <tr>
+              <td>28</td>
+              <td><code>INVALID_NUMBER_FORMAT</code></td>
+              <td>484</td>
+              <td>The dialed number has an invalid format. Check outbound route dial patterns and caller-entered digits.</td>
+            </tr>
+            <tr>
+              <td>34</td>
+              <td><code>NO_CIRCUIT_AVAILABLE</code></td>
+              <td>503</td>
+              <td>No trunk channels are available. The trunk has reached its maximum concurrent call limit.</td>
+            </tr>
+            <tr>
+              <td>38</td>
+              <td><code>NETWORK_OUT_OF_ORDER</code></td>
+              <td>503</td>
+              <td>A network-level failure prevented the call from completing. Check connectivity between the platform and the SIP provider.</td>
+            </tr>
+            <tr>
+              <td>127</td>
+              <td><code>INTERWORKING</code></td>
+              <td>500</td>
+              <td>A generic interworking error occurred. Often a catch-all when the specific cause cannot be determined.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        When investigating call failures, start with the <code>hangup_cause</code> to identify the
+        category of problem (network, capacity, destination, or configuration), then cross-reference
+        with the FreeSWITCH logs for the corresponding <code>call_id</code> for deeper diagnostics.
+      </p>
+
+      <!-- ── Export and Reporting ─────────────────────────────────────── -->
+      <h2 id="export">Export and Reporting</h2>
+      <p>
+        CDR data can be exported for use in external reporting tools, billing systems, or compliance
+        archives. The platform supports the following export workflows:
+      </p>
+
+      <h3 id="csv-export">CSV Export</h3>
+      <ul>
+        <li>Export filtered CDR results to CSV format from the web UI</li>
+        <li>All active filters are applied to the export &mdash; export exactly what you see</li>
+        <li>CSV files include all CDR fields with headers matching the API field names</li>
+        <li>Timestamps are exported in ISO 8601 format (UTC)</li>
+        <li>Large exports are processed asynchronously and delivered as a download link</li>
+      </ul>
+
+      <h3 id="api-export">API-Based Export</h3>
+      <ul>
+        <li>Use the CDR list endpoint with appropriate filters and a high <code>limit</code> value</li>
+        <li>For datasets larger than 1000 records, paginate through the full result set</li>
+        <li>Combine with date range filters for efficient batch retrieval</li>
+        <li>JSON responses can be transformed into any format by your reporting pipeline</li>
+      </ul>
+
+      <h3 id="reporting-tips">Reporting Tips</h3>
+      <ul>
+        <li><strong>Daily call volume</strong> &mdash; Group CDRs by <code>start_time</code> date and count by <code>direction</code></li>
+        <li><strong>Average handle time</strong> &mdash; Calculate the mean of <code>duration_seconds</code> for <code>ANSWERED</code> calls per extension</li>
+        <li><strong>Answer rate</strong> &mdash; Divide <code>ANSWERED</code> count by total calls for a given period</li>
+        <li><strong>Peak hours</strong> &mdash; Group by hour of day to identify call volume patterns</li>
+        <li><strong>Trunk utilization</strong> &mdash; Count concurrent calls per <code>trunk_id</code> to assess capacity needs</li>
+      </ul>
+
+      <!-- ── Retention Policy ────────────────────────────────────────── -->
+      <h2 id="retention">Retention Policy</h2>
+      <p>
+        CDR data is retained according to the tenant's configured retention policy. The default
+        retention settings are as follows:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Retention Period</th>
+              <th>Storage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Active</td>
+              <td>90 days</td>
+              <td>Primary database (fast queries, full filtering)</td>
+            </tr>
+            <tr>
+              <td>Archive</td>
+              <td>1 year</td>
+              <td>Compressed archive (slower queries, date-range access only)</td>
+            </tr>
+            <tr>
+              <td>Cold Storage</td>
+              <td>7 years</td>
+              <td>Object storage (S3/MinIO). Requires manual retrieval request.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        MSP administrators can adjust retention periods per tenant to meet specific regulatory or
+        contractual requirements. Extending retention beyond the default may affect storage costs.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Compliance Note</div>
+        Some industries (healthcare, finance, government) require call records to be retained for
+        specific periods. Ensure your retention policy meets applicable regulations such as HIPAA,
+        PCI-DSS, or state-level record retention laws before reducing the default retention period.
+      </div>
+
+      <!-- ── See Also ────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="recordings.html">Recordings</a> &mdash; Manage and play back call recordings linked to CDRs</li>
+          <li><a href="voicemail.html">Voicemail</a> &mdash; Access voicemail messages referenced in CDRs</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Manage extensions referenced in CDR records</li>
+          <li><a href="sip-trunks.html">SIP Trunks</a> &mdash; Configure trunks used for inbound and outbound calls</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; Track administrative actions and system events</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ─────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="outbound-routes.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Outbound Routes</span>
+        </a>
+        <a href="recordings.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Recordings</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#field-reference">CDR Field Reference</a></li>
+      <li><a href="#direction-types">Direction Types</a></li>
+      <li><a href="#disposition-types">Disposition Types</a></li>
+      <li><a href="#duration-fields">Duration Fields</a></li>
+      <li><a href="#filtering">Filtering and Searching</a></li>
+      <li><a href="#pagination">Pagination</a></li>
+      <li><a href="#recordings-link">Linking to Recordings</a></li>
+      <li><a href="#sip-hangup-causes">SIP Hangup Causes</a></li>
+      <li><a href="#export">Export and Reporting</a></li>
+      <li><a href="#retention">Retention Policy</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

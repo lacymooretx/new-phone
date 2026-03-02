@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holiday Calendars &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html" class="active">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="time-conditions.html">System</a>
+        <span class="sep">/</span>
+        <span>Holiday Calendars</span>
+      </div>
+
+      <h1>Holiday Calendars</h1>
+      <p class="page-subtitle">Centrally manage holidays and special closures that automatically override time condition routing.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Holiday calendars provide a centralized way to define dates when your organization is closed
+        or operating on a reduced schedule. When a holiday calendar is linked to a
+        <a href="time-conditions.html">time condition</a>, any holiday entry that covers the
+        current date and time will override the normal rules, forcing the time condition to evaluate
+        as "no-match" (after-hours routing).
+      </p>
+      <p>
+        This eliminates the need to manually update time conditions before each holiday. Define
+        your holidays once in a calendar, link it to your time conditions, and the system handles
+        the rest automatically.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">One Calendar, Many Time Conditions</div>
+        A single holiday calendar can be linked to multiple time conditions. Create one company-wide
+        calendar and reference it from every time condition that should observe those holidays.
+      </div>
+
+      <!-- ── Creating ─────────────────────────────────────────────────── -->
+      <h2 id="creating">Creating Holiday Calendars</h2>
+      <p>
+        Navigate to <strong>System &gt; Holiday Calendars</strong> and click
+        <strong>Add Calendar</strong>. Provide a name for the calendar and add one or more
+        holiday entries. Each entry represents a single holiday or closure date.
+      </p>
+      <p>
+        After creating the calendar, link it to one or more time conditions by setting the
+        <code>holiday_calendar_id</code> field on the time condition. Entries can be added,
+        modified, or removed from the calendar at any time without updating the linked time
+        conditions.
+      </p>
+
+      <!-- ── Field Reference: Calendar ────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="fields-calendar">HolidayCalendarCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>Calendar name (1&ndash;100 characters). Example: "US Federal Holidays"</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td>Optional description of the calendar's purpose</td>
+            </tr>
+            <tr>
+              <td><code>entries</code></td>
+              <td><code>list[HolidayEntryData]</code></td>
+              <td>No</td>
+              <td>List of holiday entries. Can be empty initially and populated later</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-entry">HolidayEntryData Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>Name of the holiday (1&ndash;100 characters). Example: "Christmas Day"</td>
+            </tr>
+            <tr>
+              <td><code>date</code></td>
+              <td><code>date</code></td>
+              <td>Yes</td>
+              <td>The holiday date in <code>YYYY-MM-DD</code> format</td>
+            </tr>
+            <tr>
+              <td><code>recur_annually</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td>Repeat this entry every year on the same month/day. Default: <code>false</code></td>
+            </tr>
+            <tr>
+              <td><code>all_day</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td>Whether the holiday covers the entire day. Default: <code>true</code></td>
+            </tr>
+            <tr>
+              <td><code>start_time</code></td>
+              <td><code>time</code></td>
+              <td>No</td>
+              <td>Start time for partial-day holidays. Format: <code>HH:MM:SS</code>. Only used when <code>all_day</code> is <code>false</code></td>
+            </tr>
+            <tr>
+              <td><code>end_time</code></td>
+              <td><code>time</code></td>
+              <td>No</td>
+              <td>End time for partial-day holidays. Format: <code>HH:MM:SS</code>. Only used when <code>all_day</code> is <code>false</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-response">Response Fields</h3>
+      <p>The response includes all create fields plus the following system-managed fields:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the calendar</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Owning tenant (set automatically from auth context)</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Whether the calendar is currently active</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the calendar was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Each entry in the response also includes:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the entry</td>
+            </tr>
+            <tr>
+              <td><code>calendar_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Parent calendar reference</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Recurring vs One-Time ────────────────────────────────────── -->
+      <h2 id="recurring">Recurring vs One-Time Holidays</h2>
+      <p>
+        Holiday entries can be either one-time or annually recurring, controlled by the
+        <code>recur_annually</code> field.
+      </p>
+
+      <h3 id="recurring-annual">Recurring Holidays</h3>
+      <p>
+        When <code>recur_annually</code> is <code>true</code>, the entry matches on the same
+        month and day every year. The year portion of the <code>date</code> field is used only
+        for the initial occurrence and is ignored in subsequent years.
+      </p>
+      <p>
+        This is ideal for fixed-date holidays like New Year's Day (January 1), Independence Day
+        (July 4), and Christmas Day (December 25).
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">Floating Holidays</div>
+        Holidays that fall on a different date each year (e.g., Thanksgiving, Memorial Day, Labor Day)
+        cannot use <code>recur_annually</code> because they are not fixed to a specific month/day.
+        These must be updated annually with the correct date, or you can add entries for multiple
+        future years.
+      </div>
+
+      <h3 id="one-time">One-Time Holidays</h3>
+      <p>
+        When <code>recur_annually</code> is <code>false</code> (the default), the entry matches
+        only on the exact date specified. This is useful for:
+      </p>
+      <ul>
+        <li>Floating holidays (Thanksgiving, Memorial Day, Easter)</li>
+        <li>Company-specific events (annual retreat, office move day)</li>
+        <li>One-off closures (emergency weather, building maintenance)</li>
+      </ul>
+
+      <!-- ── Partial-Day Holidays ─────────────────────────────────────── -->
+      <h2 id="partial-day">Partial-Day Holidays</h2>
+      <p>
+        Not all holidays require a full-day closure. The platform supports partial-day holidays
+        for situations like early closures before a holiday or reduced hours on specific days.
+      </p>
+      <p>
+        To create a partial-day holiday, set <code>all_day</code> to <code>false</code> and
+        provide <code>start_time</code> and <code>end_time</code> values. The holiday override
+        only applies during the specified time window.
+      </p>
+
+      <h3>Example: Christmas Eve Early Close</h3>
+      <pre><code>{
+  "name": "Christmas Eve Early Close",
+  "date": "2026-12-24",
+  "recur_annually": true,
+  "all_day": false,
+  "start_time": "12:00:00",
+  "end_time": "23:59:59"
+}</code></pre>
+      <p>
+        This entry causes the linked time condition to route calls to the after-hours destination
+        from noon onward on December 24th, while the morning hours operate normally.
+      </p>
+
+      <h3>Example: Day After Thanksgiving (half day)</h3>
+      <pre><code>{
+  "name": "Day After Thanksgiving - Half Day",
+  "date": "2026-11-27",
+  "recur_annually": false,
+  "all_day": false,
+  "start_time": "13:00:00",
+  "end_time": "23:59:59"
+}</code></pre>
+
+      <!-- ── Linking to Time Conditions ───────────────────────────────── -->
+      <h2 id="linking">Linking to Time Conditions</h2>
+      <p>
+        A holiday calendar is linked to a time condition by setting the
+        <code>holiday_calendar_id</code> field when creating or updating the time condition.
+        Once linked, the time condition automatically checks the calendar before evaluating
+        its rules.
+      </p>
+      <p>
+        The linking relationship is one-to-many: a single calendar can be referenced by many
+        time conditions, but each time condition can only reference one calendar. If you need
+        different sets of holidays for different departments, create separate calendars.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Evaluation Order</div>
+        When a time condition has a linked holiday calendar, the evaluation order is:
+        (1) check manual override, (2) check holiday calendar, (3) evaluate time rules.
+        A holiday match short-circuits the process and immediately routes to the no-match destination.
+      </div>
+
+      <!-- ── US Federal Holidays Example ──────────────────────────────── -->
+      <h2 id="us-federal">US Federal Holidays Example</h2>
+      <p>
+        The following example shows a complete calendar with common US holidays. Fixed-date
+        holidays use <code>recur_annually: true</code>, while floating holidays require
+        annual date updates.
+      </p>
+
+      <pre><code>{
+  "name": "US Federal Holidays 2026",
+  "description": "Standard US federal holidays for 2026",
+  "entries": [
+    { "name": "New Year's Day",      "date": "2026-01-01", "recur_annually": true  },
+    { "name": "MLK Jr. Day",         "date": "2026-01-19", "recur_annually": false },
+    { "name": "Presidents' Day",     "date": "2026-02-16", "recur_annually": false },
+    { "name": "Memorial Day",        "date": "2026-05-25", "recur_annually": false },
+    { "name": "Independence Day",    "date": "2026-07-04", "recur_annually": true  },
+    { "name": "Labor Day",           "date": "2026-09-07", "recur_annually": false },
+    { "name": "Columbus Day",        "date": "2026-10-12", "recur_annually": false },
+    { "name": "Veterans Day",        "date": "2026-11-11", "recur_annually": true  },
+    { "name": "Thanksgiving",        "date": "2026-11-26", "recur_annually": false },
+    { "name": "Day After Thanksgiving", "date": "2026-11-27", "recur_annually": false },
+    { "name": "Christmas Eve",       "date": "2026-12-24", "recur_annually": true,
+      "all_day": false, "start_time": "12:00:00", "end_time": "23:59:59" },
+    { "name": "Christmas Day",       "date": "2026-12-25", "recur_annually": true  }
+  ]
+}</code></pre>
+
+      <div class="callout warning">
+        <div class="callout-title">Annual Maintenance Required</div>
+        Floating holidays (MLK Day, Presidents' Day, Memorial Day, Labor Day, Columbus Day,
+        Thanksgiving) change dates each year. Review and update these entries annually, ideally
+        in December for the upcoming year.
+      </div>
+
+      <!-- ── Multiple Calendars ───────────────────────────────────────── -->
+      <h2 id="multiple-calendars">Multiple Calendar Use Cases</h2>
+      <p>
+        Organizations often benefit from maintaining multiple holiday calendars for different
+        purposes:
+      </p>
+
+      <h3>Company-Wide Calendar</h3>
+      <p>
+        A primary calendar containing all company-observed holidays. Link this to time conditions
+        for the main office, reception, and general departments.
+      </p>
+
+      <h3>Regional Calendars</h3>
+      <p>
+        For organizations with offices in multiple regions or countries, create separate calendars
+        for region-specific holidays. A UK office might observe Bank Holidays, while a Canadian
+        office observes Boxing Day and Canada Day.
+      </p>
+
+      <h3>Department-Specific Calendars</h3>
+      <p>
+        Some departments may have additional closure days (e.g., accounting closes for year-end,
+        IT closes for maintenance windows). Create department-specific calendars and link them
+        to the relevant time conditions.
+      </p>
+
+      <h3>Emergency / Ad-Hoc Calendar</h3>
+      <p>
+        Maintain a separate calendar for unplanned closures (weather, power outages, emergencies).
+        This keeps your standard holiday calendar clean while providing a quick way to add
+        temporary closures. Alternatively, use the
+        <a href="time-conditions.html#manual-override">manual override</a> feature on the
+        time condition for immediate, temporary routing changes.
+      </p>
+
+      <!-- ── See Also ─────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="time-conditions.html">Time Conditions</a> &mdash; Link holiday calendars to time-based routing rules</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Configure where incoming calls enter the system</li>
+          <li><a href="ivr-menus.html">IVR Menus</a> &mdash; Build after-hours auto-attendant menus</li>
+          <li><a href="audio-prompts.html">Audio Prompts</a> &mdash; Record holiday greetings and announcements</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="time-conditions.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Time Conditions</span>
+        </a>
+        <a href="caller-id-rules.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Caller ID Rules</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#creating">Creating Holiday Calendars</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#recurring">Recurring vs One-Time</a></li>
+      <li><a href="#partial-day">Partial-Day Holidays</a></li>
+      <li><a href="#linking">Linking to Time Conditions</a></li>
+      <li><a href="#us-federal">US Federal Holidays Example</a></li>
+      <li><a href="#multiple-calendars">Multiple Calendar Use Cases</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

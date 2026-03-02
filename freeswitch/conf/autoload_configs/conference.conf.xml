@@ -1,0 +1,20 @@
+<configuration name="conference.conf" description="Conference">
+  <!-- Minimal bootstrap — actual config served dynamically via mod_xml_curl -->
+  <caller-controls>
+    <group name="default">
+      <control action="mute" digits="0"/>
+      <control action="deaf mute" digits="*"/>
+      <control action="hangup" digits="#"/>
+    </group>
+  </caller-controls>
+  <profiles>
+    <profile name="default">
+      <param name="rate" value="16000"/>
+      <param name="interval" value="20"/>
+      <param name="energy-level" value="100"/>
+      <param name="caller-controls" value="default"/>
+      <param name="moh-sound" value="local_stream://moh"/>
+      <param name="comfort-noise" value="true"/>
+    </profile>
+  </profiles>
+</configuration>

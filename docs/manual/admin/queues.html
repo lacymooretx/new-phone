@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Queues &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html" class="active">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="extensions.html">Telephony</a>
+        <span class="sep">/</span>
+        <span>Queues</span>
+      </div>
+
+      <h1>Queues (ACD)</h1>
+      <p class="page-subtitle">Automatic Call Distribution queues with agent tiers, hold music, position announcements, wrap-up time, overflow routing, and real-time statistics.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        A queue is a call center feature that holds incoming callers in line while the system
+        finds the next available agent to handle the call. Callers hear music on hold and
+        periodic announcements (position in queue, estimated wait time) while they wait. Agents
+        are selected based on the queue's distribution strategy, their tier level, and their
+        current availability status.
+      </p>
+      <p>
+        Queues are the right choice when you need formal call center capabilities: agent
+        login/logout, idle-time-based distribution, tiered escalation, wrap-up time between
+        calls, real-time statistics, and overflow routing. For simpler scenarios where you
+        just need multiple phones to ring, see <a href="ring-groups.html">Ring Groups</a>.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Queue vs Ring Group</div>
+        Queues provide hold music, position announcements, agent status management, tiered
+        routing, wrap-up time, and detailed statistics. Ring groups simply ring a set of
+        phones. Use queues for customer-facing support and sales lines; use ring groups for
+        internal teams.
+      </div>
+
+      <!-- ── Call Flow Diagram ─────────────────────────────────────────── -->
+      <h2 id="call-flow">Queue Call Flow</h2>
+      <p>The following diagram shows the complete lifecycle of a call entering a queue.</p>
+
+      <div class="diagram">Caller &#8594; Queue
+  &#9474;
+  &#9500;&#9472; No agents logged in?
+  &#9474;   &#9492;&#9472; Wait max_wait_time_with_no_agent (120s)
+  &#9474;       &#9492;&#9472; Still no agents &#8594; Overflow destination
+  &#9474;
+  &#9500;&#9472; In queue (MOH plays, announcements every announce_frequency)
+  &#9474;   &#9474;
+  &#9474;   &#9500;&#9472; Agent becomes available
+  &#9474;   &#9474;   &#9492;&#9472; Ring agent (ring_timeout = 30s)
+  &#9474;   &#9474;       &#9500;&#9472; Agent answers &#8594; Connected (record if enabled)
+  &#9474;   &#9474;       &#9474;   &#9492;&#9472; Call ends &#8594; Wrap-up time &#8594; Agent available
+  &#9474;   &#9474;       &#9492;&#9472; No answer &#8594; Next agent (per strategy)
+  &#9474;   &#9474;
+  &#9474;   &#9500;&#9472; max_wait_time reached (300s)
+  &#9474;   &#9474;   &#9492;&#9472; Overflow destination
+  &#9474;   &#9474;
+  &#9474;   &#9492;&#9472; Caller presses caller_exit_key
+  &#9474;       &#9492;&#9472; Exit action (overflow destination)
+  &#9474;
+  &#9492;&#9472; Caller hangs up
+      &#9500;&#9472; Within discard_abandoned_after? &#8594; Marked abandoned
+      &#9492;&#9472; Caller returns + abandoned_resume_allowed?
+          &#8594; Resume original position</div>
+
+      <!-- ── Queue Strategies ──────────────────────────────────────────── -->
+      <h2 id="strategies">Queue Strategies</h2>
+      <p>
+        The queue strategy determines how the next available agent is selected when a caller
+        is ready to be connected. All strategies only consider agents whose status is
+        <code>AVAILABLE</code>.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Strategy</th>
+              <th>Selection Logic</th>
+              <th>Best For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>LONGEST_IDLE_AGENT</code></td>
+              <td>Selects the agent who has been idle (not on a call) the longest. Ensures even workload distribution based on actual availability.</td>
+              <td>Most call centers. This is the default and the most commonly used strategy.</td>
+            </tr>
+            <tr>
+              <td><code>ROUND_ROBIN</code></td>
+              <td>Cycles through agents in a fixed order, starting from where the last call left off. Each agent gets one call before the cycle repeats.</td>
+              <td>Teams where strict rotation is preferred regardless of idle time.</td>
+            </tr>
+            <tr>
+              <td><code>RANDOM</code></td>
+              <td>Picks a random available agent. Simple but may lead to uneven distribution with small teams.</td>
+              <td>Large agent pools where statistical distribution is sufficient.</td>
+            </tr>
+            <tr>
+              <td><code>FEWEST_CALLS</code></td>
+              <td>Selects the agent who has handled the fewest calls in the current period. Balances total call count rather than idle time.</td>
+              <td>Environments where total call count fairness matters more than idle time (e.g., sales with commission).</td>
+            </tr>
+            <tr>
+              <td><code>WEIGHTED</code></td>
+              <td>Uses agent position values as weights. Higher-positioned agents receive a proportionally larger share of calls.</td>
+              <td>Tiered support where senior agents should handle more calls, or skills-based routing approximation.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Creating Queues ───────────────────────────────────────────── -->
+      <h2 id="creating">Creating a Queue</h2>
+      <p>
+        Submit a <code>POST</code> request with the queue configuration and an initial list of
+        members. At minimum, provide a name and queue number.
+      </p>
+      <pre><code>POST /api/v1/queues
+
+{
+  "name": "Technical Support",
+  "queue_number": "800",
+  "description": "Tier 1 technical support queue",
+  "strategy": "LONGEST_IDLE_AGENT",
+  "max_wait_time": 300,
+  "max_wait_time_with_no_agent": 120,
+  "tier_rules_apply": true,
+  "tier_rule_wait_second": 300,
+  "tier_rule_wait_multiply_level": true,
+  "wrapup_time": 15,
+  "ring_timeout": 30,
+  "announce_frequency": 60,
+  "caller_exit_key": "0",
+  "overflow_destination_type": "VOICEMAIL",
+  "overflow_destination_id": "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
+  "record_calls": true,
+  "enabled": true,
+  "members": [
+    { "extension_id": "ext-1-uuid", "level": 1, "position": 1 },
+    { "extension_id": "ext-2-uuid", "level": 1, "position": 2 },
+    { "extension_id": "ext-3-uuid", "level": 2, "position": 1 }
+  ]
+}</code></pre>
+
+      <!-- ── Field Reference ───────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="create-fields">QueueCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Descriptive name for the queue (1&ndash;255 characters)</td>
+            </tr>
+            <tr>
+              <td><code>queue_number</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Dial number to reach the queue (1&ndash;20 characters). Example: <code>"800"</code></td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Optional description of the queue's purpose</td>
+            </tr>
+            <tr>
+              <td><code>strategy</code></td>
+              <td><code>enum</code></td>
+              <td>No</td>
+              <td><code>LONGEST_IDLE_AGENT</code></td>
+              <td>Agent selection strategy: <code>LONGEST_IDLE_AGENT</code>, <code>ROUND_ROBIN</code>, <code>RANDOM</code>, <code>FEWEST_CALLS</code>, <code>WEIGHTED</code></td>
+            </tr>
+            <tr>
+              <td><code>moh_prompt_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Audio prompt for music on hold. Falls back to system default if not set.</td>
+            </tr>
+            <tr>
+              <td><code>max_wait_time</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>300</code></td>
+              <td>Maximum seconds a caller waits in queue before overflow (0&ndash;7200). Set to 0 for unlimited wait.</td>
+            </tr>
+            <tr>
+              <td><code>max_wait_time_with_no_agent</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>120</code></td>
+              <td>Maximum seconds a caller waits when no agents are logged in (0&ndash;7200). Typically shorter than <code>max_wait_time</code> since no agent is expected.</td>
+            </tr>
+            <tr>
+              <td><code>tier_rules_apply</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>Whether tier-based escalation is active. See <a href="#tier-rules">Tier Rules</a>.</td>
+            </tr>
+            <tr>
+              <td><code>tier_rule_wait_second</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>300</code></td>
+              <td>Seconds to wait at each tier before escalating to the next (0&ndash;7200)</td>
+            </tr>
+            <tr>
+              <td><code>tier_rule_wait_multiply_level</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>When true, the wait time is multiplied by the tier level. Tier 1 waits <code>tier_rule_wait_second</code>, tier 2 waits <code>2 &times; tier_rule_wait_second</code>, etc.</td>
+            </tr>
+            <tr>
+              <td><code>tier_rule_no_agent_no_wait</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>false</code></td>
+              <td>When true, if no agents are available at the current tier, immediately escalate to the next tier without waiting.</td>
+            </tr>
+            <tr>
+              <td><code>discard_abandoned_after</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>60</code></td>
+              <td>Seconds after which an abandoned call's position is discarded (0&ndash;7200). Only relevant when <code>abandoned_resume_allowed</code> is true.</td>
+            </tr>
+            <tr>
+              <td><code>abandoned_resume_allowed</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>false</code></td>
+              <td>Allow callers who hung up and called back to resume their original position in the queue</td>
+            </tr>
+            <tr>
+              <td><code>caller_exit_key</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>DTMF key that allows the caller to exit the queue (max 5 characters). Common values: <code>"0"</code>, <code>"#"</code>. The caller is sent to the overflow destination.</td>
+            </tr>
+            <tr>
+              <td><code>wrapup_time</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>0</code></td>
+              <td>Seconds after a call ends before the agent receives the next call (0&ndash;600). Gives agents time to complete notes.</td>
+            </tr>
+            <tr>
+              <td><code>ring_timeout</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>30</code></td>
+              <td>Seconds to ring an agent before considering it unanswered and moving to the next agent (5&ndash;300)</td>
+            </tr>
+            <tr>
+              <td><code>announce_frequency</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>0</code></td>
+              <td>Seconds between position/wait-time announcements to the caller (0&ndash;600). Set to 0 to disable announcements.</td>
+            </tr>
+            <tr>
+              <td><code>announce_prompt_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Custom audio prompt for announcements. Falls back to system default if not set.</td>
+            </tr>
+            <tr>
+              <td><code>overflow_destination_type</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Destination type when the queue overflows (max 20 characters). Same types as inbound routes.</td>
+            </tr>
+            <tr>
+              <td><code>overflow_destination_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>UUID of the overflow destination object</td>
+            </tr>
+            <tr>
+              <td><code>record_calls</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>false</code></td>
+              <td>Automatically record all calls handled by this queue. Recordings are stored in the recordings system.</td>
+            </tr>
+            <tr>
+              <td><code>enabled</code></td>
+              <td><code>boolean</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>Whether the queue is active</td>
+            </tr>
+            <tr>
+              <td><code>members</code></td>
+              <td><code>list</code></td>
+              <td>No</td>
+              <td><code>[]</code></td>
+              <td>List of <code>QueueMemberCreate</code> objects. See <a href="#members">Agent/Member Management</a>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="member-fields">QueueMemberCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>extension_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Yes</td>
+              <td>The extension that will receive queue calls</td>
+            </tr>
+            <tr>
+              <td><code>level</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td>Tier level (1&ndash;100). Lower levels are tried first. Default: 1. See <a href="#tier-rules">Tier Rules</a>.</td>
+            </tr>
+            <tr>
+              <td><code>position</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td>Position within the tier (1&ndash;100). Used by some strategies for ordering. Default: 1.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="response-fields">Response Fields</h3>
+      <p>The API returns all create fields plus the following system-managed fields.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the queue</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>The tenant that owns this queue</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Computed field reflecting whether the queue is enabled</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the queue was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Agent / Member Management ─────────────────────────────────── -->
+      <h2 id="members">Agent / Member Management</h2>
+      <p>
+        Queue members are the agents (extensions) that handle calls from the queue. Each member
+        has a tier level and a position within that tier. The combination of level and position
+        determines when and in what order an agent is considered for calls.
+      </p>
+
+      <h3 id="member-structure">Member Structure</h3>
+      <ul>
+        <li><strong>Level</strong> &mdash; The tier the agent belongs to (1 = highest priority). Calls are offered to level 1 agents first. If no level 1 agents are available and tier rules allow escalation, level 2 agents are tried, and so on.</li>
+        <li><strong>Position</strong> &mdash; The agent's order within their tier. Used by strategies like round-robin and weighted to determine sequence. Lower position numbers are tried first.</li>
+      </ul>
+
+      <h3 id="member-example">Example: Two-Tier Support Team</h3>
+      <pre><code>"members": [
+  { "extension_id": "agent-a", "level": 1, "position": 1 },
+  { "extension_id": "agent-b", "level": 1, "position": 2 },
+  { "extension_id": "agent-c", "level": 1, "position": 3 },
+  { "extension_id": "senior-d", "level": 2, "position": 1 },
+  { "extension_id": "senior-e", "level": 2, "position": 2 }
+]</code></pre>
+      <p>
+        In this setup, agents A, B, and C handle calls first (tier 1). If all tier 1 agents
+        are busy and the tier escalation timer expires, calls are offered to senior agents D
+        and E (tier 2).
+      </p>
+
+      <!-- ── Tier Rules ────────────────────────────────────────────────── -->
+      <h2 id="tier-rules">Tier Rules</h2>
+      <p>
+        Tier rules control how and when calls escalate from one agent tier to the next. These
+        settings only apply when <code>tier_rules_apply</code> is <code>true</code>.
+      </p>
+
+      <h3 id="tier-escalation">Escalation Behavior</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Effect</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>tier_rule_wait_second: 300</code></td>
+              <td>Wait 300 seconds (5 minutes) at the current tier before escalating to the next tier.</td>
+            </tr>
+            <tr>
+              <td><code>tier_rule_wait_multiply_level: true</code></td>
+              <td>Tier 1 waits 300s, tier 2 waits 600s, tier 3 waits 900s, etc. This gives higher tiers more time because they handle overflow.</td>
+            </tr>
+            <tr>
+              <td><code>tier_rule_wait_multiply_level: false</code></td>
+              <td>Every tier waits exactly <code>tier_rule_wait_second</code> before escalating.</td>
+            </tr>
+            <tr>
+              <td><code>tier_rule_no_agent_no_wait: true</code></td>
+              <td>If no agents at the current tier are available (all busy, offline, or on break), immediately skip to the next tier without waiting.</td>
+            </tr>
+            <tr>
+              <td><code>tier_rule_no_agent_no_wait: false</code></td>
+              <td>Wait the full timer even if no agents are available at the current tier. An agent may become available during the wait.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="diagram">Tier escalation example (tier_rule_wait_second: 120, multiply: true)
+
+  0:00  &#8594; Try Tier 1 agents (level: 1)
+  2:00  &#8594; No answer from Tier 1 &#8594; Escalate to Tier 2 (level: 2)
+  6:00  &#8594; No answer from Tier 2 &#8594; Escalate to Tier 3 (level: 3)
+ 12:00  &#8594; No answer from Tier 3 &#8594; All tiers exhausted
+        &#8594; max_wait_time still running? Wait for any agent.
+        &#8594; max_wait_time expired? Overflow destination.</div>
+
+      <div class="callout">
+        <div class="callout-title">Disabling Tiers</div>
+        Set <code>tier_rules_apply: false</code> to treat all members as a single pool
+        regardless of their level value. The queue strategy will select from all available
+        agents without tier-based ordering.
+      </div>
+
+      <!-- ── Caller Experience ─────────────────────────────────────────── -->
+      <h2 id="caller-experience">Caller Experience</h2>
+      <p>
+        Several settings shape what the caller hears and can do while waiting in the queue.
+      </p>
+
+      <h3 id="music-on-hold">Music on Hold</h3>
+      <p>
+        The <code>moh_prompt_id</code> field specifies an audio file played continuously while
+        the caller waits. If not set, the system default music is used. Upload custom audio
+        files via <a href="audio-prompts.html">Audio Prompts</a>.
+      </p>
+
+      <h3 id="announcements">Position and Wait Time Announcements</h3>
+      <p>
+        When <code>announce_frequency</code> is greater than 0, the caller periodically hears
+        their position in the queue and estimated wait time. For example, "You are caller
+        number 3. Estimated wait time is 4 minutes." The announcement interrupts music on hold
+        briefly, then MOH resumes.
+      </p>
+      <ul>
+        <li><code>announce_frequency: 60</code> &mdash; Announce every 60 seconds</li>
+        <li><code>announce_frequency: 0</code> &mdash; No announcements (caller only hears MOH)</li>
+        <li><code>announce_prompt_id</code> &mdash; Custom announcement audio (optional)</li>
+      </ul>
+
+      <h3 id="exit-key">Caller Exit Key</h3>
+      <p>
+        The <code>caller_exit_key</code> allows callers to press a DTMF key to leave the queue
+        voluntarily. The call is then sent to the overflow destination. This is typically used
+        to let callers leave a voicemail instead of waiting.
+      </p>
+      <ul>
+        <li><code>"0"</code> &mdash; Press 0 to leave the queue (common for "press 0 to leave a message")</li>
+        <li><code>"#"</code> &mdash; Press # to exit</li>
+        <li><code>null</code> &mdash; No exit key (caller must wait or hang up)</li>
+      </ul>
+
+      <h3 id="abandoned-resume">Abandoned Call Resume</h3>
+      <p>
+        When <code>abandoned_resume_allowed</code> is <code>true</code>, a caller who hangs up
+        and calls back within <code>discard_abandoned_after</code> seconds can resume their
+        original position in the queue instead of going to the back of the line. The system
+        matches by caller ID.
+      </p>
+
+      <!-- ── Overflow and Failover ─────────────────────────────────────── -->
+      <h2 id="overflow">Overflow and Failover</h2>
+      <p>
+        The overflow destination receives calls when the queue cannot serve them. Overflow
+        triggers include:
+      </p>
+      <ul>
+        <li><strong>Max wait time exceeded</strong> &mdash; Caller has been in the queue longer than <code>max_wait_time</code> seconds.</li>
+        <li><strong>No agents available</strong> &mdash; No agents are logged in and <code>max_wait_time_with_no_agent</code> has expired.</li>
+        <li><strong>Caller pressed exit key</strong> &mdash; Caller pressed <code>caller_exit_key</code> to leave voluntarily.</li>
+      </ul>
+      <p>
+        If no overflow destination is configured, the caller hears a busy signal when overflow
+        conditions are met. Always configure an overflow destination (typically a voicemail box
+        or an announcement) for a professional caller experience.
+      </p>
+
+      <!-- ── Wrap-Up Time ──────────────────────────────────────────────── -->
+      <h2 id="wrapup-time">Wrap-Up Time</h2>
+      <p>
+        The <code>wrapup_time</code> setting adds a pause after each queue call before the
+        agent is offered the next call. During wrap-up, the agent's status remains
+        <code>BUSY</code> from the queue's perspective, giving them time to complete call
+        notes, update tickets, or take a breath.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Value</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>0</code> (default)</td>
+              <td>No wrap-up. The agent is immediately available for the next call.</td>
+            </tr>
+            <tr>
+              <td><code>15</code></td>
+              <td>15-second pause after each call. Good for quick note-taking.</td>
+            </tr>
+            <tr>
+              <td><code>60</code></td>
+              <td>60-second pause. Suitable for calls requiring ticket updates.</td>
+            </tr>
+            <tr>
+              <td><code>300</code></td>
+              <td>5-minute pause. For complex calls requiring detailed follow-up.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Agent Status ──────────────────────────────────────────────── -->
+      <h2 id="agent-status">Agent Status Management</h2>
+      <p>
+        Each agent has a status that determines whether they receive queue calls. Agents can
+        change their own status (within their permissions), and supervisors can change any
+        agent's status.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Receives Calls</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>AVAILABLE</code></td>
+              <td>Yes</td>
+              <td>Agent is logged in and ready to take calls. This is the only status that receives queue calls.</td>
+            </tr>
+            <tr>
+              <td><code>BUSY</code></td>
+              <td>No</td>
+              <td>Agent is currently on a call or in wrap-up. Set automatically by the system; returns to AVAILABLE when the call (and wrap-up) ends.</td>
+            </tr>
+            <tr>
+              <td><code>DO_NOT_DISTURB</code></td>
+              <td>No</td>
+              <td>Agent has manually entered DND mode. No queue calls are offered. The agent must manually return to AVAILABLE.</td>
+            </tr>
+            <tr>
+              <td><code>ON_BREAK</code></td>
+              <td>No</td>
+              <td>Agent is on a scheduled or manual break. Similar to DND but tracked separately for reporting.</td>
+            </tr>
+            <tr>
+              <td><code>OFFLINE</code></td>
+              <td>No</td>
+              <td>Agent is logged out of the queue. They do not appear in the available agent pool.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Status vs Queue Membership</div>
+        Agent status is separate from queue membership. An agent can be a member of a queue
+        (configured in the members list) but have a status of <code>OFFLINE</code>, meaning
+        they are not currently taking calls from that queue. Removing an agent from the
+        members list removes them permanently; changing status to OFFLINE is temporary.
+      </div>
+
+      <!-- ── Queue Statistics ──────────────────────────────────────────── -->
+      <h2 id="statistics">Queue Statistics</h2>
+      <p>
+        The platform provides real-time queue statistics through the
+        <code>QueueStatsResponse</code> object. These metrics are available via the API and
+        displayed on the <a href="dashboard.html">Dashboard</a>.
+      </p>
+
+      <h3 id="stats-fields">QueueStatsResponse Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>queue_id</code></td>
+              <td><code>UUID</code></td>
+              <td>The queue these stats belong to</td>
+            </tr>
+            <tr>
+              <td><code>queue_name</code></td>
+              <td><code>string</code></td>
+              <td>Display name of the queue</td>
+            </tr>
+            <tr>
+              <td><code>waiting_count</code></td>
+              <td><code>int</code></td>
+              <td>Number of callers currently waiting in the queue</td>
+            </tr>
+            <tr>
+              <td><code>agents_logged_in</code></td>
+              <td><code>int</code></td>
+              <td>Total number of agents with any status other than OFFLINE</td>
+            </tr>
+            <tr>
+              <td><code>agents_available</code></td>
+              <td><code>int</code></td>
+              <td>Number of agents with status AVAILABLE (ready to take calls)</td>
+            </tr>
+            <tr>
+              <td><code>agents_on_call</code></td>
+              <td><code>int</code></td>
+              <td>Number of agents currently handling a queue call</td>
+            </tr>
+            <tr>
+              <td><code>longest_wait_seconds</code></td>
+              <td><code>int</code></td>
+              <td>How long the longest-waiting caller has been in the queue (seconds)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <pre><code>GET /api/v1/queues/{queue_id}/stats
+
+{
+  "queue_id": "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
+  "queue_name": "Technical Support",
+  "waiting_count": 3,
+  "agents_logged_in": 5,
+  "agents_available": 2,
+  "agents_on_call": 3,
+  "longest_wait_seconds": 127
+}</code></pre>
+
+      <!-- ── Call Recording ────────────────────────────────────────────── -->
+      <h2 id="recording">Call Recording in Queues</h2>
+      <p>
+        When <code>record_calls</code> is <code>true</code>, every call handled by the queue
+        is automatically recorded from the moment the agent answers until the call ends. The
+        recording captures both sides of the conversation.
+      </p>
+      <ul>
+        <li>Recordings are stored in the platform's object storage (MinIO/S3)</li>
+        <li>Each recording is linked to the CDR (call detail record) for the call</li>
+        <li>Recordings can be played back and downloaded from <a href="recordings.html">Recordings</a></li>
+        <li>Storage retention follows the tenant's configured retention policy</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Legal Compliance</div>
+        Call recording laws vary by jurisdiction. Some states and countries require all-party
+        consent (all participants must be informed). Configure an announcement prompt that
+        notifies callers their call may be recorded. Consult legal counsel for your specific
+        requirements.
+      </div>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="ring-groups.html">Ring Groups</a> &mdash; Simpler multi-ring without queue features</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Manage the extensions that serve as queue agents</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Route incoming calls to a queue</li>
+          <li><a href="audio-prompts.html">Audio Prompts</a> &mdash; Upload custom MOH and announcement audio</li>
+          <li><a href="recordings.html">Recordings</a> &mdash; Access and manage call recordings</li>
+          <li><a href="cdrs.html">Call History</a> &mdash; View call detail records for queue calls</li>
+          <li><a href="dashboard.html">Dashboard</a> &mdash; Real-time queue statistics display</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="ring-groups.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Ring Groups</span>
+        </a>
+        <a href="ivr-menus.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">IVR Menus</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#call-flow">Queue Call Flow</a></li>
+      <li><a href="#strategies">Queue Strategies</a></li>
+      <li><a href="#creating">Creating a Queue</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#members">Agent / Member Management</a></li>
+      <li><a href="#tier-rules">Tier Rules</a></li>
+      <li><a href="#caller-experience">Caller Experience</a></li>
+      <li><a href="#overflow">Overflow &amp; Failover</a></li>
+      <li><a href="#wrapup-time">Wrap-Up Time</a></li>
+      <li><a href="#agent-status">Agent Status</a></li>
+      <li><a href="#statistics">Queue Statistics</a></li>
+      <li><a href="#recording">Call Recording</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

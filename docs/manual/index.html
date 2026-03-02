@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Phone Platform &mdash; Documentation</title>
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Landing-page overrides: no sidebar, centered layout */
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    .landing { max-width: 960px; margin: 0 auto; padding: 40px 24px 64px; width: 100%; }
+    .landing-header { text-align: center; margin-bottom: 48px; }
+    .landing-header img { width: 48px; height: 48px; margin-bottom: 12px; }
+    .landing-header h1 { font-size: 34px; font-weight: 800; margin-bottom: 8px; }
+    .landing-header p { font-size: 17px; color: var(--text-muted); max-width: 620px; margin: 0 auto; }
+    .landing-theme { position: fixed; top: 16px; right: 16px; z-index: 100; }
+    .section-heading { font-size: 22px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); text-align: center; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px; margin-bottom: 32px;
+    }
+    .feature-item {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 14px 16px; font-size: 14px; font-weight: 500;
+    }
+    .landing-footer { text-align: center; padding: 32px 0; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border); margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <div class="landing-theme">
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+  </div>
+
+  <div class="landing">
+
+    <!-- Header -->
+    <div class="landing-header">
+      <img src="images/favicon.svg" alt="New Phone Platform">
+      <h1>New Phone Platform</h1>
+      <p>Multi-tenant, API-first PBX platform built for managed service providers. Complete documentation for administrators and end users.</p>
+    </div>
+
+    <!-- Manual Cards -->
+    <div class="hero-cards">
+      <a href="admin/index.html" class="hero-card" style="text-decoration:none;">
+        <div class="icon">&#128736;</div>
+        <h2>Administrator Manual</h2>
+        <p>System setup, tenant management, extensions, trunks, routing, queues, IVR, security, and platform operations.</p>
+      </a>
+      <a href="user/index.html" class="hero-card" style="text-decoration:none;">
+        <div class="icon">&#128222;</div>
+        <h2>User Guide</h2>
+        <p>Making and receiving calls, voicemail, call history, the WebRTC softphone, and everyday phone features.</p>
+      </a>
+    </div>
+
+    <!-- Architecture -->
+    <h2 class="section-heading" id="architecture">Platform Architecture</h2>
+    <p style="text-align:center; color:var(--text-muted); font-size:14px; margin-bottom:20px;">
+      The New Phone Platform separates the control plane (Python/FastAPI) from the media plane (FreeSWITCH), with a Rust-based SIP proxy handling all signaling. Every component runs in Docker containers orchestrated by Docker Compose.
+    </p>
+
+    <div class="diagram" role="img" aria-label="Architecture diagram">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;  Web Client  &#9474;  &#9474; Mobile Client  &#9474;  &#9474; Desk Phones  &#9474;
+&#9474;  React/TS    &#9474;  &#9474; Flutter/Dart   &#9474;  &#9474; SIP/XML Apps &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+       &#9474;                 &#9474;                   &#9474;
+       &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                    &#9474;  HTTPS / WSS / SIP-TLS
+              &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+              &#9474;  SIP Proxy  &#9474;  Rust
+              &#9474;  + RTP Relay&#9474;
+              &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                    &#9474;
+         &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+         &#9474;   FastAPI Control    &#9474;
+         &#9474;      Plane (Python)  &#9474;
+         &#9492;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9496;
+            &#9474;      &#9474;       &#9474;
+     &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9488;  &#9484;&#9472;&#9472;&#9524;&#9472;&#9472;&#9488;  &#9484;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+     &#9474;Postgres&#9474;  &#9474;Redis &#9474;  &#9474;FreeSWITCH&#9474;
+     &#9474; + RLS  &#9474;  &#9474;     &#9474;  &#9474;  Media   &#9474;
+     &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+
+    <!-- What's Included -->
+    <h2 class="section-heading" id="features">What's Included</h2>
+
+    <div class="features-grid">
+      <div class="feature-item">Multi-tenant with RLS</div>
+      <div class="feature-item">SIP TLS + SRTP only</div>
+      <div class="feature-item">Extensions &amp; Ring Groups</div>
+      <div class="feature-item">Call Queues (ACD)</div>
+      <div class="feature-item">IVR / Auto-Attendant</div>
+      <div class="feature-item">Conference Bridges</div>
+      <div class="feature-item">Paging &amp; Intercom</div>
+      <div class="feature-item">SIP Trunk Management</div>
+      <div class="feature-item">DID Number Routing</div>
+      <div class="feature-item">Inbound / Outbound Routes</div>
+      <div class="feature-item">Follow Me / Find Me</div>
+      <div class="feature-item">Call Parking</div>
+      <div class="feature-item">Voicemail (visual + email)</div>
+      <div class="feature-item">Call Recordings</div>
+      <div class="feature-item">CDR &amp; Reporting</div>
+      <div class="feature-item">WebRTC Softphone</div>
+      <div class="feature-item">Mobile Softphone (Flutter)</div>
+      <div class="feature-item">Desk Phone Provisioning</div>
+      <div class="feature-item">XML Phone Apps</div>
+      <div class="feature-item">Time Conditions</div>
+      <div class="feature-item">Holiday Calendars</div>
+      <div class="feature-item">Caller ID Rules</div>
+      <div class="feature-item">Audio Prompt Management</div>
+      <div class="feature-item">5-Role RBAC</div>
+      <div class="feature-item">SSO (Entra ID / Google)</div>
+      <div class="feature-item">MFA (TOTP / WebAuthn)</div>
+      <div class="feature-item">SMS / MMS Messaging</div>
+      <div class="feature-item">10DLC Compliance</div>
+      <div class="feature-item">E911 with PIDF-LO</div>
+      <div class="feature-item">ConnectWise PSA Integration</div>
+      <div class="feature-item">AI Transcription &amp; Summary</div>
+      <div class="feature-item">AI Voice Agents</div>
+      <div class="feature-item">Audit Logging</div>
+      <div class="feature-item">REST API (OpenAPI)</div>
+      <div class="feature-item">Docker Deployment</div>
+      <div class="feature-item">Infrastructure Monitoring</div>
+    </div>
+
+    <!-- Quick Links -->
+    <h2 class="section-heading" id="quicklinks">Quick Links</h2>
+    <div class="card-grid">
+      <div class="card">
+        <a href="admin/index.html">
+          <h3>Getting Started (Admin)</h3>
+          <p>Initial login, tenant setup, adding users and extensions, and making your first test call.</p>
+        </a>
+      </div>
+      <div class="card">
+        <a href="admin/extensions.html">
+          <h3>Extensions</h3>
+          <p>Create, edit, and manage SIP extensions across your tenants.</p>
+        </a>
+      </div>
+      <div class="card">
+        <a href="admin/sip-trunks.html">
+          <h3>SIP Trunks</h3>
+          <p>Configure trunk connections to ClearlyIP, Twilio, or other SIP providers.</p>
+        </a>
+      </div>
+      <div class="card">
+        <a href="admin/queues.html">
+          <h3>Call Queues</h3>
+          <p>Set up ACD queues with ring strategies, timeouts, and agent management.</p>
+        </a>
+      </div>
+      <div class="card">
+        <a href="admin/users.html">
+          <h3>Users &amp; Roles</h3>
+          <p>Manage user accounts, assign roles, and configure authentication.</p>
+        </a>
+      </div>
+      <div class="card">
+        <a href="user/index.html">
+          <h3>Getting Started (User)</h3>
+          <p>Log in, configure your softphone, check voicemail, and make calls.</p>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="landing-footer">
+    New Phone Platform Documentation &middot; Built for MSPs
+  </div>
+
+  <script src="js/nav.js"></script>
+</body>
+</html>

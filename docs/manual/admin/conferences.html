@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conference Bridges &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html" class="active">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="extensions.html">Telephony</a>
+        <span class="sep">/</span>
+        <span>Conferences</span>
+      </div>
+
+      <h1>Conference Bridges</h1>
+      <p class="page-subtitle">Set up multi-party conference rooms with moderator controls, PIN protection, join/leave announcements, and optional recording.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Conference bridges allow multiple participants to join a shared audio room by dialing a
+        room number. Each bridge operates independently with its own settings for capacity, PIN
+        protection, moderation, and recording. Conferences are ideal for recurring team meetings,
+        customer calls with multiple stakeholders, and ad-hoc collaboration.
+      </p>
+      <p>
+        The platform distinguishes between two participant roles: <strong>moderators</strong>
+        who have elevated control and <strong>participants</strong> who join as regular
+        attendees. A moderator PIN grants moderator privileges; a participant PIN (if set)
+        simply restricts access to authorized users.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Dialing In</div>
+        Participants join a conference by dialing the <code>room_number</code> from any
+        registered extension, the WebRTC softphone, or (if routed via an inbound route) from
+        an external phone number.
+      </div>
+
+      <!-- ── Creating a Conference ────────────────────────────────────── -->
+      <h2 id="creating">Creating a Conference Bridge</h2>
+      <p>
+        Create a conference bridge by submitting a <code>POST</code> request with the room
+        configuration. The only required fields are <code>name</code> and
+        <code>room_number</code>.
+      </p>
+
+      <pre><code>POST /api/v1/conferences
+
+{
+  "name": "Weekly Engineering Standup",
+  "room_number": "800",
+  "description": "Every Monday 9:00 AM team standup",
+  "max_participants": 25,
+  "participant_pin": "1234",
+  "moderator_pin": "5678",
+  "wait_for_moderator": true,
+  "announce_join_leave": true,
+  "moh_prompt_id": null,
+  "record_conference": false,
+  "muted_on_join": false,
+  "enabled": true
+}</code></pre>
+
+      <!-- ── Field Reference ─────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="create-fields">ConferenceBridgeCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Display name for the conference (1&ndash;255 characters)</td>
+            </tr>
+            <tr>
+              <td><code>room_number</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>The dial number participants use to reach this conference (1&ndash;20 characters)</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Optional description of the conference purpose</td>
+            </tr>
+            <tr>
+              <td><code>max_participants</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>50</code></td>
+              <td>Maximum number of simultaneous participants (0&ndash;300; 0 = unlimited)</td>
+            </tr>
+            <tr>
+              <td><code>participant_pin</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>PIN required for regular participants (max 20 characters). If null, no PIN is required.</td>
+            </tr>
+            <tr>
+              <td><code>moderator_pin</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>PIN that grants moderator privileges (max 20 characters). If null, all participants are regular.</td>
+            </tr>
+            <tr>
+              <td><code>wait_for_moderator</code></td>
+              <td><code>bool</code></td>
+              <td>No</td>
+              <td><code>false</code></td>
+              <td>If true, participants hear music on hold until a moderator joins</td>
+            </tr>
+            <tr>
+              <td><code>announce_join_leave</code></td>
+              <td><code>bool</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>Play a tone or announcement when participants join or leave</td>
+            </tr>
+            <tr>
+              <td><code>moh_prompt_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td><code>null</code></td>
+              <td>Music on hold played while waiting for a moderator. Uses system default if null.</td>
+            </tr>
+            <tr>
+              <td><code>record_conference</code></td>
+              <td><code>bool</code></td>
+              <td>No</td>
+              <td><code>false</code></td>
+              <td>Automatically record the entire conference session</td>
+            </tr>
+            <tr>
+              <td><code>muted_on_join</code></td>
+              <td><code>bool</code></td>
+              <td>No</td>
+              <td><code>false</code></td>
+              <td>Mute all participants when they join (moderators are not muted)</td>
+            </tr>
+            <tr>
+              <td><code>enabled</code></td>
+              <td><code>bool</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>Whether the conference bridge is active and accepting calls</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="response-fields">Response Fields</h3>
+      <p>The API response includes all create fields plus the following system-managed fields:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for this conference bridge</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Owning tenant (set automatically from auth context)</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>bool</code></td>
+              <td>System-computed active state (enabled and not soft-deleted)</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the bridge was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last update</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── PINs ─────────────────────────────────────────────────────── -->
+      <h2 id="pins">PIN Protection</h2>
+      <p>
+        Conferences support two distinct PINs that serve different purposes. PINs are entirely
+        optional &mdash; omit both for an open conference room that anyone with the room number
+        can join.
+      </p>
+
+      <h3 id="participant-pin">Participant PIN</h3>
+      <p>
+        When <code>participant_pin</code> is set, callers must enter the correct PIN before being
+        admitted to the conference. This restricts access to authorized attendees only. The system
+        prompts the caller to enter the PIN and grants up to three attempts before disconnecting.
+      </p>
+
+      <h3 id="moderator-pin">Moderator PIN</h3>
+      <p>
+        When <code>moderator_pin</code> is set, callers who enter this PIN instead of the
+        participant PIN are granted moderator privileges. Moderators are never muted on join
+        (even when <code>muted_on_join</code> is true) and their presence satisfies the
+        <code>wait_for_moderator</code> requirement.
+      </p>
+
+      <div class="callout warning">
+        <div class="callout-title">PIN Security</div>
+        Use different values for participant and moderator PINs. If both PINs are the same,
+        every caller receives moderator privileges. For sensitive meetings, use PINs of at
+        least 6 digits and change them periodically.
+      </div>
+
+      <h3 id="pin-combinations">PIN Behavior Matrix</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Participant PIN</th>
+              <th>Moderator PIN</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Not set</td>
+              <td>Not set</td>
+              <td>Open access. Anyone who dials the room number joins immediately as a regular participant.</td>
+            </tr>
+            <tr>
+              <td>Set</td>
+              <td>Not set</td>
+              <td>PIN required for entry. All callers enter as regular participants. No moderator privileges available.</td>
+            </tr>
+            <tr>
+              <td>Not set</td>
+              <td>Set</td>
+              <td>Open access for participants. Callers who enter the moderator PIN receive moderator privileges.</td>
+            </tr>
+            <tr>
+              <td>Set</td>
+              <td>Set</td>
+              <td>All callers must enter a PIN. The system checks against both PINs to determine the caller's role.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Moderator Features ───────────────────────────────────────── -->
+      <h2 id="moderator">Moderator Features</h2>
+      <p>
+        Moderators have elevated control over the conference session. Their presence can gate
+        whether other participants can hear each other, and they bypass the mute-on-join setting.
+      </p>
+
+      <h3 id="wait-for-moderator">Wait for Moderator</h3>
+      <p>
+        When <code>wait_for_moderator</code> is <code>true</code>, participants who join before
+        any moderator are placed on hold and hear music on hold (from <code>moh_prompt_id</code>
+        or the system default). They cannot hear each other. Once a moderator joins, all waiting
+        participants are connected into the conference simultaneously.
+      </p>
+      <p>
+        If the last moderator leaves the conference while participants remain, the behavior
+        depends on your deployment configuration. By default, participants remain connected
+        but new callers will again be placed on hold until a moderator rejoins.
+      </p>
+
+      <h3 id="muted-on-join">Mute on Join</h3>
+      <p>
+        When <code>muted_on_join</code> is <code>true</code>, all participants join the
+        conference with their microphone muted. This is useful for large meetings, town halls,
+        or presentations where only the moderator should speak initially. Participants can
+        unmute themselves using their phone's mute toggle or a DTMF command (if supported by
+        the handset). Moderators are never muted on join.
+      </p>
+
+      <!-- ── Join/Leave Announcements ─────────────────────────────────── -->
+      <h2 id="announcements">Join and Leave Announcements</h2>
+      <p>
+        When <code>announce_join_leave</code> is <code>true</code>, existing participants hear
+        a notification tone each time someone joins or leaves the conference. This helps
+        attendees stay aware of who is present without checking a participant list.
+      </p>
+      <ul>
+        <li><strong>Join tone</strong> &mdash; A brief chime played to all current participants when a new caller enters.</li>
+        <li><strong>Leave tone</strong> &mdash; A different tone played when a participant disconnects.</li>
+      </ul>
+      <p>
+        For large conferences (20+ participants), consider disabling announcements to avoid
+        constant notification sounds disrupting the meeting. For small team meetings, announcements
+        provide helpful context about attendance.
+      </p>
+
+      <!-- ── Recording ────────────────────────────────────────────────── -->
+      <h2 id="recording">Recording Conferences</h2>
+      <p>
+        When <code>record_conference</code> is <code>true</code>, the entire conference session
+        is recorded from the moment the first participant joins until the last participant leaves.
+        The recording captures a mixed audio stream of all participants.
+      </p>
+      <ul>
+        <li>Recordings are stored in the platform's object storage (MinIO/S3)</li>
+        <li>Each recording is linked to the conference session and accessible from <a href="recordings.html">Recordings</a></li>
+        <li>Storage retention follows the tenant's configured retention policy</li>
+        <li>Recordings can be downloaded for archival or compliance purposes</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Recording Compliance</div>
+        Recording laws vary by jurisdiction. Some require all-party consent, meaning every
+        participant must be informed the conference is being recorded. Consider playing an
+        announcement at the start of recorded conferences. Consult legal counsel for your
+        specific requirements.
+      </div>
+
+      <!-- ── Capacity Planning ────────────────────────────────────────── -->
+      <h2 id="capacity">Capacity Planning</h2>
+      <p>
+        The <code>max_participants</code> field controls the maximum number of simultaneous
+        participants in a single conference room. The platform supports up to 300 participants
+        per conference, though real-world capacity depends on your server resources.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Participants</th>
+              <th>Use Case</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>5&ndash;10</td>
+              <td>Team standups, small meetings</td>
+              <td>Minimal resource usage. Announcements and recording work well.</td>
+            </tr>
+            <tr>
+              <td>10&ndash;50</td>
+              <td>Department meetings, project syncs</td>
+              <td>Consider <code>muted_on_join</code> to reduce background noise.</td>
+            </tr>
+            <tr>
+              <td>50&ndash;150</td>
+              <td>Company-wide meetings, town halls</td>
+              <td>Use <code>muted_on_join: true</code> and disable <code>announce_join_leave</code>.</td>
+            </tr>
+            <tr>
+              <td>150&ndash;300</td>
+              <td>Large events, webinars</td>
+              <td>Monitor server CPU and bandwidth. Recording increases resource usage. Consider a dedicated media server.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Setting <code>max_participants: 0</code> removes the participant limit entirely. Use
+        this only when you are confident in your server capacity, as an unlimited conference
+        can consume significant CPU and bandwidth.
+      </p>
+
+      <!-- ── Common Use Cases ─────────────────────────────────────────── -->
+      <h2 id="use-cases">Common Use Cases</h2>
+
+      <h3 id="uc-recurring">Recurring Team Meeting</h3>
+      <p>
+        Create a dedicated conference room for each team with a fixed room number. Team members
+        dial the same number every day. Use <code>wait_for_moderator: false</code> so the first
+        person to dial in can start talking immediately.
+      </p>
+      <pre><code>{
+  "name": "Dev Team Daily",
+  "room_number": "801",
+  "max_participants": 15,
+  "wait_for_moderator": false,
+  "announce_join_leave": true,
+  "muted_on_join": false
+}</code></pre>
+
+      <h3 id="uc-customer">Customer Conference Call</h3>
+      <p>
+        Secure conferences with external participants. Set both PINs so only invited callers can
+        join, and enable recording for documentation. Route an external DID to the conference
+        via an inbound route so external callers can dial in.
+      </p>
+      <pre><code>{
+  "name": "Client Review - Acme Corp",
+  "room_number": "850",
+  "max_participants": 20,
+  "participant_pin": "924731",
+  "moderator_pin": "186402",
+  "wait_for_moderator": true,
+  "record_conference": true
+}</code></pre>
+
+      <h3 id="uc-townhall">Company Town Hall</h3>
+      <p>
+        Large presentation-style conferences. Mute everyone on join so only the moderator
+        (presenter) speaks. Disable join/leave sounds to avoid constant notifications. Record
+        for employees who could not attend.
+      </p>
+      <pre><code>{
+  "name": "Q1 All-Hands",
+  "room_number": "899",
+  "max_participants": 200,
+  "moderator_pin": "770055",
+  "wait_for_moderator": true,
+  "announce_join_leave": false,
+  "record_conference": true,
+  "muted_on_join": true
+}</code></pre>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="audio-prompts.html">Audio Prompts</a> &mdash; Upload custom music on hold for waiting participants</li>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Route external DID calls to a conference room</li>
+          <li><a href="recordings.html">Recordings</a> &mdash; Access and manage conference recordings</li>
+          <li><a href="extensions.html">Extensions</a> &mdash; Internal extensions that dial into conferences</li>
+          <li><a href="ivr-menus.html">IVR Menus</a> &mdash; Offer conference access as an IVR option</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="ivr-menus.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">IVR Menus</span>
+        </a>
+        <a href="page-groups.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Paging</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#creating">Creating a Conference</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#pins">PIN Protection</a></li>
+      <li><a href="#moderator">Moderator Features</a></li>
+      <li><a href="#announcements">Join / Leave Announcements</a></li>
+      <li><a href="#recording">Recording</a></li>
+      <li><a href="#capacity">Capacity Planning</a></li>
+      <li><a href="#use-cases">Common Use Cases</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

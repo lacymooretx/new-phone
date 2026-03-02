@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication &amp; Login — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html" class="active">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="auth.html">Security</a>
+        <span class="sep">/</span>
+        <span>Authentication</span>
+      </div>
+
+      <h1>Authentication &amp; Login</h1>
+      <p class="page-subtitle">How users authenticate with the platform, including password login, SSO, MFA challenges, and token lifecycle.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        The New Phone Platform uses a token-based authentication system built on JSON Web Tokens (JWT).
+        All API access requires a valid access token, which is obtained by authenticating with email
+        and password credentials. If Multi-Factor Authentication (MFA) is enabled on the account, a
+        secondary challenge step is required before tokens are issued.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">API-First Authentication</div>
+        All authentication flows go through the REST API. The web UI and mobile apps use the same
+        endpoints documented here. All communication is encrypted over TLS.
+      </div>
+
+      <!-- ── Login Flow ────────────────────────────────────────────────── -->
+      <h2 id="login-flow">Login Flow</h2>
+      <p>
+        To log in, a user submits their email address and password to the login endpoint. The API
+        validates the credentials and returns one of two responses depending on whether MFA is enabled.
+      </p>
+
+      <h3 id="login-request">LoginRequest Schema</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>email</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>The user's email address</td>
+            </tr>
+            <tr>
+              <td><code>password</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>The user's password (min 8, max 128 characters)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="token-response">TokenResponse Schema</h3>
+      <p>Returned on successful authentication (no MFA, or after MFA verification).</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>access_token</code></td>
+              <td><code>string</code></td>
+              <td>JWT access token for API requests</td>
+            </tr>
+            <tr>
+              <td><code>refresh_token</code></td>
+              <td><code>string</code></td>
+              <td>Long-lived token used to obtain new access tokens</td>
+            </tr>
+            <tr>
+              <td><code>token_type</code></td>
+              <td><code>"bearer"</code></td>
+              <td>Always <code>"bearer"</code> &mdash; include in the <code>Authorization</code> header</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Auth Flow Diagram ─────────────────────────────────────────── -->
+      <h2 id="auth-flow-diagram">Authentication Flow Diagram</h2>
+      <p>The following diagram shows the complete authentication flow, including the MFA challenge branch.</p>
+
+      <div class="diagram">User &#8594; Login (email/password) &#8594; API
+  &#9500;&#9472; No MFA &#8594; TokenResponse (access_token, refresh_token)
+  &#9492;&#9472; MFA Enabled &#8594; MFAChallengeResponse (mfa_required, mfa_token)
+       &#8594; User enters TOTP code
+       &#8594; MFAChallengeRequest (mfa_token, code) &#8594; API
+       &#8594; TokenResponse (access_token, refresh_token)</div>
+
+      <p>
+        When MFA is not enabled, the user receives tokens immediately. When MFA is enabled, the
+        API returns an <code>MFAChallengeResponse</code> instead, and the user must complete the
+        second factor before tokens are issued.
+      </p>
+
+      <!-- ── MFA Challenge ─────────────────────────────────────────────── -->
+      <h2 id="mfa-challenge">MFA Challenge Flow</h2>
+      <p>
+        When a user with MFA enabled submits valid credentials, the API does not return tokens.
+        Instead, it returns an MFA challenge that must be completed.
+      </p>
+
+      <h3 id="mfa-challenge-response">MFAChallengeResponse Schema</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>mfa_required</code></td>
+              <td><code>boolean</code></td>
+              <td>Always <code>true</code> when MFA is needed</td>
+            </tr>
+            <tr>
+              <td><code>mfa_token</code></td>
+              <td><code>string</code></td>
+              <td>Temporary token that authorizes the MFA verification step</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="mfa-challenge-request">MFAChallengeRequest Schema</h3>
+      <p>Submit the MFA token along with the user's TOTP code to complete authentication.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>mfa_token</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>The temporary token from MFAChallengeResponse</td>
+            </tr>
+            <tr>
+              <td><code>code</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>6-digit TOTP code from the user's authenticator app</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        If the code is valid, the API returns a <code>TokenResponse</code> with access and refresh
+        tokens. If the code is invalid or the <code>mfa_token</code> has expired, the request is
+        rejected and the user must start the login process again.
+      </p>
+
+      <!-- ── SSO ───────────────────────────────────────────────────────── -->
+      <h2 id="sso">Single Sign-On (SSO) <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        The platform will support enterprise SSO through two providers. SSO allows users to
+        authenticate using their existing corporate identity without managing a separate password.
+      </p>
+
+      <h3 id="sso-entra">Microsoft Entra ID</h3>
+      <p>
+        Integration via both OIDC and SAML protocols. Tenant administrators will be able to configure
+        their Entra ID tenant connection in the admin panel, mapping Entra groups to platform roles.
+      </p>
+      <ul>
+        <li>Protocol support: OpenID Connect (OIDC) and SAML 2.0</li>
+        <li>Automatic user provisioning on first login</li>
+        <li>Group-to-role mapping</li>
+        <li>Support for Conditional Access policies</li>
+      </ul>
+
+      <h3 id="sso-google">Google Workspace</h3>
+      <p>
+        Integration via OIDC. Similar configuration flow to Entra ID, with Google Workspace
+        organizational units mapped to platform roles.
+      </p>
+      <ul>
+        <li>Protocol support: OpenID Connect (OIDC)</li>
+        <li>Automatic user provisioning on first login</li>
+        <li>Organizational unit mapping</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">SSO Not Yet Available</div>
+        SSO integration is planned for a future release. Currently, only email/password
+        authentication is supported. Contact your MSP administrator for timeline updates.
+      </div>
+
+      <!-- ── Token Lifecycle ───────────────────────────────────────────── -->
+      <h2 id="token-lifecycle">Token Lifecycle</h2>
+      <p>
+        The platform uses a dual-token system with short-lived access tokens and long-lived
+        refresh tokens.
+      </p>
+
+      <h3 id="access-tokens">Access Tokens</h3>
+      <ul>
+        <li>Short-lived JWT containing user identity, role, and tenant context</li>
+        <li>Included in every API request via the <code>Authorization: Bearer &lt;token&gt;</code> header</li>
+        <li>Automatically verified on each request; expired tokens are rejected with <code>401 Unauthorized</code></li>
+        <li>Contain claims: <code>sub</code> (user ID), <code>tenant_id</code>, <code>role</code>, <code>exp</code> (expiry), <code>iat</code> (issued at)</li>
+      </ul>
+
+      <h3 id="refresh-tokens">Refresh Tokens</h3>
+      <ul>
+        <li>Longer-lived token stored securely by the client</li>
+        <li>Used to request a new access token when the current one expires</li>
+        <li>Each refresh token can only be used once (rotation on use)</li>
+        <li>Revoked on logout or password change</li>
+      </ul>
+
+      <h3 id="token-usage">Token Usage</h3>
+      <pre><code>Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</code></pre>
+      <p>
+        The <code>token_type</code> field in the <code>TokenResponse</code> is always
+        <code>"bearer"</code>. Clients must include the access token in the
+        <code>Authorization</code> header of every API request.
+      </p>
+
+      <!-- ── Session Management ────────────────────────────────────────── -->
+      <h2 id="session-management">Session Management</h2>
+      <p>
+        Sessions are managed entirely through tokens. The platform does not use server-side session
+        storage. Key behaviors include:
+      </p>
+      <ul>
+        <li><strong>Login</strong> &mdash; Creates a new token pair (access + refresh)</li>
+        <li><strong>Token refresh</strong> &mdash; Issues a new token pair, invalidates the old refresh token</li>
+        <li><strong>Logout</strong> &mdash; Revokes the refresh token; the access token expires naturally</li>
+        <li><strong>Password change</strong> &mdash; Revokes all active refresh tokens for the user</li>
+        <li><strong>Admin revocation</strong> &mdash; Administrators can revoke all sessions for any user</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Stateless Access Tokens</div>
+        Access tokens are stateless JWTs verified by signature only. They cannot be individually
+        revoked before expiry. This is why access token lifetimes are kept short. For immediate
+        session termination, revoke the refresh token and wait for the access token to expire.
+      </div>
+
+      <!-- ── Password Requirements ─────────────────────────────────────── -->
+      <h2 id="password-requirements">Password Requirements</h2>
+      <p>All passwords must meet the following requirements:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Rule</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Minimum length</td>
+              <td>8 characters</td>
+            </tr>
+            <tr>
+              <td>Maximum length</td>
+              <td>128 characters</td>
+            </tr>
+            <tr>
+              <td>Hashing algorithm</td>
+              <td>bcrypt (cost factor 12)</td>
+            </tr>
+            <tr>
+              <td>Storage</td>
+              <td>Only the bcrypt hash is stored; plaintext is never persisted</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Passwords are validated at both the API schema level (length constraints) and during
+        user creation or password change operations.
+      </p>
+
+      <!-- ── Account Lockout ───────────────────────────────────────────── -->
+      <h2 id="account-lockout">Account Lockout</h2>
+      <p>
+        To protect against brute-force attacks, the platform enforces account lockout after
+        repeated failed login attempts.
+      </p>
+      <ul>
+        <li>After a configurable number of failed attempts, the account is temporarily locked</li>
+        <li>Locked accounts cannot authenticate until the lockout period expires</li>
+        <li>Failed attempt counters reset on successful login</li>
+        <li>Administrators can manually unlock accounts from the Users management page</li>
+        <li>Lockout events are recorded in the audit log</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Rate Limiting</div>
+        In addition to account lockout, the login endpoint is rate-limited by IP address.
+        Excessive requests from a single IP will receive <code>429 Too Many Requests</code>
+        responses regardless of which account is being targeted.
+      </div>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="mfa.html">MFA Setup</a> &mdash; Configure multi-factor authentication</li>
+          <li><a href="rbac.html">Roles &amp; Permissions</a> &mdash; Understand the RBAC model</li>
+          <li><a href="users.html">Users</a> &mdash; Manage user accounts and unlock locked accounts</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; Review authentication events</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="admin-ops.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Admin Ops</span>
+        </a>
+        <a href="mfa.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">MFA Setup</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#login-flow">Login Flow</a></li>
+      <li><a href="#auth-flow-diagram">Auth Flow Diagram</a></li>
+      <li><a href="#mfa-challenge">MFA Challenge Flow</a></li>
+      <li><a href="#sso">Single Sign-On (SSO)</a></li>
+      <li><a href="#token-lifecycle">Token Lifecycle</a></li>
+      <li><a href="#session-management">Session Management</a></li>
+      <li><a href="#password-requirements">Password Requirements</a></li>
+      <li><a href="#account-lockout">Account Lockout</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

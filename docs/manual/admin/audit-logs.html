@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audit Logs — New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html" class="active">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="users.html">System</a>
+        <span class="sep">/</span>
+        <span>Audit Logs</span>
+      </div>
+
+      <h1>Audit Logs</h1>
+      <p class="page-subtitle">Every administrative action on the platform is recorded in an immutable audit log. Use audit logs for security investigations, compliance reporting, and change tracking.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        The audit log captures a tamper-evident record of every significant action performed on the
+        platform. When a user creates an extension, modifies a queue, deletes a trunk, or logs into
+        the system, the platform writes an audit log entry with the actor's identity, what changed,
+        when it changed, and from where the request originated.
+      </p>
+      <p>
+        Audit logs are append-only and immutable. Once written, entries cannot be modified or deleted
+        by any user, including MSP super-administrators. This guarantees a trustworthy record for
+        compliance audits, security investigations, and operational troubleshooting.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Automatic and Comprehensive</div>
+        Audit logging is always enabled and cannot be disabled. Every CRUD operation on every
+        resource type generates an audit log entry automatically. No configuration is required
+        to activate logging.
+      </div>
+
+      <!-- ── Audit Log Field Reference ───────────────────────────────── -->
+      <h2 id="field-reference">Audit Log Field Reference</h2>
+      <p>The following table describes every field returned in an <code>AuditLogResponse</code> object.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for this audit log entry</td>
+            </tr>
+            <tr>
+              <td><code>user_id</code></td>
+              <td><code>UUID | null</code></td>
+              <td>The user who performed the action. Null for system-initiated actions (automated processes, scheduled tasks, webhook-triggered operations). See <a href="#system-vs-user">System vs User Actions</a>.</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID | null</code></td>
+              <td>The tenant context of the action. Null for MSP-level operations that span multiple tenants (such as tenant creation or global configuration changes).</td>
+            </tr>
+            <tr>
+              <td><code>action</code></td>
+              <td><code>string</code></td>
+              <td>The type of operation performed: <code>"create"</code>, <code>"update"</code>, <code>"delete"</code>, <code>"login"</code>, <code>"logout"</code>, and others. See <a href="#action-types">Action Types</a>.</td>
+            </tr>
+            <tr>
+              <td><code>resource_type</code></td>
+              <td><code>string</code></td>
+              <td>The kind of resource affected: <code>"extension"</code>, <code>"user"</code>, <code>"queue"</code>, <code>"trunk"</code>, and others. See <a href="#resource-types">Resource Types</a>.</td>
+            </tr>
+            <tr>
+              <td><code>resource_id</code></td>
+              <td><code>UUID | null</code></td>
+              <td>The specific resource instance that was affected. Null for actions that do not target a single resource (such as login or bulk operations).</td>
+            </tr>
+            <tr>
+              <td><code>changes</code></td>
+              <td><code>object | null</code></td>
+              <td>A JSON object containing before/after values for each modified field. Null for non-update actions or when change tracking is not applicable. See <a href="#changes-field">Changes Field</a>.</td>
+            </tr>
+            <tr>
+              <td><code>ip_address</code></td>
+              <td><code>string</code></td>
+              <td>The IP address from which the request originated. For API requests, this is the client's IP. For system actions, this may be the server's internal address.</td>
+            </tr>
+            <tr>
+              <td><code>user_agent</code></td>
+              <td><code>string | null</code></td>
+              <td>The User-Agent header from the HTTP request. Identifies the browser, application, or API client that made the request. Null for system-initiated actions.</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the audit log entry was recorded (ISO 8601, UTC). This is the authoritative timestamp for when the action occurred.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── What Gets Logged ────────────────────────────────────────── -->
+      <h2 id="what-gets-logged">What Gets Logged</h2>
+      <p>
+        The audit log captures all state-changing operations on all platform resources. This includes
+        every create, update, and delete operation, as well as authentication events and
+        administrative actions. The following categories are always logged:
+      </p>
+      <ul>
+        <li><strong>Resource CRUD</strong> &mdash; Creating, updating, or deleting any telephony resource (extensions, queues, ring groups, IVRs, trunks, DIDs, routes, etc.)</li>
+        <li><strong>User management</strong> &mdash; Creating, updating, disabling, or deleting user accounts. Changing roles or permissions.</li>
+        <li><strong>Authentication events</strong> &mdash; Successful and failed login attempts, logouts, MFA enrollment and verification, password changes, token refresh, session revocation.</li>
+        <li><strong>Tenant operations</strong> &mdash; Creating, updating, suspending, or deleting tenants. Changing tenant-level settings.</li>
+        <li><strong>Recording access</strong> &mdash; Generating playback URLs, downloading recordings, deleting recordings. Provides a chain of custody for sensitive audio data.</li>
+        <li><strong>Configuration changes</strong> &mdash; Modifying time conditions, holiday calendars, caller ID rules, audio prompts, outbound dial patterns, and other system settings.</li>
+        <li><strong>Bulk operations</strong> &mdash; Batch imports, exports, and bulk update operations. Logged as a single entry with summary details.</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Read Operations</div>
+        Standard read/list operations (viewing a list of extensions, reading a CDR, etc.) are
+        <strong>not</strong> logged in the audit trail to avoid excessive log volume. The exception
+        is recording playback, which is logged due to the sensitive nature of call recordings.
+      </div>
+
+      <!-- ── Action Types ────────────────────────────────────────────── -->
+      <h2 id="action-types">Action Types</h2>
+      <p>
+        The <code>action</code> field categorizes what kind of operation was performed. The core
+        CRUD actions are supplemented by authentication-specific and administrative action types.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Description</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>create</code></td>
+              <td>A new resource was created. The <code>changes</code> field contains the initial values of all fields.</td>
+              <td>Administrator creates a new extension 201.</td>
+            </tr>
+            <tr>
+              <td><code>update</code></td>
+              <td>An existing resource was modified. The <code>changes</code> field shows before/after values for each changed field.</td>
+              <td>Administrator changes the voicemail PIN on extension 201.</td>
+            </tr>
+            <tr>
+              <td><code>delete</code></td>
+              <td>A resource was removed. The <code>changes</code> field may contain the final state of the resource before deletion.</td>
+              <td>Administrator deletes an unused SIP trunk.</td>
+            </tr>
+            <tr>
+              <td><code>login</code></td>
+              <td>A user successfully authenticated. The <code>resource_type</code> is <code>"session"</code> and <code>resource_id</code> is null.</td>
+              <td>User john@example.com logs in from 192.168.1.50.</td>
+            </tr>
+            <tr>
+              <td><code>login_failed</code></td>
+              <td>An authentication attempt failed. Captures the email used and the failure reason (bad password, locked account, etc.).</td>
+              <td>Failed login attempt for jane@example.com from 10.0.0.5.</td>
+            </tr>
+            <tr>
+              <td><code>logout</code></td>
+              <td>A user explicitly logged out, revoking their refresh token.</td>
+              <td>User john@example.com logs out.</td>
+            </tr>
+            <tr>
+              <td><code>mfa_enroll</code></td>
+              <td>A user enrolled in multi-factor authentication.</td>
+              <td>User jane@example.com enables TOTP MFA.</td>
+            </tr>
+            <tr>
+              <td><code>mfa_verify</code></td>
+              <td>A user completed an MFA challenge during login.</td>
+              <td>User jane@example.com verifies TOTP code after password login.</td>
+            </tr>
+            <tr>
+              <td><code>password_change</code></td>
+              <td>A user changed their password. All active sessions for the user are revoked.</td>
+              <td>User john@example.com changes their password.</td>
+            </tr>
+            <tr>
+              <td><code>session_revoke</code></td>
+              <td>An administrator forcibly revoked all sessions for a user.</td>
+              <td>Admin revokes all sessions for a compromised account.</td>
+            </tr>
+            <tr>
+              <td><code>recording_access</code></td>
+              <td>A user generated a playback URL or downloaded a call recording.</td>
+              <td>Supervisor plays back a recording for quality review.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Resource Types ──────────────────────────────────────────── -->
+      <h2 id="resource-types">Resource Types</h2>
+      <p>
+        The <code>resource_type</code> field identifies what kind of platform object was affected.
+        Combined with <code>action</code> and <code>resource_id</code>, it provides a complete
+        picture of what was done to which object.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Resource Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>extension</code></td>
+              <td>SIP extensions (phone lines assigned to users or devices)</td>
+            </tr>
+            <tr>
+              <td><code>user</code></td>
+              <td>User accounts (authentication, roles, profile information)</td>
+            </tr>
+            <tr>
+              <td><code>queue</code></td>
+              <td>Call queues (ACD queues with agent management)</td>
+            </tr>
+            <tr>
+              <td><code>ring_group</code></td>
+              <td>Ring groups (simultaneous or sequential ringing patterns)</td>
+            </tr>
+            <tr>
+              <td><code>ivr</code></td>
+              <td>IVR menus (interactive voice response auto-attendants)</td>
+            </tr>
+            <tr>
+              <td><code>trunk</code></td>
+              <td>SIP trunks (connections to PSTN carriers)</td>
+            </tr>
+            <tr>
+              <td><code>did</code></td>
+              <td>DIDs (phone numbers assigned to the tenant)</td>
+            </tr>
+            <tr>
+              <td><code>inbound_route</code></td>
+              <td>Inbound routing rules (DID-to-destination mapping)</td>
+            </tr>
+            <tr>
+              <td><code>outbound_route</code></td>
+              <td>Outbound routing rules (dial pattern-to-trunk mapping)</td>
+            </tr>
+            <tr>
+              <td><code>conference</code></td>
+              <td>Conference rooms (multi-party calling)</td>
+            </tr>
+            <tr>
+              <td><code>page_group</code></td>
+              <td>Paging groups (one-way broadcast to multiple devices)</td>
+            </tr>
+            <tr>
+              <td><code>time_condition</code></td>
+              <td>Time-based routing conditions</td>
+            </tr>
+            <tr>
+              <td><code>holiday_calendar</code></td>
+              <td>Holiday calendar definitions</td>
+            </tr>
+            <tr>
+              <td><code>caller_id_rule</code></td>
+              <td>Caller ID manipulation rules</td>
+            </tr>
+            <tr>
+              <td><code>audio_prompt</code></td>
+              <td>Custom audio prompts and hold music</td>
+            </tr>
+            <tr>
+              <td><code>recording</code></td>
+              <td>Call recordings (access, deletion, legal hold changes)</td>
+            </tr>
+            <tr>
+              <td><code>tenant</code></td>
+              <td>Tenant organizations (MSP-level operations)</td>
+            </tr>
+            <tr>
+              <td><code>session</code></td>
+              <td>Authentication sessions (login, logout, token events)</td>
+            </tr>
+            <tr>
+              <td><code>follow_me</code></td>
+              <td>Follow-me routing configurations</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Changes Field ───────────────────────────────────────────── -->
+      <h2 id="changes-field">Changes Field</h2>
+      <p>
+        For <code>update</code> actions, the <code>changes</code> field contains a JSON object
+        showing exactly what was modified. Each key in the object is a field name, and the value
+        is an object with <code>old</code> and <code>new</code> properties representing the
+        before and after states.
+      </p>
+
+      <h3 id="changes-structure">Structure</h3>
+      <pre><code>{
+  "field_name": {
+    "old": "previous value",
+    "new": "updated value"
+  },
+  "another_field": {
+    "old": 100,
+    "new": 200
+  }
+}</code></pre>
+
+      <h3 id="changes-example">Example: Extension Update</h3>
+      <p>
+        An administrator changes the caller ID name and enables call recording on extension 201.
+        The <code>changes</code> field would contain:
+      </p>
+      <pre><code>{
+  "caller_id_name": {
+    "old": "John Smith",
+    "new": "John Smith - Sales"
+  },
+  "recording_policy": {
+    "old": "never",
+    "new": "always"
+  }
+}</code></pre>
+
+      <h3 id="changes-notes">Important Notes</h3>
+      <ul>
+        <li>Only modified fields appear in the <code>changes</code> object. Fields that were not changed are omitted.</li>
+        <li>For <code>create</code> actions, <code>changes</code> may contain the initial values with <code>old</code> set to <code>null</code>.</li>
+        <li>For <code>delete</code> actions, <code>changes</code> may contain the final values with <code>new</code> set to <code>null</code>.</li>
+        <li>Sensitive fields (passwords, MFA secrets, tokens) are never included in the <code>changes</code> object. They are replaced with <code>"[redacted]"</code>.</li>
+        <li>Large values (such as audio file content) are truncated to prevent excessive log size.</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Sensitive Data Redaction</div>
+        The audit log never stores sensitive values. Password hashes, MFA secrets, API tokens, and
+        other credential material are automatically redacted from the <code>changes</code> field.
+        The log records <em>that</em> a password was changed but never stores the old or new value.
+      </div>
+
+      <!-- ── Filtering and Searching ─────────────────────────────────── -->
+      <h2 id="filtering">Filtering and Searching</h2>
+      <p>
+        The audit log list endpoint accepts filter parameters to help you find specific events.
+        All filters are optional and can be combined with AND logic.
+      </p>
+
+      <h3 id="audit-filter">AuditLogListParams</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td><em>none</em></td>
+              <td>Filter by tenant. MSP administrators can view logs across tenants; tenant administrators are restricted to their own tenant.</td>
+            </tr>
+            <tr>
+              <td><code>user_id</code></td>
+              <td><code>UUID</code></td>
+              <td><em>none</em></td>
+              <td>Filter by the user who performed the action. Useful for investigating a specific user's activity.</td>
+            </tr>
+            <tr>
+              <td><code>action</code></td>
+              <td><code>string</code></td>
+              <td><em>none</em></td>
+              <td>Filter by action type: <code>"create"</code>, <code>"update"</code>, <code>"delete"</code>, <code>"login"</code>, <code>"login_failed"</code>, etc.</td>
+            </tr>
+            <tr>
+              <td><code>resource_type</code></td>
+              <td><code>string</code></td>
+              <td><em>none</em></td>
+              <td>Filter by resource type: <code>"extension"</code>, <code>"user"</code>, <code>"queue"</code>, <code>"trunk"</code>, etc.</td>
+            </tr>
+            <tr>
+              <td><code>date_from</code></td>
+              <td><code>datetime</code></td>
+              <td><em>none</em></td>
+              <td>Return entries created on or after this timestamp (ISO 8601, UTC)</td>
+            </tr>
+            <tr>
+              <td><code>date_to</code></td>
+              <td><code>datetime</code></td>
+              <td><em>none</em></td>
+              <td>Return entries created on or before this timestamp (ISO 8601, UTC)</td>
+            </tr>
+            <tr>
+              <td><code>page</code></td>
+              <td><code>integer</code></td>
+              <td><code>1</code></td>
+              <td>Page number for pagination (1-based). Combined with <code>per_page</code> to navigate through results.</td>
+            </tr>
+            <tr>
+              <td><code>per_page</code></td>
+              <td><code>integer</code></td>
+              <td><code>50</code></td>
+              <td>Number of entries per page (1&ndash;200)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="filter-examples">Common Filter Combinations</h3>
+      <ul>
+        <li><strong>Security investigation</strong> &mdash; Set <code>action</code> to <code>"login_failed"</code> and <code>date_from</code>/<code>date_to</code> to a suspicious time window</li>
+        <li><strong>User activity audit</strong> &mdash; Set <code>user_id</code> to the target user and leave other filters empty to see all their actions</li>
+        <li><strong>Configuration changes</strong> &mdash; Set <code>resource_type</code> to the specific resource (e.g., <code>"trunk"</code>) and <code>action</code> to <code>"update"</code></li>
+        <li><strong>Deletion review</strong> &mdash; Set <code>action</code> to <code>"delete"</code> to see all resource deletions in a period</li>
+        <li><strong>Recording access trail</strong> &mdash; Set <code>action</code> to <code>"recording_access"</code> to see who listened to recordings</li>
+      </ul>
+
+      <!-- ── Pagination ──────────────────────────────────────────────── -->
+      <h2 id="pagination">Pagination</h2>
+      <p>
+        Audit log results use page-based pagination (as opposed to the offset-based pagination used
+        by CDRs and recordings). This model is more intuitive for browsing through sequential event
+        logs.
+      </p>
+      <ul>
+        <li><strong>First page</strong>: <code>page=1&amp;per_page=50</code> (default)</li>
+        <li><strong>Second page</strong>: <code>page=2&amp;per_page=50</code></li>
+        <li><strong>Custom page size</strong>: <code>page=1&amp;per_page=200</code> (maximum)</li>
+      </ul>
+      <p>
+        The maximum value for <code>per_page</code> is 200 entries per page. Results are returned in
+        reverse chronological order (newest first) by default. Use date range filters to narrow the
+        result set for large tenants with high log volume.
+      </p>
+
+      <!-- ── System vs User Actions ──────────────────────────────────── -->
+      <h2 id="system-vs-user">System vs User Actions</h2>
+      <p>
+        Most audit log entries have a <code>user_id</code> identifying the person who performed the
+        action. However, some actions are performed by the system itself without direct human
+        initiation. These system actions have a <code>null</code> <code>user_id</code>.
+      </p>
+
+      <h3 id="user-actions">User-Initiated Actions</h3>
+      <p>
+        Any action triggered by an authenticated API request has a <code>user_id</code> value. This
+        includes actions taken through the web UI, mobile app, or direct API calls. The
+        <code>ip_address</code> and <code>user_agent</code> fields provide additional context about
+        where and how the user made the request.
+      </p>
+
+      <h3 id="system-actions">System-Initiated Actions</h3>
+      <p>
+        Actions triggered by automated processes have <code>user_id</code> set to <code>null</code>.
+        Common system-initiated actions include:
+      </p>
+      <ul>
+        <li><strong>Scheduled retention cleanup</strong> &mdash; Automatic deletion of expired recordings or CDRs based on retention policies</li>
+        <li><strong>Account lockout</strong> &mdash; Automatic locking of accounts after too many failed login attempts</li>
+        <li><strong>Token expiration</strong> &mdash; Automatic session cleanup when refresh tokens expire</li>
+        <li><strong>Webhook-triggered operations</strong> &mdash; Actions initiated by external system integrations</li>
+        <li><strong>Database maintenance</strong> &mdash; Automated data archival and optimization tasks</li>
+      </ul>
+
+      <p>
+        To distinguish system actions in the audit log, filter for entries where <code>user_id</code>
+        is null. The <code>ip_address</code> for system actions will typically show an internal
+        server address (e.g., <code>127.0.0.1</code> or the container IP).
+      </p>
+
+      <!-- ── Compliance ──────────────────────────────────────────────── -->
+      <h2 id="compliance">Compliance</h2>
+      <p>
+        The audit log is designed to support common compliance frameworks used in telecommunications
+        and managed services. Its immutability, comprehensive scope, and searchability make it suitable
+        for the following regulatory and industry standards.
+      </p>
+
+      <h3 id="soc2">SOC 2</h3>
+      <p>
+        SOC 2 Type II audits require evidence of continuous monitoring and logging of system changes.
+        The New Phone Platform audit log satisfies several Trust Service Criteria:
+      </p>
+      <ul>
+        <li><strong>CC6.1</strong> &mdash; Logical access controls are logged (login, logout, failed login, session revocation)</li>
+        <li><strong>CC6.2</strong> &mdash; Access to system components is restricted and tracked (role changes, permission modifications)</li>
+        <li><strong>CC7.2</strong> &mdash; Security events are monitored (failed logins, account lockouts, unusual access patterns)</li>
+        <li><strong>CC8.1</strong> &mdash; Changes to system components are authorized, tested, and documented (all CRUD operations logged with before/after values)</li>
+      </ul>
+
+      <h3 id="hipaa">HIPAA Considerations</h3>
+      <p>
+        Healthcare organizations using the platform for patient communications must comply with HIPAA
+        audit requirements. The audit log supports this through:
+      </p>
+      <ul>
+        <li>Recording access logging &mdash; every playback of a call recording is tracked with user identity, timestamp, and IP address</li>
+        <li>User access management &mdash; all changes to user accounts, roles, and permissions are logged</li>
+        <li>Immutable log storage &mdash; audit entries cannot be altered or deleted, satisfying the integrity requirement</li>
+        <li>Minimum retention of 6 years (configurable) for HIPAA-covered entities</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Compliance Is Shared Responsibility</div>
+        The audit log provides the technical controls and evidence needed for compliance, but
+        compliance is a holistic process that includes organizational policies, personnel training,
+        risk assessments, and more. The platform's audit capabilities are one component of your
+        overall compliance program.
+      </div>
+
+      <h3 id="pci-dss">PCI-DSS</h3>
+      <p>
+        If your organization processes payment card data over the phone, the audit log supports
+        PCI-DSS requirement 10 (track and monitor all access to network resources and cardholder
+        data) through comprehensive logging of all administrative actions, access controls, and
+        system changes.
+      </p>
+
+      <!-- ── Log Retention ───────────────────────────────────────────── -->
+      <h2 id="retention">Log Retention</h2>
+      <p>
+        Audit log entries are retained for a configurable period. The default and minimum retention
+        periods depend on the compliance requirements of the tenant.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Retention</th>
+              <th>Storage</th>
+              <th>Access</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Active</td>
+              <td>1 year</td>
+              <td>Primary database</td>
+              <td>Full filtering, instant queries</td>
+            </tr>
+            <tr>
+              <td>Archive</td>
+              <td>3 years</td>
+              <td>Compressed archive tables</td>
+              <td>Date-range queries, slightly slower</td>
+            </tr>
+            <tr>
+              <td>Cold Storage</td>
+              <td>7 years</td>
+              <td>Object storage (S3/MinIO)</td>
+              <td>Manual retrieval, exported as JSON/CSV files</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        MSP administrators can extend retention periods per tenant. Common extended retention
+        requirements include:
+      </p>
+      <ul>
+        <li><strong>HIPAA</strong> &mdash; 6 years minimum</li>
+        <li><strong>SOX</strong> &mdash; 7 years minimum</li>
+        <li><strong>PCI-DSS</strong> &mdash; 1 year minimum, 3 years recommended</li>
+        <li><strong>GDPR</strong> &mdash; Varies by purpose; ensure retention does not exceed what is necessary</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Audit Logs Are Never Fully Deleted</div>
+        Unlike other platform data, audit log entries are never permanently deleted during normal
+        operation. Even when the retention policy window passes, entries transition to cold storage
+        rather than being removed. This ensures a complete historical record is always available
+        for legal and regulatory purposes.
+      </div>
+
+      <!-- ── See Also ────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="auth.html">Authentication</a> &mdash; Login and session events captured in audit logs</li>
+          <li><a href="rbac.html">Roles &amp; Permissions</a> &mdash; Control who can view audit logs</li>
+          <li><a href="users.html">Users</a> &mdash; User management actions recorded in the audit trail</li>
+          <li><a href="recordings.html">Recordings</a> &mdash; Recording access events in the audit log</li>
+          <li><a href="tenants.html">Tenants</a> &mdash; Tenant-level operations in the audit trail</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ─────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="caller-id-rules.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Caller ID Rules</span>
+        </a>
+        <a href="admin-ops.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Admin Ops</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#field-reference">Audit Log Field Reference</a></li>
+      <li><a href="#what-gets-logged">What Gets Logged</a></li>
+      <li><a href="#action-types">Action Types</a></li>
+      <li><a href="#resource-types">Resource Types</a></li>
+      <li><a href="#changes-field">Changes Field</a></li>
+      <li><a href="#filtering">Filtering and Searching</a></li>
+      <li><a href="#pagination">Pagination</a></li>
+      <li><a href="#system-vs-user">System vs User Actions</a></li>
+      <li><a href="#compliance">Compliance</a></li>
+      <li><a href="#retention">Log Retention</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

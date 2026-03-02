@@ -1,0 +1,32 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "**/Dockerfile"
+      - "docker-compose.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build -f api/Dockerfile api/
+
+      - name: Build Web image
+        run: docker build -f web/Dockerfile web/
+
+      - name: Build AI Engine image
+        run: docker build -f ai-engine/Dockerfile ai-engine/
+
+      - name: Build FreeSWITCH image
+        run: docker build -f freeswitch/Dockerfile freeswitch/

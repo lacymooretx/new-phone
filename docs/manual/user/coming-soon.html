@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coming Soon — New Phone User Guide</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="" width="28" height="28">
+      <div>
+        <span class="logo-text">New Phone</span>
+        <span class="logo-sub">User Guide</span>
+      </div>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+          <a href="login.html">Logging In</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Your Phone</div>
+        <div class="sidebar-group-items">
+          <a href="your-extension.html">Your Extension</a>
+          <a href="voicemail.html">Voicemail</a>
+          <a href="call-history.html">Call History</a>
+          <a href="softphone.html">Web Softphone</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Application</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="profile.html">Your Profile</a>
+          <a href="keyboard-shortcuts.html">Shortcuts</a>
+        </div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html" class="active">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="../index.html" style="font-size:13px;color:var(--text-muted)">Manual Home</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="../index.html">Manual</a>
+        <span class="sep">/</span>
+        <a href="index.html">User Guide</a>
+        <span class="sep">/</span>
+        <span>Coming Soon</span>
+      </div>
+
+      <h1>Coming Soon</h1>
+      <p class="page-subtitle">Upcoming features and improvements planned for end users. These are actively in development and will be documented here once released.</p>
+
+      <!-- Intro -->
+      <h2 id="overview">What Is Coming Next</h2>
+      <p>
+        The New Phone Platform is under active development. The features listed below are
+        planned for upcoming releases. Each feature will get its own documentation page in
+        this user guide when it becomes available.
+      </p>
+      <p>
+        Features on this page are in various stages of development. Your administrator can
+        provide more specific timing for features that are important to your organization.
+      </p>
+
+      <!-- Mobile App -->
+      <h2 id="mobile-app">Mobile App <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        Native mobile applications for iOS and Android that let you make and receive calls
+        on your extension from your phone. The iOS app uses Apple CallKit for native call
+        integration, and the Android app uses ConnectionService for seamless call handling.
+        Your extension rings on your mobile device just like it does on your desk phone.
+      </p>
+
+      <!-- Desktop App -->
+      <h2 id="desktop-app">Desktop App <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        A standalone desktop application for Windows and macOS that runs outside your browser.
+        It includes a system tray icon for quick access, incoming call notifications even when
+        the app is minimized, and all the same features as the web softphone in a dedicated
+        window.
+      </p>
+
+      <!-- SMS Messaging -->
+      <h2 id="sms">SMS Messaging <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        Send and receive text messages (SMS and MMS) directly from the New Phone application.
+        Conversations are threaded by contact, so you can see your full message history in one
+        place. Messages can be routed to queues for shared team inboxes, making it easy to
+        handle customer texts as a group.
+      </p>
+
+      <!-- Video Calling -->
+      <h2 id="video">Video Calling <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        Start video calls with coworkers directly from the application. Video calling works
+        through the same web softphone interface, with the option to turn your camera on or
+        off during a call. No separate video conferencing software needed for quick internal
+        face-to-face conversations.
+      </p>
+
+      <!-- Presence -->
+      <h2 id="presence">Presence &amp; Status <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        Show your availability to coworkers in real time. Set your status to Available, Busy,
+        Away, or Do Not Disturb, and see the status of others in the directory. Presence
+        updates automatically based on your call activity, so coworkers know when you are on
+        a call without having to check.
+      </p>
+
+      <!-- Contact Directory -->
+      <h2 id="contacts">Contact Directory <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        A searchable directory of all users in your organization with their extension numbers,
+        email addresses, and departments. Click any contact to call them instantly. The
+        directory also includes external contacts that your administrator has added, giving
+        you a single place to find anyone you need to reach.
+      </p>
+
+      <!-- Click-to-Call -->
+      <h2 id="click-to-call">Click-to-Call Browser Extension <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        A browser extension for Chrome and Edge that detects phone numbers on any web page
+        and turns them into clickable links. Click a phone number on any website and it
+        automatically dials through your New Phone softphone. Great for calling numbers from
+        CRM systems, websites, and email without manually copying and pasting.
+      </p>
+
+      <!-- Voicemail Transcription -->
+      <h2 id="transcription">Voicemail Transcription <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        AI-powered automatic transcription of your voicemail messages. Instead of listening
+        to each message, read a text transcript right in your voicemail inbox. Transcriptions
+        are also included in voicemail-to-email notifications so you can quickly scan messages
+        without playing audio.
+      </p>
+
+      <!-- Transfer to Voicemail -->
+      <h2 id="transfer-to-vm">Transfer to Voicemail <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        Send an active call directly to another user's voicemail box without ringing their
+        phone. Useful when you know a coworker is unavailable and want to let the caller
+        leave a message immediately rather than waiting through multiple rings.
+      </p>
+
+      <!-- Headset Integration -->
+      <h2 id="headset">Headset Integration <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        Native support for headset controls from popular brands like Jabra, Poly, and
+        Plantronics. Answer and hang up calls using the button on your headset, and mute
+        or adjust volume without switching to the browser. Headset status indicators (LED
+        busy light) will also reflect your call state.
+      </p>
+
+      <!-- Dark Mode -->
+      <h2 id="dark-mode">Dark Mode Improvements <span class="badge badge-coming">Coming Soon</span></h2>
+      <p>
+        Enhanced dark mode with improved contrast, better color choices for accessibility,
+        and automatic switching based on your operating system preferences. The current
+        theme toggle will be expanded to support system-auto, light, and dark modes with
+        smoother transitions between themes.
+      </p>
+
+      <!-- Feature Requests -->
+      <h2 id="requests">Have a Feature Request?</h2>
+      <p>
+        If there is a feature you would like to see in the New Phone Platform, let your
+        administrator know. They collect feedback from users and work with the development
+        team to prioritize new features. Your input helps shape the direction of the platform.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Stay Updated</div>
+        When features from this page are released, they will be moved to their own
+        documentation pages with full usage instructions. Check back here periodically
+        to see what is new, or ask your administrator about upcoming releases.
+      </div>
+
+      <!-- See Also -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="index.html">Getting Started</a> &mdash; Begin using the platform with the features available today</li>
+          <li><a href="softphone.html">Web Softphone</a> &mdash; Make calls from your browser right now</li>
+          <li><a href="dashboard.html">Dashboard</a> &mdash; Your daily activity overview</li>
+          <li><a href="../admin/coming-soon.html">Admin Coming Soon</a> &mdash; Upcoming administrative features</li>
+        </ul>
+      </div>
+
+      <!-- Prev / Next -->
+      <div class="page-nav">
+        <a href="keyboard-shortcuts.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Keyboard Shortcuts</span>
+        </a>
+        <a href="index.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Getting Started</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Page TOC -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">What Is Coming Next</a></li>
+      <li><a href="#mobile-app">Mobile App</a></li>
+      <li><a href="#desktop-app">Desktop App</a></li>
+      <li><a href="#sms">SMS Messaging</a></li>
+      <li><a href="#video">Video Calling</a></li>
+      <li><a href="#presence">Presence &amp; Status</a></li>
+      <li><a href="#contacts">Contact Directory</a></li>
+      <li><a href="#click-to-call">Click-to-Call Extension</a></li>
+      <li><a href="#transcription">Voicemail Transcription</a></li>
+      <li><a href="#transfer-to-vm">Transfer to Voicemail</a></li>
+      <li><a href="#headset">Headset Integration</a></li>
+      <li><a href="#dark-mode">Dark Mode Improvements</a></li>
+      <li><a href="#requests">Feature Requests</a></li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

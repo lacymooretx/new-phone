@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caller ID Rules &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html" class="active">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="time-conditions.html">System</a>
+        <span class="sep">/</span>
+        <span>Caller ID Rules</span>
+      </div>
+
+      <h1>Caller ID Rules</h1>
+      <p class="page-subtitle">Match, block, replace, route, or tag inbound calls based on their caller ID number using pattern-based rules.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Caller ID rules allow administrators to take automated actions on inbound calls based on
+        the calling party's number. Rules are evaluated in priority order against the caller ID
+        of each incoming call, and the first matching rule's action is applied.
+      </p>
+      <p>
+        Common uses include blocking known spam callers, routing VIP customers to a priority
+        queue, replacing malformed caller IDs with a normalized format, and tagging calls for
+        reporting purposes.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Inbound Processing</div>
+        Caller ID rules are evaluated early in the inbound call path, before the call reaches
+        time conditions, IVR menus, or ring groups. A BLOCK action terminates the call
+        immediately, while ROUTE, REPLACE, and TAG actions modify or redirect the call
+        before it continues through the normal routing flow.
+      </div>
+
+      <!-- ── Creating ─────────────────────────────────────────────────── -->
+      <h2 id="creating">Creating Caller ID Rules</h2>
+      <p>
+        Navigate to <strong>System &gt; Caller ID Rules</strong> and click
+        <strong>Add Rule</strong>. Configure the match type, pattern, action, and priority.
+        Rules take effect immediately after creation.
+      </p>
+      <p>
+        Take care when setting priorities. Rules are evaluated from lowest priority number to
+        highest, and evaluation stops at the first match. Plan your priority assignments to
+        ensure more specific rules are evaluated before general ones.
+      </p>
+
+      <!-- ── Field Reference ──────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="fields-create">CallerIdRuleCreate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>Descriptive name (1&ndash;100 characters). Example: "Block 900 Numbers"</td>
+            </tr>
+            <tr>
+              <td><code>rule_type</code></td>
+              <td><code>enum</code></td>
+              <td>Yes</td>
+              <td>Match type: <code>PREFIX_MATCH</code>, <code>EXACT_MATCH</code>, or <code>REGEX</code></td>
+            </tr>
+            <tr>
+              <td><code>match_pattern</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>The pattern to match against the caller ID (1&ndash;40 characters)</td>
+            </tr>
+            <tr>
+              <td><code>action</code></td>
+              <td><code>enum</code></td>
+              <td>Yes</td>
+              <td>Action to take on match: <code>BLOCK</code>, <code>REPLACE</code>, <code>ROUTE</code>, or <code>TAG</code></td>
+            </tr>
+            <tr>
+              <td><code>destination_id</code></td>
+              <td><code>UUID</code></td>
+              <td>No</td>
+              <td>Target destination for the <code>ROUTE</code> action. Required when action is <code>ROUTE</code></td>
+            </tr>
+            <tr>
+              <td><code>priority</code></td>
+              <td><code>integer</code></td>
+              <td>No</td>
+              <td>Evaluation order (0&ndash;9999). Lower numbers are evaluated first. Default: <code>0</code></td>
+            </tr>
+            <tr>
+              <td><code>notes</code></td>
+              <td><code>string</code></td>
+              <td>No</td>
+              <td>Optional notes explaining the purpose of this rule</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fields-response">Response Fields</h3>
+      <p>The response includes all create fields plus the following system-managed fields:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for the rule</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Owning tenant (set automatically from auth context)</td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>boolean</code></td>
+              <td>Whether the rule is currently active</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when the rule was created</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last modification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Match Types ──────────────────────────────────────────────── -->
+      <h2 id="match-types">Match Types</h2>
+
+      <h3 id="match-prefix">PREFIX_MATCH</h3>
+      <p>
+        Matches when the caller ID number starts with the specified pattern. This is the
+        most commonly used match type, ideal for blocking area codes, country codes, or
+        number ranges.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pattern</th>
+              <th>Matches</th>
+              <th>Does Not Match</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>1900</code></td>
+              <td>19005551234, 19001234567</td>
+              <td>12125551234, 9001234567</td>
+            </tr>
+            <tr>
+              <td><code>1212</code></td>
+              <td>12125551234, 12129876543</td>
+              <td>12135551234, 2125551234</td>
+            </tr>
+            <tr>
+              <td><code>+44</code></td>
+              <td>+442071234567, +441234567890</td>
+              <td>12125551234, 442071234567</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="match-exact">EXACT_MATCH</h3>
+      <p>
+        Matches only when the caller ID number is exactly equal to the pattern. Use this
+        for specific known numbers, such as a VIP client's direct line or a known spam number.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pattern</th>
+              <th>Matches</th>
+              <th>Does Not Match</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>12125551234</code></td>
+              <td>12125551234</td>
+              <td>12125551235, 2125551234</td>
+            </tr>
+            <tr>
+              <td><code>Anonymous</code></td>
+              <td>Anonymous</td>
+              <td>anonymous, ANONYMOUS</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="match-regex">REGEX</h3>
+      <p>
+        Matches using a regular expression pattern. This provides the most flexibility but
+        requires familiarity with regex syntax. The pattern is matched against the full
+        caller ID string.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pattern</th>
+              <th>Purpose</th>
+              <th>Matches</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>^1(900|976)\d+$</code></td>
+              <td>Premium rate numbers</td>
+              <td>19005551234, 19761234567</td>
+            </tr>
+            <tr>
+              <td><code>^(\+?1)?800\d{7}$</code></td>
+              <td>Toll-free 800 numbers</td>
+              <td>8005551234, 18005551234, +18005551234</td>
+            </tr>
+            <tr>
+              <td><code>^(Anonymous|Unavailable|Unknown)$</code></td>
+              <td>Blocked/private callers</td>
+              <td>Anonymous, Unavailable, Unknown</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">Regex Performance</div>
+        Complex regular expressions are evaluated on every inbound call. Keep patterns simple
+        and test them thoroughly before deploying. Avoid unbounded quantifiers and
+        backtracking-prone patterns that could impact call setup latency.
+      </div>
+
+      <!-- ── Actions ──────────────────────────────────────────────────── -->
+      <h2 id="actions">Actions</h2>
+
+      <h3 id="action-block">BLOCK</h3>
+      <p>
+        Immediately rejects the call. The caller hears a fast busy signal or a configurable
+        rejection tone. The call is logged in CDRs with a "blocked" disposition.
+      </p>
+      <ul>
+        <li><strong>Use case:</strong> Block known spam numbers, robocallers, or premium-rate prefixes</li>
+        <li><strong>CDR impact:</strong> Call appears in call history with blocked status for audit purposes</li>
+      </ul>
+
+      <h3 id="action-replace">REPLACE</h3>
+      <p>
+        Modifies the caller ID before the call continues through the routing flow. The
+        <code>match_pattern</code> determines what to match, and the replacement value is
+        derived from the pattern (for regex, capture groups can be used). The call then
+        proceeds through normal inbound routing with the modified caller ID.
+      </p>
+      <ul>
+        <li><strong>Use case:</strong> Normalize international formats, strip prefixes, or add country codes</li>
+        <li><strong>CDR impact:</strong> Both original and modified caller ID are recorded</li>
+      </ul>
+
+      <h3 id="action-route">ROUTE</h3>
+      <p>
+        Overrides normal inbound routing and sends the call directly to a specific destination.
+        Requires a <code>destination_id</code> pointing to an extension, ring group, queue,
+        IVR, or other routable resource.
+      </p>
+      <ul>
+        <li><strong>Use case:</strong> Route VIP clients to a priority queue, send known partners to a dedicated extension</li>
+        <li><strong>CDR impact:</strong> Call is logged with the override destination noted</li>
+      </ul>
+
+      <h3 id="action-tag">TAG</h3>
+      <p>
+        Adds a metadata tag to the call without changing its routing. The call proceeds through
+        normal inbound routing, but the tag is available for reporting, queue prioritization,
+        and CRM integration.
+      </p>
+      <ul>
+        <li><strong>Use case:</strong> Tag internal calls, flag calls from specific regions, categorize callers for analytics</li>
+        <li><strong>CDR impact:</strong> Tag is stored in the CDR record and available in reports</li>
+      </ul>
+
+      <!-- ── Priority and Evaluation ──────────────────────────────────── -->
+      <h2 id="priority">Priority and Evaluation Order</h2>
+      <p>
+        Rules are evaluated in ascending priority order (lowest number first). When a rule
+        matches, its action is applied and no further rules are evaluated. If no rules match,
+        the call proceeds through normal inbound routing unchanged.
+      </p>
+
+      <div class="diagram">Inbound Call (Caller ID: 12125559999)
+  |
+  v
+Rule priority 0: PREFIX_MATCH "1900" BLOCK       -- no match, continue
+  |
+  v
+Rule priority 10: EXACT_MATCH "12125559999" ROUTE -- MATCH! Route to VIP queue
+  |                                                   (stop evaluating)
+  X  (remaining rules skipped)</div>
+
+      <p>Recommended priority ranges:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Priority Range</th>
+              <th>Suggested Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0&ndash;99</td>
+              <td>Emergency blocks (spam, fraud, abuse)</td>
+            </tr>
+            <tr>
+              <td>100&ndash;499</td>
+              <td>VIP routing and exact-match rules</td>
+            </tr>
+            <tr>
+              <td>500&ndash;999</td>
+              <td>Prefix-based routing and replacements</td>
+            </tr>
+            <tr>
+              <td>1000&ndash;4999</td>
+              <td>General tagging and categorization</td>
+            </tr>
+            <tr>
+              <td>5000&ndash;9999</td>
+              <td>Catch-all and default rules</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Tie-Breaking</div>
+        When multiple rules share the same priority, their evaluation order among themselves
+        is determined by creation time (oldest first). To ensure deterministic behavior,
+        assign unique priorities to rules that could potentially match the same callers.
+      </div>
+
+      <!-- ── Common Use Cases ─────────────────────────────────────────── -->
+      <h2 id="use-cases">Common Use Cases</h2>
+
+      <h3>Block Spam Prefixes</h3>
+      <pre><code>{
+  "name": "Block 900 Numbers",
+  "rule_type": "PREFIX_MATCH",
+  "match_pattern": "1900",
+  "action": "BLOCK",
+  "priority": 0,
+  "notes": "Block premium-rate 900 numbers"
+}</code></pre>
+
+      <h3>Route VIP Callers</h3>
+      <pre><code>{
+  "name": "VIP - Acme Corp Main Line",
+  "rule_type": "EXACT_MATCH",
+  "match_pattern": "12125551000",
+  "action": "ROUTE",
+  "destination_id": "uuid-of-vip-queue",
+  "priority": 100,
+  "notes": "Route Acme Corp direct to VIP support queue"
+}</code></pre>
+
+      <h3>Tag Internal Calls</h3>
+      <pre><code>{
+  "name": "Tag Internal Extensions",
+  "rule_type": "REGEX",
+  "match_pattern": "^1(555)\\d{7}$",
+  "action": "TAG",
+  "priority": 1000,
+  "notes": "Tag calls from our own DID range for reporting"
+}</code></pre>
+
+      <h3>Block Anonymous Callers</h3>
+      <pre><code>{
+  "name": "Block Anonymous/Unknown",
+  "rule_type": "REGEX",
+  "match_pattern": "^(Anonymous|Unavailable|Unknown|Restricted)$",
+  "action": "BLOCK",
+  "priority": 50,
+  "notes": "Block callers hiding their caller ID"
+}</code></pre>
+
+      <!-- ── See Also ─────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="inbound-routes.html">Inbound Routes</a> &mdash; Configure inbound call routing that follows caller ID rule processing</li>
+          <li><a href="cdrs.html">Call History</a> &mdash; View blocked and tagged calls in call detail records</li>
+          <li><a href="queues.html">Queues</a> &mdash; Route VIP callers to priority queues</li>
+          <li><a href="dids.html">DIDs</a> &mdash; Manage the phone numbers that receive inbound calls</li>
+          <li><a href="audit-logs.html">Audit Logs</a> &mdash; Track rule creation and modification events</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="holiday-calendars.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Holiday Calendars</span>
+        </a>
+        <a href="audit-logs.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Audit Logs</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#creating">Creating Caller ID Rules</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#match-types">Match Types</a></li>
+      <li><a href="#actions">Actions</a></li>
+      <li><a href="#priority">Priority &amp; Evaluation Order</a></li>
+      <li><a href="#use-cases">Common Use Cases</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>

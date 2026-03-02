@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Follow Me &mdash; New Phone Platform Admin Manual</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="../images/favicon.svg" alt="Logo">
+      <div>
+        <span class="logo-text">New Phone Platform</span>
+        <span class="logo-sub">Admin Manual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="manual-search" placeholder="Search docs..." autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Getting Started (no group label) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="index.html">Getting Started</a>
+        </div>
+      </div>
+
+      <!-- Telephony -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Telephony</div>
+        <div class="sidebar-group-items">
+          <a href="extensions.html">Extensions</a>
+          <a href="ring-groups.html">Ring Groups</a>
+          <a href="queues.html">Queues</a>
+          <a href="ivr-menus.html">IVR Menus</a>
+          <a href="conferences.html">Conferences</a>
+          <a href="page-groups.html">Paging</a>
+          <a href="follow-me.html" class="active">Follow Me</a>
+        </div>
+      </div>
+
+      <!-- Connectivity -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Connectivity</div>
+        <div class="sidebar-group-items">
+          <a href="sip-trunks.html">SIP Trunks</a>
+          <a href="dids.html">DIDs</a>
+          <a href="inbound-routes.html">Inbound Routes</a>
+          <a href="outbound-routes.html">Outbound Routes</a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Reports</div>
+        <div class="sidebar-group-items">
+          <a href="cdrs.html">Call History</a>
+          <a href="recordings.html">Recordings</a>
+          <a href="voicemail.html">Voicemail</a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">System</div>
+        <div class="sidebar-group-items">
+          <a href="users.html">Users</a>
+          <a href="audio-prompts.html">Audio Prompts</a>
+          <a href="time-conditions.html">Time Conditions</a>
+          <a href="holiday-calendars.html">Holiday Calendars</a>
+          <a href="caller-id-rules.html">Caller ID Rules</a>
+          <a href="audit-logs.html">Audit Logs</a>
+          <a href="admin-ops.html">Admin Ops</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Security</div>
+        <div class="sidebar-group-items">
+          <a href="auth.html">Authentication</a>
+          <a href="mfa.html">MFA Setup</a>
+          <a href="rbac.html">Roles &amp; Permissions</a>
+        </div>
+      </div>
+
+      <!-- MSP -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">MSP</div>
+        <div class="sidebar-group-items">
+          <a href="tenants.html">Tenants</a>
+        </div>
+      </div>
+
+      <!-- Interface -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Interface</div>
+        <div class="sidebar-group-items">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="webrtc-softphone.html">WebRTC Softphone</a>
+          <a href="ui-guide.html">UI Guide</a>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-items">
+          <a href="coming-soon.html">Coming Soon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span style="font-size:12px;color:var(--text-muted)">v1.0</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">&#9790;</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────── -->
+  <main class="content">
+    <div class="content-inner">
+
+      <div class="breadcrumbs">
+        <a href="index.html">Admin Manual</a>
+        <span class="sep">/</span>
+        <a href="extensions.html">Telephony</a>
+        <span class="sep">/</span>
+        <span>Follow Me</span>
+      </div>
+
+      <h1>Follow Me</h1>
+      <p class="page-subtitle">Forward unanswered calls to cell phones and external numbers using sequential or simultaneous ring strategies, with per-destination ring times.</p>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <h2 id="overview">Overview</h2>
+      <p>
+        Follow Me extends an extension's reach beyond the desk phone. When enabled, calls
+        that are not answered at the extension within a configurable time are automatically
+        forwarded to one or more external numbers &mdash; typically a cell phone, home office
+        line, or alternate work number. This ensures that mobile workers, field staff, and
+        on-call personnel never miss important calls.
+      </p>
+      <p>
+        Follow Me is configured per extension and supports up to 10 external destinations.
+        Each destination has its own independent ring time, and the system can ring them
+        one at a time (sequential) or all at once (simultaneous).
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Follow Me vs Call Forwarding</div>
+        Follow Me and Call Forwarding (CF) are related but distinct features. Call Forwarding
+        immediately redirects all calls to a single destination without ringing the extension
+        first. Follow Me tries the extension first (optionally), then falls through to external
+        destinations. Follow Me also supports multiple destinations and ring strategies.
+        See the <a href="#vs-cf">comparison section</a> below for a detailed breakdown.
+      </div>
+
+      <!-- ── Configuring Follow Me ────────────────────────────────────── -->
+      <h2 id="configuring">Configuring Follow Me</h2>
+      <p>
+        Follow Me is an update operation on an existing extension. Each extension has a Follow
+        Me configuration that is disabled by default. To enable it, submit a <code>PUT</code>
+        request to the extension's Follow Me endpoint.
+      </p>
+
+      <pre><code>PUT /api/v1/extensions/{extension_id}/follow-me
+
+{
+  "enabled": true,
+  "strategy": "SEQUENTIAL",
+  "ring_extension_first": true,
+  "extension_ring_time": 25,
+  "destinations": [
+    { "destination": "+15551234567", "ring_time": 20 },
+    { "destination": "+15559876543", "ring_time": 25 }
+  ]
+}</code></pre>
+
+      <!-- ── Field Reference ─────────────────────────────────────────── -->
+      <h2 id="field-reference">Field Reference</h2>
+
+      <h3 id="update-fields">FollowMeUpdate Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>enabled</code></td>
+              <td><code>bool</code></td>
+              <td>No</td>
+              <td><code>false</code></td>
+              <td>Master switch &mdash; set to <code>true</code> to activate Follow Me for this extension</td>
+            </tr>
+            <tr>
+              <td><code>strategy</code></td>
+              <td><code>enum</code></td>
+              <td>No</td>
+              <td><code>SEQUENTIAL</code></td>
+              <td>Ring strategy: <code>SEQUENTIAL</code> (one at a time) or <code>SIMULTANEOUS</code> (all at once)</td>
+            </tr>
+            <tr>
+              <td><code>ring_extension_first</code></td>
+              <td><code>bool</code></td>
+              <td>No</td>
+              <td><code>true</code></td>
+              <td>If true, ring the desk extension before trying external destinations</td>
+            </tr>
+            <tr>
+              <td><code>extension_ring_time</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>25</code></td>
+              <td>Seconds to ring the desk extension before moving to external destinations (5&ndash;120). Only applies when <code>ring_extension_first</code> is true.</td>
+            </tr>
+            <tr>
+              <td><code>destinations</code></td>
+              <td><code>list</code></td>
+              <td>No</td>
+              <td><code>[]</code></td>
+              <td>List of <code>FollowMeDestinationData</code> objects (max 10). External numbers to ring.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="destination-fields">FollowMeDestinationData Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>destination</code></td>
+              <td><code>string</code></td>
+              <td>Yes</td>
+              <td>&mdash;</td>
+              <td>Phone number to ring (1&ndash;40 characters). Typically E.164 format, e.g. <code>+15551234567</code>.</td>
+            </tr>
+            <tr>
+              <td><code>ring_time</code></td>
+              <td><code>int</code></td>
+              <td>No</td>
+              <td><code>20</code></td>
+              <td>Seconds to ring this destination before moving on (5&ndash;120)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="response-fields">Response Fields</h3>
+      <p>The API response includes:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td><code>UUID</code></td>
+              <td>Unique identifier for this Follow Me configuration</td>
+            </tr>
+            <tr>
+              <td><code>tenant_id</code></td>
+              <td><code>UUID</code></td>
+              <td>Owning tenant (set automatically from auth context)</td>
+            </tr>
+            <tr>
+              <td><code>extension_id</code></td>
+              <td><code>UUID</code></td>
+              <td>The extension this Follow Me configuration belongs to</td>
+            </tr>
+            <tr>
+              <td><code>enabled</code></td>
+              <td><code>bool</code></td>
+              <td>Whether Follow Me is currently active</td>
+            </tr>
+            <tr>
+              <td><code>strategy</code></td>
+              <td><code>enum</code></td>
+              <td>Current ring strategy</td>
+            </tr>
+            <tr>
+              <td><code>ring_extension_first</code></td>
+              <td><code>bool</code></td>
+              <td>Whether the desk extension rings first</td>
+            </tr>
+            <tr>
+              <td><code>extension_ring_time</code></td>
+              <td><code>int</code></td>
+              <td>Seconds the desk extension rings</td>
+            </tr>
+            <tr>
+              <td><code>destinations</code></td>
+              <td><code>list</code></td>
+              <td>List of destinations, each with <code>id</code>, <code>position</code>, <code>destination</code>, and <code>ring_time</code></td>
+            </tr>
+            <tr>
+              <td><code>is_active</code></td>
+              <td><code>bool</code></td>
+              <td>System-computed active state</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp when Follow Me was first configured</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td><code>datetime</code></td>
+              <td>Timestamp of the last update</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Strategies ───────────────────────────────────────────────── -->
+      <h2 id="strategies">Ring Strategies</h2>
+
+      <h3 id="sequential">SEQUENTIAL</h3>
+      <p>
+        In sequential mode, the system rings each destination one at a time, in list order.
+        If the first destination does not answer within its <code>ring_time</code>, the system
+        hangs up that leg and dials the next destination. This continues until a destination
+        answers or all destinations have been tried.
+      </p>
+      <ul>
+        <li>Destinations are tried in the order they appear in the <code>destinations</code> list</li>
+        <li>Each destination rings for its own <code>ring_time</code> independently</li>
+        <li>If no destination answers, the call falls through to the extension's voicemail (if configured)</li>
+        <li>Total ring time is the sum of all ring times (extension + each destination)</li>
+      </ul>
+
+      <h3 id="simultaneous">SIMULTANEOUS</h3>
+      <p>
+        In simultaneous mode, the system rings all external destinations at the same time.
+        The first destination to answer gets the call; all other ringing legs are cancelled.
+        This minimizes the total time the caller waits before someone picks up.
+      </p>
+      <ul>
+        <li>All destinations ring at the same moment</li>
+        <li>First to answer wins &mdash; other legs are torn down</li>
+        <li>Ring time is determined by the longest <code>ring_time</code> among all destinations</li>
+        <li>If no destination answers before all ring times expire, the call falls through to voicemail</li>
+      </ul>
+
+      <div class="callout">
+        <div class="callout-title">Which Strategy to Choose</div>
+        Use <strong>sequential</strong> when you have a priority order (try the office cell
+        first, then the personal cell, then the home phone). Use <strong>simultaneous</strong>
+        when you want the fastest possible answer &mdash; whichever phone the user is near
+        will pick up.
+      </div>
+
+      <!-- ── Ring Extension First ─────────────────────────────────────── -->
+      <h2 id="ring-first">Ring Extension First</h2>
+      <p>
+        When <code>ring_extension_first</code> is <code>true</code> (the default), the system
+        rings the user's desk extension for <code>extension_ring_time</code> seconds before
+        engaging any external destinations. This gives the user a chance to answer at their
+        desk before the call goes to their cell phone.
+      </p>
+      <p>
+        When set to <code>false</code>, the system skips the desk extension entirely and
+        immediately rings the external destinations. This is useful for users who are never
+        at their desk (field workers, remote employees) and do not want the caller to wait
+        through a desk ring that will never be answered.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>ring_extension_first: true</code></td>
+              <td>Ring desk phone for <code>extension_ring_time</code> seconds, then try external destinations</td>
+            </tr>
+            <tr>
+              <td><code>ring_extension_first: false</code></td>
+              <td>Skip desk phone entirely, immediately ring external destinations</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Destination Types ────────────────────────────────────────── -->
+      <h2 id="destinations">Destination Types</h2>
+      <p>
+        Follow Me destinations are external phone numbers dialed through the outbound SIP
+        trunk. Any number that can be reached via the platform's outbound routes can be a
+        Follow Me destination.
+      </p>
+      <ul>
+        <li><strong>Cell phones</strong> &mdash; The most common destination. Forward to the user's mobile number so they can take calls on the go.</li>
+        <li><strong>Home office lines</strong> &mdash; Landline or VoIP number at a home office for remote workers.</li>
+        <li><strong>Alternate work numbers</strong> &mdash; A second office or a shared workspace phone.</li>
+        <li><strong>Hotel/travel numbers</strong> &mdash; Temporary numbers when traveling, updated as needed.</li>
+        <li><strong>International numbers</strong> &mdash; Forward to international destinations (subject to outbound route permissions and toll charges).</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Toll Charges</div>
+        Follow Me calls to external numbers are placed as outbound calls through your SIP
+        trunk. Standard per-minute charges apply based on your trunk provider's rate. High-volume
+        Follow Me usage to mobile or long-distance numbers can significantly increase your
+        monthly telecom costs. Monitor CDRs for Follow Me call volume.
+      </div>
+
+      <!-- ── Ring Time Per Destination ────────────────────────────────── -->
+      <h2 id="ring-time">Ring Time Per Destination</h2>
+      <p>
+        Each destination has its own <code>ring_time</code> setting (default 20 seconds) that
+        controls how long the system rings that number before giving up. This allows fine-tuned
+        control over the calling experience.
+      </p>
+      <ul>
+        <li><strong>Short ring time (5&ndash;15s)</strong> &mdash; For destinations where the user is unlikely to answer (backup numbers). Fails fast and moves on.</li>
+        <li><strong>Standard ring time (20&ndash;30s)</strong> &mdash; Typical for cell phones. Gives the user time to hear the ring and pick up.</li>
+        <li><strong>Long ring time (30&ndash;120s)</strong> &mdash; For destinations where the user may need extra time (remote locations, shared phones).</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-title">Cell Phone Voicemail Interception</div>
+        If a Follow Me destination is a cell phone, the carrier's voicemail system may answer
+        the call before the ring time expires. Most cell carriers send calls to voicemail after
+        15&ndash;25 seconds. Set the Follow Me <code>ring_time</code> shorter than the carrier's
+        voicemail pickup time to prevent the cell voicemail from intercepting the call. A
+        <code>ring_time</code> of 15&ndash;18 seconds is typically safe for most carriers.
+      </div>
+
+      <!-- ── Follow Me vs Call Forwarding ─────────────────────────────── -->
+      <h2 id="vs-cf">Follow Me vs Call Forwarding</h2>
+      <p>
+        Both features forward calls to external numbers, but they serve different purposes and
+        behave differently. The table below compares the two.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Follow Me</th>
+              <th>Call Forwarding (CF)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Rings extension first</td>
+              <td>Optional (configurable)</td>
+              <td>No &mdash; immediately forwards</td>
+            </tr>
+            <tr>
+              <td>Multiple destinations</td>
+              <td>Up to 10</td>
+              <td>Single destination</td>
+            </tr>
+            <tr>
+              <td>Ring strategy</td>
+              <td>Sequential or simultaneous</td>
+              <td>Not applicable (single target)</td>
+            </tr>
+            <tr>
+              <td>Per-destination ring time</td>
+              <td>Yes (5&ndash;120s each)</td>
+              <td>Not applicable</td>
+            </tr>
+            <tr>
+              <td>Trigger</td>
+              <td>No answer at extension (after ring time)</td>
+              <td>Unconditional, busy, or no-answer (variant-dependent)</td>
+            </tr>
+            <tr>
+              <td>User self-service</td>
+              <td>Configured by admin or user</td>
+              <td>Often toggled by users via feature codes</td>
+            </tr>
+            <tr>
+              <td>Best for</td>
+              <td>Mobile workers who need multi-hop failover</td>
+              <td>Simple "send all calls to my cell" redirection</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Call Flow Diagram ────────────────────────────────────────── -->
+      <h2 id="flow-diagram">Call Flow Diagram</h2>
+      <p>
+        The following diagram illustrates the sequential Follow Me flow with
+        <code>ring_extension_first: true</code> and two external destinations.
+      </p>
+
+      <div class="diagram">Incoming Call to Extension 150
+  &#9474;
+  &#9492;&#9472; ring_extension_first: true
+       &#9474;
+       &#9500;&#9472; Ring desk phone (ext 150) for 25 seconds
+       &#9474;   &#9500;&#9472; Answered? &#8594; Call connected. Done.
+       &#9474;   &#9492;&#9472; No answer &#8594; Continue
+       &#9474;
+       &#9492;&#9472; Strategy: SEQUENTIAL
+            &#9474;
+            &#9500;&#9472; Destination 1: +15551234567 (ring 20s)
+            &#9474;   &#9500;&#9472; Answered? &#8594; Call connected. Done.
+            &#9474;   &#9492;&#9472; No answer &#8594; Continue
+            &#9474;
+            &#9500;&#9472; Destination 2: +15559876543 (ring 25s)
+            &#9474;   &#9500;&#9472; Answered? &#8594; Call connected. Done.
+            &#9474;   &#9492;&#9472; No answer &#8594; Continue
+            &#9474;
+            &#9492;&#9472; All destinations exhausted
+                 &#8594; Fall through to voicemail (ext 150)</div>
+
+      <!-- ── Common Use Cases ─────────────────────────────────────────── -->
+      <h2 id="use-cases">Common Use Cases</h2>
+
+      <h3 id="uc-mobile">Mobile Worker</h3>
+      <p>
+        A sales representative who is frequently out of the office. Ring the desk phone first
+        briefly, then try the cell phone. Keep ring times short to avoid the cell carrier's
+        voicemail intercepting the call.
+      </p>
+      <pre><code>{
+  "enabled": true,
+  "strategy": "SEQUENTIAL",
+  "ring_extension_first": true,
+  "extension_ring_time": 15,
+  "destinations": [
+    { "destination": "+15551234567", "ring_time": 18 }
+  ]
+}</code></pre>
+
+      <h3 id="uc-oncall">On-Call Rotation</h3>
+      <p>
+        An IT support extension where the on-call person changes weekly. Update the Follow Me
+        destinations each week to point to the current on-call technician's cell phone.
+        Skip the desk extension since nobody sits at the on-call desk.
+      </p>
+      <pre><code>{
+  "enabled": true,
+  "strategy": "SEQUENTIAL",
+  "ring_extension_first": false,
+  "destinations": [
+    { "destination": "+15557771000", "ring_time": 20 },
+    { "destination": "+15557772000", "ring_time": 20 }
+  ]
+}</code></pre>
+
+      <h3 id="uc-executive">Executive with Multiple Devices</h3>
+      <p>
+        Ring the desk phone and all devices simultaneously. Whichever device the executive is
+        near picks up first.
+      </p>
+      <pre><code>{
+  "enabled": true,
+  "strategy": "SIMULTANEOUS",
+  "ring_extension_first": true,
+  "extension_ring_time": 30,
+  "destinations": [
+    { "destination": "+15558001000", "ring_time": 25 },
+    { "destination": "+15558002000", "ring_time": 25 }
+  ]
+}</code></pre>
+
+      <h3 id="uc-remote">Fully Remote Employee</h3>
+      <p>
+        A remote worker with no desk phone. Skip the extension ring entirely and go straight
+        to their home office number, falling back to their cell phone.
+      </p>
+      <pre><code>{
+  "enabled": true,
+  "strategy": "SEQUENTIAL",
+  "ring_extension_first": false,
+  "destinations": [
+    { "destination": "+15553001000", "ring_time": 25 },
+    { "destination": "+15553002000", "ring_time": 20 }
+  ]
+}</code></pre>
+
+      <!-- ── See Also ──────────────────────────────────────────────────── -->
+      <div class="see-also">
+        <h3>See Also</h3>
+        <ul>
+          <li><a href="extensions.html">Extensions</a> &mdash; Manage the extensions that Follow Me is configured on</li>
+          <li><a href="outbound-routes.html">Outbound Routes</a> &mdash; External destinations are dialed via outbound routes</li>
+          <li><a href="voicemail.html">Voicemail</a> &mdash; Where calls land when all Follow Me destinations are exhausted</li>
+          <li><a href="cdrs.html">Call History</a> &mdash; Monitor Follow Me call volume and costs</li>
+          <li><a href="ring-groups.html">Ring Groups</a> &mdash; For ringing multiple internal extensions, use ring groups</li>
+        </ul>
+      </div>
+
+      <!-- ── Prev / Next ──────────────────────────────────────────────── -->
+      <div class="page-nav">
+        <a href="page-groups.html">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Paging</span>
+        </a>
+        <a href="sip-trunks.html" style="text-align:right">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">SIP Trunks</span>
+        </a>
+      </div>
+
+    </div><!-- /content-inner -->
+  </main>
+
+  <!-- ── Page TOC (right rail) ────────────────────────────────────────── -->
+  <div class="page-toc">
+    <div class="toc-title">On This Page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#configuring">Configuring Follow Me</a></li>
+      <li><a href="#field-reference">Field Reference</a></li>
+      <li><a href="#strategies">Ring Strategies</a></li>
+      <li><a href="#ring-first">Ring Extension First</a></li>
+      <li><a href="#destinations">Destination Types</a></li>
+      <li><a href="#ring-time">Ring Time Per Destination</a></li>
+      <li><a href="#vs-cf">Follow Me vs Call Forwarding</a></li>
+      <li><a href="#flow-diagram">Call Flow Diagram</a></li>
+      <li><a href="#use-cases">Common Use Cases</a></li>
+    </ul>
+  </div>
+
+</div><!-- /layout -->
+
+<script src="../js/nav.js"></script>
+</body>
+</html>
