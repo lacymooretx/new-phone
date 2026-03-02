@@ -7,6 +7,7 @@ services:
 
   api:
     restart: unless-stopped
+    ports: []  # Remove host port mapping — nginx proxies via Docker network
     deploy:
       resources:
         limits:
@@ -34,6 +35,7 @@ services:
 
   web:
     restart: unless-stopped
+    ports: []  # Remove host port mapping — nginx proxies via Docker network
     deploy:
       resources:
         limits:
@@ -121,9 +123,7 @@ services:
         reservations:
           cpus: "0.25"
           memory: 256M
-    ports:
-      - "9000:9000"
-      # Remove console port in production
+    ports: []  # Remove all host ports — access via Docker network only
     healthcheck:
       interval: 30s
       timeout: 10s
@@ -149,8 +149,9 @@ services:
           cpus: "1.0"
           memory: 1024M
     ports:
-      - "5061:5061/tcp"   # SIP TLS
-      - "7443:7443/tcp"   # WSS (WebRTC)
+      - "5061:5061/tcp"       # SIP TLS
+      - "7443:7443/tcp"       # WSS (WebRTC)
+      - "10000-20000:10000-20000/udp"  # RTP media range
       # ESL port NOT exposed in production
     healthcheck:
       interval: 30s
@@ -179,8 +180,7 @@ services:
           memory: 512M
     environment:
       NP_AI_LOG_LEVEL: "INFO"
-    ports:
-      - "${NP_AI_WS_HOST_PORT:-8090}:8090"
+    ports: []  # Remove host port mapping — internal access only via Docker network
     healthcheck:
       interval: 30s
       timeout: 10s
@@ -458,6 +458,7 @@ services:
 
   prometheus:
     restart: unless-stopped
+    ports: []  # Remove host port — internal only
     deploy:
       resources:
         limits:
@@ -481,6 +482,7 @@ services:
 
   grafana:
     restart: unless-stopped
+    ports: []  # Remove host port — internal only
     deploy:
       resources:
         limits:
@@ -504,6 +506,7 @@ services:
 
   alertmanager:
     restart: unless-stopped
+    ports: []  # Remove host port — internal only
     deploy:
       resources:
         limits:
@@ -526,6 +529,7 @@ services:
 
   node-exporter:
     restart: unless-stopped
+    ports: []  # Remove host port — internal only
     deploy:
       resources:
         limits:
@@ -544,6 +548,7 @@ services:
 
   redis-exporter:
     restart: unless-stopped
+    ports: []  # Remove host port — internal only
     deploy:
       resources:
         limits:
@@ -563,6 +568,7 @@ services:
 
   postgres-exporter:
     restart: unless-stopped
+    ports: []  # Remove host port — internal only
     deploy:
       resources:
         limits:
