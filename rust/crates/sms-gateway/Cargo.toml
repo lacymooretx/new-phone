@@ -1,0 +1,19 @@
+[package]
+name = "sms-gateway"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+np-shared = { path = "../../shared" }
+tokio = { workspace = true }
+axum = { workspace = true }
+reqwest = { workspace = true }
+redis = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }

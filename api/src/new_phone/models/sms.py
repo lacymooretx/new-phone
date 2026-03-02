@@ -135,6 +135,9 @@ class Message(Base, TimestampMixin):
     )
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     segments: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    next_retry_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    max_retries: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
 
     conversation = relationship("Conversation", back_populates="messages")
     sent_by_user = relationship("User", lazy="joined")

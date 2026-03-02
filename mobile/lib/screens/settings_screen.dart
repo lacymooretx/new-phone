@@ -1,6 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
 import '../models/user.dart';
@@ -67,13 +70,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.music_note_outlined),
             title: const Text('Ringtone'),
-            subtitle: const Text('Default'),
+            subtitle: Text(_ringtoneDisplayName(settings.ringtone)),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Ringtone selection coming soon')),
-              );
-            },
+            onTap: () => _showRingtoneSelector(settings.ringtone),
           ),
 
           // ---------------------------------------------------------------
@@ -144,13 +143,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: const Icon(Icons.lock_outline),
             title: const Text('Change Password'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Password change coming soon'),
-                ),
-              );
-            },
+            onTap: () => context.push('/settings/change-password'),
           ),
 
           // ---------------------------------------------------------------
@@ -180,11 +173,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: const Icon(Icons.support_agent_outlined),
             title: const Text('Support'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Support page coming soon')),
-              );
-            },
+            onTap: () => _launchSupport(),
           ),
 
           // ---------------------------------------------------------------
@@ -282,13 +271,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
                 tooltip: 'Edit Profile',
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Profile editing coming soon'),
-                    ),
-                  );
-                },
+                onPressed: () => _showEditProfileDialog(user),
               ),
             ],
           ),
@@ -475,6 +458,307 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ThemeMode.light => 'Light',
         ThemeMode.dark => 'Dark',
       };
+
+  // ---------------------------------------------------------------------------
+  // Ringtone selector (4B)
+  // ---------------------------------------------------------------------------
+
+  /// Map of ringtone IDs to display names.
+  static const _ringtones = {
+    'default': 'Default',
+    'classic': 'Classic',
+    'digital': 'Digital',
+    'gentle': 'Gentle',
+    'urgent': 'Urgent',
+  };
+
+  String _ringtoneDisplayName(String id) => _ringtones[id] ?? 'Default';
+
+  void _showRingtoneSelector(String currentRingtone) {
+    String selectedRingtone = currentRingtone;
+    AudioPlayer? previewPlayer;
+
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Text(
+                      'Select Ringtone',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ),
+                  ..._ringtones.entries.map((entry) {
+                    final isSelected = entry.key == selectedRingtone;
+                    return ListTile(
+                      leading: Icon(
+                        isSelected
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
+                      ),
+                      title: Text(entry.value),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.play_circle_outline),
+                        tooltip: 'Preview',
+                        onPressed: () async {
+                          // Stop any ongoing preview
+                          await previewPlayer?.stop();
+                          await previewPlayer?.dispose();
+                          previewPlayer = AudioPlayer();
+                          try {
+                            await previewPlayer!.setAsset(
+                              'assets/audio/ringtone_${entry.key}.mp3',
+                            );
+                            await previewPlayer!.play();
+                          } catch (_) {
+                            // Asset may not exist in dev; ignore
+                          }
+                        },
+                      ),
+                      onTap: () {
+                        setModalState(() {
+                          selectedRingtone = entry.key;
+                        });
+                      },
+                    );
+                  }),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            previewPlayer?.stop();
+                            previewPlayer?.dispose();
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton(
+                          onPressed: () {
+                            previewPlayer?.stop();
+                            previewPlayer?.dispose();
+                            ref
+                                .read(settingsProvider.notifier)
+                                .setRingtone(selectedRingtone);
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Save'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      // Ensure preview is cleaned up if sheet is dismissed
+      previewPlayer?.stop();
+      previewPlayer?.dispose();
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Profile editing dialog (4C)
+  // ---------------------------------------------------------------------------
+
+  void _showEditProfileDialog(User user) {
+    // Split displayName into first/last name for the form
+    final parts = (user.displayName ?? '').split(' ');
+    final firstNameController = TextEditingController(
+      text: parts.isNotEmpty ? parts.first : '',
+    );
+    final lastNameController = TextEditingController(
+      text: parts.length > 1 ? parts.sublist(1).join(' ') : '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        bool isSaving = false;
+        String? errorMessage;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Edit Profile'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        errorMessage!,
+                        style: TextStyle(
+                          color:
+                              Theme.of(context).colorScheme.onErrorContainer,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  TextField(
+                    controller: firstNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'First Name',
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    textCapitalization: TextCapitalization.words,
+                    enabled: !isSaving,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: lastNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Last Name',
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.words,
+                    enabled: !isSaving,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSaving
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          setDialogState(() {
+                            isSaving = true;
+                            errorMessage = null;
+                          });
+
+                          try {
+                            final api = ref.read(apiServiceProvider);
+                            final firstName =
+                                firstNameController.text.trim();
+                            final lastName =
+                                lastNameController.text.trim();
+                            final displayName = lastName.isNotEmpty
+                                ? '$firstName $lastName'
+                                : firstName;
+
+                            await api.patch(
+                              '/tenants/${user.tenantId}/users/${user.id}',
+                              data: {
+                                'first_name': firstName,
+                                'last_name': lastName,
+                                'display_name': displayName,
+                              },
+                            );
+
+                            // The display name in the JWT will update on
+                            // next token refresh. Show success feedback now.
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(this.context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Profile updated'),
+                                ),
+                              );
+                            }
+                          } on DioException catch (e) {
+                            final msg = _extractProfileErrorMessage(e);
+                            setDialogState(() {
+                              isSaving = false;
+                              errorMessage = msg;
+                            });
+                          } catch (e) {
+                            setDialogState(() {
+                              isSaving = false;
+                              errorMessage =
+                                  'An unexpected error occurred.';
+                            });
+                          }
+                        },
+                  child: isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      firstNameController.dispose();
+      lastNameController.dispose();
+    });
+  }
+
+  String _extractProfileErrorMessage(DioException e) {
+    if (e.response?.data is Map<String, dynamic>) {
+      final data = e.response!.data as Map<String, dynamic>;
+      if (data.containsKey('detail')) {
+        final detail = data['detail'];
+        if (detail is String) return detail;
+      }
+    }
+    final code = e.response?.statusCode;
+    if (code == 403) return 'You do not have permission to edit this profile.';
+    if (code == 404) return 'User not found.';
+    if (code != null && code >= 500) return 'Server error. Try again later.';
+    return 'Could not update profile.';
+  }
+
+  // ---------------------------------------------------------------------------
+  // Support action (4D)
+  // ---------------------------------------------------------------------------
+
+  Future<void> _launchSupport() async {
+    final uri = Uri.parse('mailto:support@aspendora.com');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open email client'),
+          ),
+        );
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------

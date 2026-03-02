@@ -1,7 +1,7 @@
 import json
 import random
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import structlog
 from sqlalchemy import func, select
@@ -175,6 +175,7 @@ class SMSService:
         conversation_id: uuid.UUID,
         body: str,
         sent_by_user_id: uuid.UUID,
+        media_urls: list[str] | None = None,
     ) -> Message:
         await set_tenant_context(self.db, tenant_id)
 
@@ -195,12 +196,16 @@ class SMSService:
         if not did_number:
             raise ValueError("Conversation DID not found")
 
+        media_urls_json = json.dumps(media_urls) if media_urls else None
+
         # Send via provider
         try:
-            result = await provider.send_message(did_number, conversation.remote_number, body)
+            result = await provider.send_message(
+                did_number, conversation.remote_number, body, media_urls=media_urls
+            )
         except Exception as e:
             logger.error("sms_send_failed", error=str(e), conversation_id=str(conversation_id))
-            # Record failed message
+            # Record failed message with retry scheduling
             message = Message(
                 conversation_id=conversation_id,
                 tenant_id=tenant_id,
@@ -208,11 +213,15 @@ class SMSService:
                 from_number=did_number,
                 to_number=conversation.remote_number,
                 body=body,
+                media_urls=media_urls_json,
                 status=MessageStatus.FAILED,
                 provider=config.provider_type,
                 sent_by_user_id=sent_by_user_id,
                 error_message=str(e),
                 segments=1,
+                retry_count=0,
+                next_retry_at=datetime.now(UTC) + timedelta(seconds=60),
+                max_retries=3,
             )
             self.db.add(message)
             conversation.last_message_at = datetime.now(UTC)
@@ -228,6 +237,7 @@ class SMSService:
             from_number=did_number,
             to_number=conversation.remote_number,
             body=body,
+            media_urls=media_urls_json,
             status=result.status,
             provider=config.provider_type,
             provider_message_id=result.provider_message_id,

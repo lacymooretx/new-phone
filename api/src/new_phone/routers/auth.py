@@ -15,7 +15,10 @@ from new_phone.schemas.auth import (
     MFAChallengeResponse,
     MFASetupResponse,
     MFAVerifyRequest,
+    PasswordChangeRequest,
     RefreshRequest,
+    SSOCompleteRequest,
+    SSOInitiateRequest,
     TokenResponse,
 )
 from new_phone.services.audit_utils import log_audit
@@ -32,7 +35,9 @@ async def login(
     db: Annotated[AsyncSession, Depends(get_admin_db)],
 ):
     """Authenticate with email + password. Returns JWT or MFA challenge."""
-    service = AuthService(db)
+    from new_phone.main import redis_client as _redis
+
+    service = AuthService(db, redis=_redis)
     try:
         result = await service.authenticate(body.email, body.password)
     except ValueError as e:
@@ -61,7 +66,9 @@ async def refresh_token(
     db: Annotated[AsyncSession, Depends(get_admin_db)],
 ):
     """Exchange a refresh token for a new token pair."""
-    service = AuthService(db)
+    from new_phone.main import redis_client as _redis
+
+    service = AuthService(db, redis=_redis)
     try:
         result = await service.refresh_tokens(body.refresh_token)
     except (ValueError, JWTError) as e:
@@ -75,7 +82,9 @@ async def mfa_setup(
     db: Annotated[AsyncSession, Depends(get_admin_db)],
 ):
     """Generate TOTP secret and QR code for MFA enrollment."""
-    service = AuthService(db)
+    from new_phone.main import redis_client as _redis
+
+    service = AuthService(db, redis=_redis)
     result = await service.setup_mfa(user)
     return MFASetupResponse(**result)
 
@@ -87,7 +96,9 @@ async def mfa_verify(
     db: Annotated[AsyncSession, Depends(get_admin_db)],
 ):
     """Confirm MFA setup by verifying a TOTP code."""
-    service = AuthService(db)
+    from new_phone.main import redis_client as _redis
+
+    service = AuthService(db, redis=_redis)
     try:
         await service.verify_mfa_setup(user, body.code)
     except ValueError as e:
@@ -101,12 +112,34 @@ async def mfa_challenge(
     db: Annotated[AsyncSession, Depends(get_admin_db)],
 ):
     """Submit TOTP code during login MFA challenge."""
-    service = AuthService(db)
+    from new_phone.main import redis_client as _redis
+
+    service = AuthService(db, redis=_redis)
     try:
         result = await service.complete_mfa_challenge(body.mfa_token, body.code)
     except (ValueError, JWTError) as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e)) from None
     return TokenResponse(**result)
+
+
+@router.post("/change-password")
+async def change_password(
+    body: PasswordChangeRequest,
+    user: Annotated[User, Depends(get_current_user)],
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_admin_db)],
+):
+    """Change the authenticated user's password."""
+    from new_phone.main import redis_client as _redis
+
+    service = AuthService(db, redis=_redis)
+    try:
+        await service.change_password(user.id, body.current_password, body.new_password)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from None
+
+    await log_audit(db, user, request, "password_changed", "auth")
+    return {"message": "Password changed successfully"}
 
 
 # -- SSO Endpoints -------------------------------------------------------------
@@ -126,18 +159,15 @@ async def sso_check_domain(
 
 @router.post("/sso/initiate")
 async def sso_initiate(
-    body: dict,
+    body: SSOInitiateRequest,
     db: Annotated[AsyncSession, Depends(get_admin_db)],
 ):
     """Start SSO flow — returns authorization URL (public endpoint)."""
     from new_phone.main import redis_client as _redis
 
-    email = body.get("email", "")
-    if not email:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
     service = SSOService(db, _redis)
     try:
-        result = await service.initiate_sso(email)
+        result = await service.initiate_sso(body.email)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from None
     return result
@@ -152,20 +182,24 @@ async def sso_callback(
     error_description: Annotated[str | None, Query()] = None,
 ):
     """Handle OIDC callback from IdP — exchanges code for tokens, redirects to frontend."""
+    from urllib.parse import quote
+
     from new_phone.main import redis_client as _redis
 
     if error:
-        # IdP returned an error — redirect to frontend with error
+        # IdP returned an error — redirect to frontend with URL-encoded error
+        safe_error = quote(error_description or error)
         return RedirectResponse(
-            url=f"{settings.sso_frontend_url}/login?sso_error={error_description or error}"
+            url=f"{settings.sso_frontend_url}/login?sso_error={safe_error}"
         )
 
     service = SSOService(db, _redis)
     try:
         result_state = await service.handle_callback(code, state)
     except ValueError as e:
+        safe_error = quote(str(e))
         return RedirectResponse(
-            url=f"{settings.sso_frontend_url}/login?sso_error={e!s}"
+            url=f"{settings.sso_frontend_url}/login?sso_error={safe_error}"
         )
 
     # Redirect to frontend with state token for token retrieval
@@ -176,18 +210,15 @@ async def sso_callback(
 
 @router.post("/sso/complete")
 async def sso_complete(
-    body: dict,
+    body: SSOCompleteRequest,
     db: Annotated[AsyncSession, Depends(get_admin_db)],
 ):
     """Frontend calls this to exchange SSO state for JWT tokens."""
     from new_phone.main import redis_client as _redis
 
-    state = body.get("state", "")
-    if not state:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="State is required")
     service = SSOService(db, _redis)
     try:
-        tokens = await service.complete_sso(state)
+        tokens = await service.complete_sso(body.state)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e)) from None
     return TokenResponse(**tokens)

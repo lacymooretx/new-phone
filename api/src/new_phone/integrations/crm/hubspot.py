@@ -1,9 +1,14 @@
 """HubSpot CRM provider — contact search via v3 API."""
 
+import httpx
 import structlog
-from httpx import AsyncClient
 
-from new_phone.integrations.crm.provider_base import CRMContact, CRMProviderBase
+from new_phone.integrations.crm.provider_base import (
+    CRMContact,
+    CRMProviderBase,
+    create_crm_client,
+    crm_retry,
+)
 
 logger = structlog.get_logger()
 
@@ -11,10 +16,9 @@ HUBSPOT_API = "https://api.hubapi.com"
 
 
 class HubSpotProvider(CRMProviderBase):
-    def __init__(self, access_token: str, base_url: str | None = None, timeout: int = 5):
+    def __init__(self, access_token: str, base_url: str | None = None):
         self.access_token = access_token
         self.api_url = base_url or HUBSPOT_API
-        self.timeout = timeout
 
     def _headers(self) -> dict[str, str]:
         return {
@@ -30,11 +34,9 @@ class HubSpotProvider(CRMProviderBase):
         if len(digits) < 7:
             return None
 
-        async with AsyncClient(timeout=self.timeout) as client:
-            resp = await client.post(
-                f"{self.api_url}/crm/v3/objects/contacts/search",
-                headers=self._headers(),
-                json={
+        try:
+            async with create_crm_client() as client:
+                search_body = {
                     "filterGroups": [
                         {
                             "filters": [
@@ -63,32 +65,46 @@ class HubSpotProvider(CRMProviderBase):
                         "hs_object_id",
                     ],
                     "limit": 1,
-                },
-            )
-            resp.raise_for_status()
-            results = resp.json().get("results", [])
+                }
 
-            if not results:
-                return None
+                async def _do_search():
+                    resp = await client.post(
+                        f"{self.api_url}/crm/v3/objects/contacts/search",
+                        headers=self._headers(),
+                        json=search_body,
+                    )
+                    resp.raise_for_status()
+                    return resp.json().get("results", [])
 
-            props = results[0].get("properties", {})
-            contact_id = results[0].get("id", "")
-            first = props.get("firstname", "")
-            last = props.get("lastname", "")
-            full_name = f"{first} {last}".strip()
+                results = await crm_retry(_do_search, provider_name="hubspot")
 
-            return CRMContact(
-                customer_name=full_name,
-                company_name=props.get("company", ""),
-                contact_id=contact_id,
-                deep_link_url=(
-                    f"https://app.hubspot.com/contacts/{contact_id}" if contact_id else ""
-                ),
-            )
+                if not results:
+                    return None
+
+                props = results[0].get("properties", {})
+                contact_id = results[0].get("id", "")
+                first = props.get("firstname", "")
+                last = props.get("lastname", "")
+                full_name = f"{first} {last}".strip()
+
+                return CRMContact(
+                    customer_name=full_name,
+                    company_name=props.get("company", ""),
+                    contact_id=contact_id,
+                    deep_link_url=(
+                        f"https://app.hubspot.com/contacts/{contact_id}" if contact_id else ""
+                    ),
+                )
+        except (httpx.HTTPStatusError, httpx.RequestError) as exc:
+            logger.warning("hubspot_lookup_failed", phone=phone, error=str(exc))
+            return None
+        except Exception as exc:
+            logger.warning("hubspot_lookup_unexpected_error", phone=phone, error=str(exc))
+            return None
 
     async def test_connection(self) -> dict:
         try:
-            async with AsyncClient(timeout=self.timeout) as client:
+            async with create_crm_client() as client:
                 resp = await client.get(
                     f"{self.api_url}/crm/v3/objects/contacts",
                     headers=self._headers(),

@@ -24,6 +24,7 @@ dependencies = [
     "authlib>=1.4.0",
     "pytz>=2025.2",
     "prometheus-client>=0.21.0",
+    "slowapi>=0.1.9",
 ]
 
 [project.optional-dependencies]

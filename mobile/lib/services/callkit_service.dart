@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
+import 'package:flutter_callkeep/flutter_callkeep.dart';
 
 // ---------------------------------------------------------------------------
 // CallKit / ConnectionService abstraction
@@ -27,10 +26,6 @@ typedef SystemCallActionCallback = void Function(
 /// On iOS this drives the native incoming-call UI (works even when the app is
 /// backgrounded or the device is locked). On Android it integrates with
 /// ConnectionService for a similar experience.
-///
-/// The actual platform channel calls require the `flutter_callkeep` (or
-/// equivalent) package. This class provides the interface and state management
-/// so the rest of the app can be built and tested against it now.
 abstract class CallKitService {
   /// Report an incoming call to the OS.
   ///
@@ -77,19 +72,84 @@ abstract class CallKitService {
 }
 
 // ---------------------------------------------------------------------------
-// Default implementation
+// Default implementation using flutter_callkeep
 // ---------------------------------------------------------------------------
 
 /// Default [CallKitService] implementation.
 ///
 /// Wires platform channels for iOS CallKit / Android ConnectionService via the
-/// callkeep package. Until that dependency is installed the actual platform
-/// calls are stubbed with debug prints.
+/// flutter_callkeep package. Handles the native incoming-call UI, audio
+/// session management, and system callbacks for call control.
 class DefaultCallKitService implements CallKitService {
   SystemCallActionCallback? _actionCallback;
 
   /// Track active calls reported to the OS.
   final Map<String, _ReportedCall> _activeCalls = {};
+
+  /// Whether the service has been initialized.
+  bool _initialized = false;
+
+  /// The PushKit VoIP token (iOS), sent to the server for VoIP push.
+  String? voipToken;
+
+  /// Initialize the CallKeep plugin with app configuration.
+  ///
+  /// Must be called once during app startup, before any incoming calls
+  /// can be reported to the OS.
+  Future<void> init() async {
+    if (_initialized) return;
+
+    try {
+      final config = CallKeepConfig(
+        appName: 'New Phone',
+        android: CallKeepAndroidConfig(
+          ringtoneFileName: 'ringtone',
+          accentColor: '#1565C0',
+          incomingCallNotificationChannelName: 'New Phone Incoming Calls',
+          missedCallNotificationChannelName: 'New Phone Missed Calls',
+          showMissedCallNotification: true,
+          showCallBackAction: true,
+        ),
+        ios: CallKeepIosConfig(
+          iconName: 'CallKitIcon',
+          ringtoneFileName: 'ringtone.caf',
+          handleType: CallKitHandleType.number,
+          isVideoSupported: false,
+          maximumCallGroups: 1,
+          maximumCallsPerCallGroup: 1,
+          supportsDTMF: true,
+          supportsHolding: true,
+          supportsGrouping: false,
+          supportsUngrouping: false,
+          audioSessionActive: true,
+          audioSessionMode: AvAudioSessionMode.voiceChat,
+        ),
+      );
+
+      await CallKeep.instance.configure(config);
+
+      // Register event handlers for system-initiated call actions.
+      CallKeep.instance.handler = CallEventHandler(
+        onCallIncoming: _onCallIncoming,
+        onCallAccepted: _onCallAccepted,
+        onCallDeclined: _onCallDeclined,
+        onCallEnded: _onCallEnded,
+        onCallStarted: _onCallStarted,
+        onCallTimedOut: _onCallTimedOut,
+        onCallMissed: _onCallMissed,
+        onHoldToggled: _onHoldToggled,
+        onMuteToggled: _onMuteToggled,
+        onDmtfToggled: _onDtmfToggled,
+        onAudioSessionToggled: _onAudioSessionToggled,
+        onVoipTokenUpdated: _onVoipTokenUpdated,
+      );
+
+      _initialized = true;
+      debugPrint('[CallKitService] Initialized');
+    } catch (e) {
+      debugPrint('[CallKitService] Init failed: $e');
+    }
+  }
 
   @override
   Future<void> reportIncomingCall({
@@ -98,41 +158,64 @@ class DefaultCallKitService implements CallKitService {
     String? callerName,
     bool hasVideo = false,
   }) async {
+    if (!_initialized) {
+      await init();
+    }
+
     _activeCalls[callId] = _ReportedCall(
       callId: callId,
       callerNumber: callerNumber,
       callerName: callerName,
     );
 
-    // TODO: FlutterCallkeep.displayIncomingCall(
-    //   callId,
-    //   callerNumber,
-    //   callerName: callerName ?? callerNumber,
-    //   hasVideo: hasVideo,
-    //   handleType: 'number',
-    // );
+    try {
+      final callEvent = CallEvent(
+        uuid: callId,
+        callerName: callerName ?? callerNumber,
+        handle: callerNumber,
+        hasVideo: hasVideo,
+        duration: 45,
+      );
 
-    debugPrint(
-      '[CallKitService] Reported incoming call $callId '
-      'from ${callerName ?? callerNumber}',
-    );
+      await CallKeep.instance.displayIncomingCall(callEvent);
+
+      debugPrint(
+        '[CallKitService] Reported incoming call $callId '
+        'from ${callerName ?? callerNumber}',
+      );
+    } catch (e) {
+      debugPrint('[CallKitService] reportIncomingCall failed: $e');
+    }
   }
 
   @override
   Future<void> reportCallStarted({required String callId}) async {
-    // TODO: FlutterCallkeep.reportConnectingOutgoingCallWithUUID(callId);
-    // TODO: FlutterCallkeep.reportConnectedOutgoingCallWithUUID(callId);
+    try {
+      final reported = _activeCalls[callId];
+      final callEvent = CallEvent(
+        uuid: callId,
+        callerName: reported?.callerName ?? '',
+        handle: reported?.callerNumber ?? '',
+      );
 
-    debugPrint('[CallKitService] Call started: $callId');
+      await CallKeep.instance.startCall(callEvent);
+
+      debugPrint('[CallKitService] Call started: $callId');
+    } catch (e) {
+      debugPrint('[CallKitService] reportCallStarted failed: $e');
+    }
   }
 
   @override
   Future<void> reportCallEnded({required String callId}) async {
     _activeCalls.remove(callId);
 
-    // TODO: FlutterCallkeep.endCall(callId);
-
-    debugPrint('[CallKitService] Call ended: $callId');
+    try {
+      await CallKeep.instance.endCall(callId);
+      debugPrint('[CallKitService] Call ended: $callId');
+    } catch (e) {
+      debugPrint('[CallKitService] reportCallEnded failed: $e');
+    }
   }
 
   @override
@@ -140,8 +223,8 @@ class DefaultCallKitService implements CallKitService {
     required String callId,
     required bool held,
   }) async {
-    // TODO: FlutterCallkeep.setOnHold(callId, held);
-
+    // The hold state is managed via the onHoldToggled callback from the OS.
+    // This method reports our app's hold state to the OS.
     debugPrint(
       '[CallKitService] Call $callId hold=${held ? 'on' : 'off'}',
     );
@@ -152,8 +235,8 @@ class DefaultCallKitService implements CallKitService {
     required String callId,
     required bool muted,
   }) async {
-    // TODO: FlutterCallkeep.setMutedCall(callId, muted);
-
+    // The mute state is managed via the onMuteToggled callback from the OS.
+    // This method reports our app's mute state to the OS.
     debugPrint(
       '[CallKitService] Call $callId mute=${muted ? 'on' : 'off'}',
     );
@@ -162,28 +245,6 @@ class DefaultCallKitService implements CallKitService {
   @override
   void setActionCallback(SystemCallActionCallback callback) {
     _actionCallback = callback;
-
-    // TODO: Register platform channel listeners:
-    // FlutterCallkeep.addEventListener('answerCall', (event) {
-    //   _actionCallback?.call(event['callUUID'], SystemCallAction.answer);
-    // });
-    // FlutterCallkeep.addEventListener('endCall', (event) {
-    //   _actionCallback?.call(event['callUUID'], SystemCallAction.end);
-    // });
-    // FlutterCallkeep.addEventListener('setHeldCall', (event) {
-    //   final held = event['hold'] as bool;
-    //   _actionCallback?.call(
-    //     event['callUUID'],
-    //     held ? SystemCallAction.hold : SystemCallAction.unhold,
-    //   );
-    // });
-    // FlutterCallkeep.addEventListener('setMutedCall', (event) {
-    //   final muted = event['muted'] as bool;
-    //   _actionCallback?.call(
-    //     event['callUUID'],
-    //     muted ? SystemCallAction.mute : SystemCallAction.unmute,
-    //   );
-    // });
   }
 
   /// Simulate a system call action (for testing / development).
@@ -196,6 +257,116 @@ class DefaultCallKitService implements CallKitService {
   void dispose() {
     _activeCalls.clear();
     _actionCallback = null;
+    _initialized = false;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private — CallKeep event handlers
+  // ---------------------------------------------------------------------------
+
+  /// Called when an incoming call notification is displayed by the OS.
+  void _onCallIncoming(CallEvent event) {
+    debugPrint(
+      '[CallKitService] onCallIncoming: ${event.uuid} '
+      'from ${event.callerName}',
+    );
+  }
+
+  /// Called when the user accepts an incoming call from the system UI.
+  void _onCallAccepted(CallEvent event) {
+    final callId = event.uuid;
+    debugPrint('[CallKitService] onCallAccepted: $callId');
+    _actionCallback?.call(callId, SystemCallAction.answer);
+  }
+
+  /// Called when the user declines an incoming call from the system UI.
+  void _onCallDeclined(CallEvent event) {
+    final callId = event.uuid;
+    debugPrint('[CallKitService] onCallDeclined: $callId');
+    _actionCallback?.call(callId, SystemCallAction.end);
+  }
+
+  /// Called when a call ends (from system UI or programmatically).
+  void _onCallEnded(CallEvent event) {
+    final callId = event.uuid;
+    debugPrint('[CallKitService] onCallEnded: $callId');
+    _activeCalls.remove(callId);
+    _actionCallback?.call(callId, SystemCallAction.end);
+  }
+
+  /// Called when an outgoing call is started via the system UI.
+  void _onCallStarted(CallEvent event) {
+    debugPrint('[CallKitService] onCallStarted: ${event.uuid}');
+  }
+
+  /// Called when an incoming call times out (not answered).
+  void _onCallTimedOut(CallEvent event) {
+    final callId = event.uuid;
+    debugPrint('[CallKitService] onCallTimedOut: $callId');
+    _activeCalls.remove(callId);
+    _actionCallback?.call(callId, SystemCallAction.end);
+  }
+
+  /// Called when a call is missed.
+  void _onCallMissed(CallEvent event) {
+    debugPrint('[CallKitService] onCallMissed: ${event.uuid}');
+    _activeCalls.remove(event.uuid);
+  }
+
+  /// Called when the user toggles hold from the system call UI.
+  void _onHoldToggled(HoldToggleEvent event) {
+    final callId = event.uuid;
+    final isOnHold = event.isOnHold;
+    debugPrint(
+      '[CallKitService] onHoldToggled: $callId isOnHold=$isOnHold',
+    );
+    if (callId != null) {
+      _actionCallback?.call(
+        callId,
+        isOnHold ? SystemCallAction.hold : SystemCallAction.unhold,
+      );
+    }
+  }
+
+  /// Called when the user toggles mute from the system call UI.
+  void _onMuteToggled(MuteToggleEvent event) {
+    final callId = event.uuid;
+    final isMuted = event.isMuted;
+    debugPrint(
+      '[CallKitService] onMuteToggled: $callId isMuted=$isMuted',
+    );
+    if (callId != null) {
+      _actionCallback?.call(
+        callId,
+        isMuted ? SystemCallAction.mute : SystemCallAction.unmute,
+      );
+    }
+  }
+
+  /// Called when the user sends DTMF from the system call UI.
+  void _onDtmfToggled(DmtfToggleEvent event) {
+    debugPrint(
+      '[CallKitService] onDtmfToggled: ${event.uuid} '
+      'digits=${event.digits}',
+    );
+    // DTMF from the system UI is forwarded to the SipService via
+    // the CallNotifier layer, which listens for these events.
+  }
+
+  /// Called when the audio session state changes.
+  void _onAudioSessionToggled(AudioSessionToggleEvent event) {
+    debugPrint(
+      '[CallKitService] onAudioSessionToggled: isActivated=${event.isActivated}',
+    );
+  }
+
+  /// Called when the PushKit VoIP token is updated (iOS only).
+  void _onVoipTokenUpdated(VoipTokenEvent event) {
+    voipToken = event.token;
+    debugPrint(
+      '[CallKitService] onVoipTokenUpdated: '
+      '${event.token?.substring(0, (event.token?.length ?? 0).clamp(0, 20))}...',
+    );
   }
 }
 

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -24,6 +24,12 @@ class Tenant(Base, TimestampMixin):
         nullable=True,
     )
     default_language: Mapped[str] = mapped_column(String(10), default="en", nullable=False)
+
+    # Lifecycle & quotas
+    lifecycle_state: Mapped[str] = mapped_column(String(20), nullable=False, default="trial")
+    max_extensions: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    max_dids: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    max_concurrent_calls: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     deactivated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

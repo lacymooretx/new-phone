@@ -1,16 +1,21 @@
 from contextlib import asynccontextmanager
 
 import structlog
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from new_phone.config import settings
 from new_phone.events.publisher import EventPublisher
 from new_phone.freeswitch.config_sync import ConfigSync
+from new_phone.jobs.sms_retry import SMSRetryJob
 from new_phone.middleware.error_handler import http_exception_handler, unhandled_exception_handler
 from new_phone.middleware.metrics import MetricsMiddleware, metrics_endpoint
+from new_phone.middleware.rate_limit import limiter
 from new_phone.middleware.request_logging import RequestLoggingMiddleware
+from new_phone.middleware.security_headers import SecurityHeadersMiddleware
 from new_phone.services.camp_on_job import CampOnJob
 from new_phone.services.email_service import EmailService
 from new_phone.services.esl_event_listener import ESLEventListener
@@ -28,6 +33,7 @@ esl_event_listener: ESLEventListener | None = None
 email_service: EmailService | None = None
 tiering_job: TieringJob | None = None
 camp_on_job: CampOnJob | None = None
+sms_retry_job: SMSRetryJob | None = None
 event_publisher: EventPublisher | None = None
 connection_manager: ConnectionManager | None = None
 
@@ -61,7 +67,8 @@ async def lifespan(app: FastAPI):
         event_publisher, \
         connection_manager, \
         tiering_job, \
-        camp_on_job
+        camp_on_job, \
+        sms_retry_job
 
     logger = structlog.get_logger()
     configure_logging()
@@ -117,9 +124,15 @@ async def lifespan(app: FastAPI):
     camp_on_job = CampOnJob(redis=redis_client)
     await camp_on_job.start()
 
+    # SMS retry background job (every 30s)
+    sms_retry_job = SMSRetryJob()
+    await sms_retry_job.start()
+
     yield
 
     # Shutdown
+    if sms_retry_job:
+        await sms_retry_job.stop()
     if camp_on_job:
         await camp_on_job.stop()
     if tiering_job:
@@ -146,10 +159,23 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # Rate limiter
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+    # CORS — parse comma-separated origins from config
+    if settings.cors_allowed_origins:
+        cors_origins = [o.strip() for o in settings.cors_allowed_origins.split(",") if o.strip()]
+    elif settings.debug:
+        cors_origins = ["*"]
+    else:
+        cors_origins = []
+
     # Middleware (order matters — outermost first)
+    app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"] if settings.debug else [],
+        allow_origins=cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -157,8 +183,19 @@ def create_app() -> FastAPI:
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(MetricsMiddleware)
 
-    # Prometheus metrics endpoint
-    app.add_route("/metrics", metrics_endpoint)
+    # Prometheus metrics endpoint (optionally protected by bearer token)
+    if settings.metrics_token:
+        _expected_token = settings.metrics_token
+
+        async def _protected_metrics(request: Request) -> Response:
+            auth_header = request.headers.get("Authorization", "")
+            if auth_header != f"Bearer {_expected_token}":
+                return Response(status_code=403, content="Forbidden")
+            return await metrics_endpoint(request)
+
+        app.add_route("/metrics", _protected_metrics)
+    else:
+        app.add_route("/metrics", metrics_endpoint)
 
     # Error handlers
     app.add_exception_handler(HTTPException, http_exception_handler)
@@ -194,12 +231,14 @@ def create_app() -> FastAPI:
         holiday_calendars,
         inbound_routes,
         ivr_menus,
+        onboarding,
         outbound_routes,
         page_groups,
         paging_zones,
         panic_alerts,
         parking,
         phone_models,
+        port_requests,
         queues,
         recording_tier,
         recordings,
@@ -211,6 +250,7 @@ def create_app() -> FastAPI:
         sms_conversations,
         sms_provider_configs,
         sso_config,
+        ten_dlc,
         tenants,
         time_conditions,
         users,
@@ -271,6 +311,9 @@ def create_app() -> FastAPI:
     app.include_router(door_stations.router, prefix="/api/v1")
     app.include_router(paging_zones.router, prefix="/api/v1")
     app.include_router(building_webhooks.router, prefix="/api/v1")
+    app.include_router(ten_dlc.router, prefix="/api/v1")
+    app.include_router(port_requests.router, prefix="/api/v1")
+    app.include_router(onboarding.router, prefix="/api/v1")
     app.include_router(analytics.msp_router, prefix="/api/v1")
 
     # AI engine internal endpoints (no /api/v1 prefix — Docker network only)

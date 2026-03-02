@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/call_provider.dart';
+import '../services/audio_service.dart';
 import '../services/sip_service.dart';
 import '../widgets/dial_pad.dart';
 
@@ -202,6 +203,10 @@ class _ConnectedView extends ConsumerWidget {
         if (showDtmfPad) ...[
           DialPad(
             onDigitPressed: (digit) => notifier.sendDtmf(digit),
+            playDtmfTones: true,
+            onToneRequested: (digit) {
+              ref.read(audioServiceProvider).playDtmfTone(digit);
+            },
             buttonSize: 64,
             spacing: 12,
           ),

@@ -65,6 +65,7 @@ import new_phone.models.site
 import new_phone.models.sms
 import new_phone.models.sso_provider
 import new_phone.models.sso_role_mapping
+import new_phone.models.ten_dlc
 import new_phone.models.tenant
 import new_phone.models.time_condition
 import new_phone.models.user
@@ -263,6 +264,25 @@ _RLS_MODULES = [
     "new_phone.services.sip_trunk_service",
     "new_phone.services.inbound_route_service",
     "new_phone.services.outbound_route_service",
+    "new_phone.services.sms_service",
+    "new_phone.services.ivr_menu_service",
+    "new_phone.services.time_condition_service",
+    "new_phone.services.parking_service",
+    "new_phone.services.voicemail_message_service",
+    "new_phone.services.ten_dlc_service",
+    "new_phone.services.port_service",
+    "new_phone.services.conference_bridge_service",
+    "new_phone.services.page_group_service",
+    "new_phone.services.follow_me_service",
+    "new_phone.services.caller_id_rule_service",
+    "new_phone.services.holiday_calendar_service",
+    "new_phone.services.device_service",
+    "new_phone.services.audio_prompt_service",
+    "new_phone.services.disposition_service",
+    "new_phone.services.site_service",
+    "new_phone.services.boss_admin_service",
+    "new_phone.services.building_webhook_service",
+    "new_phone.services.door_station_service",
     "new_phone.deps.auth",
 ]
 

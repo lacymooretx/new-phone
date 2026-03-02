@@ -1,0 +1,700 @@
+# Production overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+name: new-phone
+
+services:
+  # ─── Core Application ───────────────────────────────────────────────
+
+  api:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1024M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+    environment:
+      NP_DEBUG: "false"
+      NP_LOG_LEVEL: "INFO"
+    healthcheck:
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - frontend
+      - backend
+
+  web:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    healthcheck:
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - frontend
+
+  # ─── Data Stores ────────────────────────────────────────────────────
+
+  postgres:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    ports: []  # Remove host port mapping in production
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - backend
+
+  redis:
+    restart: unless-stopped
+    command: >-
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    ports: []  # Remove host port mapping in production
+    healthcheck:
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - backend
+
+  minio:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1024M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    ports:
+      - "9000:9000"
+      # Remove console port in production
+    healthcheck:
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - backend
+
+  # ─── Telephony ──────────────────────────────────────────────────────
+
+  freeswitch:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 4096M
+        reservations:
+          cpus: "1.0"
+          memory: 1024M
+    ports:
+      - "5061:5061/tcp"   # SIP TLS
+      - "7443:7443/tcp"   # WSS (WebRTC)
+      # ESL port NOT exposed in production
+    healthcheck:
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - backend
+
+  # ─── AI Engine ──────────────────────────────────────────────────────
+
+  ai-engine:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    environment:
+      NP_AI_LOG_LEVEL: "INFO"
+    ports:
+      - "${NP_AI_WS_HOST_PORT:-8090}:8090"
+    healthcheck:
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - backend
+
+  # ─── Rust Services ──────────────────────────────────────────────────
+
+  sip-proxy:
+    image: ${NP_REGISTRY:-ghcr.io/new-phone}/sip-proxy:${NP_VERSION:-latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 64M
+    ports:
+      - "5060:5060/tcp"   # SIP (proxy listens, forwards to FS)
+      - "5060:5060/udp"
+    environment:
+      FREESWITCH_PRIMARY: freeswitch:5061
+      FREESWITCH_STANDBY: ${NP_FS_STANDBY_HOST:-}
+      REDIS_URL: redis://redis:6379/0
+      LISTEN_ADDR: 0.0.0.0:5060
+      LOG_LEVEL: ${NP_LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    depends_on:
+      redis:
+        condition: service_healthy
+      freeswitch:
+        condition: service_healthy
+    networks:
+      - backend
+
+  rtp-relay:
+    image: ${NP_REGISTRY:-ghcr.io/new-phone}/rtp-relay:${NP_VERSION:-latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 2048M
+        reservations:
+          cpus: "1.0"
+          memory: 512M
+    ports:
+      - "10000-10999:10000-10999/udp"  # RTP port range
+    environment:
+      FREESWITCH_HOST: freeswitch
+      REDIS_URL: redis://redis:6379/0
+      RTP_PORT_MIN: 10000
+      RTP_PORT_MAX: 10999
+      LOG_LEVEL: ${NP_LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+
+  dpma-service:
+    image: ${NP_REGISTRY:-ghcr.io/new-phone}/dpma-service:${NP_VERSION:-latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 64M
+    ports:
+      - "4569:4569/udp"  # DPMA protocol port
+    environment:
+      API_URL: http://api:8000
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: ${NP_LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+
+  event-router:
+    image: ${NP_REGISTRY:-ghcr.io/new-phone}/event-router:${NP_VERSION:-latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 64M
+    environment:
+      FREESWITCH_ESL_HOST: freeswitch
+      FREESWITCH_ESL_PORT: 8021
+      FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      REDIS_URL: redis://redis:6379/0
+      API_URL: http://api:8000
+      LOG_LEVEL: ${NP_LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    depends_on:
+      freeswitch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+
+  parking-manager:
+    image: ${NP_REGISTRY:-ghcr.io/new-phone}/parking-manager:${NP_VERSION:-latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    environment:
+      FREESWITCH_ESL_HOST: freeswitch
+      FREESWITCH_ESL_PORT: 8021
+      FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      REDIS_URL: redis://redis:6379/0
+      API_URL: http://api:8000
+      LOG_LEVEL: ${NP_LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    depends_on:
+      freeswitch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+
+  e911-handler:
+    image: ${NP_REGISTRY:-ghcr.io/new-phone}/e911-handler:${NP_VERSION:-latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    environment:
+      API_URL: http://api:8000
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
+      LOG_LEVEL: ${NP_LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+
+  sms-gateway:
+    image: ${NP_REGISTRY:-ghcr.io/new-phone}/sms-gateway:${NP_VERSION:-latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    ports:
+      - "8085:8085"  # Webhook receiver for SMS provider callbacks
+    environment:
+      API_URL: http://api:8000
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
+      LOG_LEVEL: ${NP_LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+      - frontend
+
+  # ─── Monitoring Stack ───────────────────────────────────────────────
+
+  prometheus:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1024M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    healthcheck:
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - monitoring
+      - backend
+
+  grafana:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    healthcheck:
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - monitoring
+      - frontend
+
+  alertmanager:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    healthcheck:
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - monitoring
+
+  node-exporter:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+        reservations:
+          cpus: "0.1"
+          memory: 32M
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - monitoring
+
+  redis-exporter:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+        reservations:
+          cpus: "0.05"
+          memory: 32M
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - monitoring
+      - backend
+
+  postgres-exporter:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+        reservations:
+          cpus: "0.05"
+          memory: 32M
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - monitoring
+      - backend
+
+  # ─── Log Aggregation ────────────────────────────────────────────────
+
+  loki:
+    image: grafana/loki:3.0.0
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1024M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3100/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - monitoring
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    depends_on:
+      loki:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - monitoring
+
+  # Remove mailhog in production
+  mailhog:
+    profiles:
+      - dev-only
+
+volumes:
+  pg_data:
+    name: new_phone_pg_data
+    labels:
+      backup: "daily"
+      retention: "30d"
+  redis_data:
+    name: new_phone_redis_data
+    labels:
+      backup: "daily"
+      retention: "7d"
+  fs_data:
+    name: new_phone_fs_data
+    labels:
+      backup: "daily"
+      retention: "30d"
+  minio_data:
+    name: new_phone_minio_data
+    labels:
+      backup: "daily"
+      retention: "90d"
+  recordings:
+    name: new_phone_recordings
+    labels:
+      backup: "daily"
+      retention: "365d"
+  prometheus_data:
+    name: new_phone_prometheus_data
+    labels:
+      backup: "weekly"
+      retention: "30d"
+  grafana_data:
+    name: new_phone_grafana_data
+    labels:
+      backup: "weekly"
+      retention: "30d"
+  loki_data:
+    name: new_phone_loki_data
+    labels:
+      backup: "weekly"
+      retention: "30d"
+
+networks:
+  frontend:
+    name: new_phone_frontend
+    driver: bridge
+  backend:
+    name: new_phone_backend
+    driver: bridge
+    internal: true
+  monitoring:
+    name: new_phone_monitoring
+    driver: bridge
+    internal: true

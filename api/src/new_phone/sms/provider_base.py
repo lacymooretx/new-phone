@@ -31,8 +31,10 @@ class StatusUpdate:
 
 class SMSProviderBase(ABC):
     @abstractmethod
-    async def send_message(self, from_number: str, to_number: str, body: str) -> SendResult:
-        """Send an SMS message via this provider."""
+    async def send_message(
+        self, from_number: str, to_number: str, body: str, media_urls: list[str] | None = None
+    ) -> SendResult:
+        """Send an SMS/MMS message via this provider."""
 
     @abstractmethod
     def parse_inbound_webhook(self, request_data: dict) -> InboundMessage:

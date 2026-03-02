@@ -1,0 +1,25 @@
+FROM rust:1.82-alpine AS builder
+RUN apk add --no-cache musl-dev cmake make perl
+WORKDIR /app
+
+COPY Cargo.toml Cargo.lock ./
+COPY shared/ shared/
+COPY crates/e911-handler/ crates/e911-handler/
+
+# Create dummy crates for other workspace members
+RUN for crate in sip-proxy rtp-relay dpma-service event-router parking-manager sms-gateway; do \
+      mkdir -p crates/$crate/src && \
+      echo "fn main(){}" > crates/$crate/src/main.rs && \
+      echo '[package]' > crates/$crate/Cargo.toml && \
+      echo "name = \"$crate\"" >> crates/$crate/Cargo.toml && \
+      echo 'version = "0.1.0"' >> crates/$crate/Cargo.toml && \
+      echo 'edition = "2021"' >> crates/$crate/Cargo.toml; \
+    done
+
+RUN cargo build --release -p e911-handler
+
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /app/target/release/e911-handler /usr/local/bin/
+USER 65534
+ENTRYPOINT ["e911-handler"]

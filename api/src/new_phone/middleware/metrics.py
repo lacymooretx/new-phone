@@ -32,6 +32,75 @@ REQUESTS_IN_PROGRESS = Gauge(
 ACTIVE_CALLS = Gauge("active_calls", "Number of active calls")
 REGISTERED_EXTENSIONS = Gauge("registered_extensions", "Number of registered SIP extensions")
 
+# FreeSWITCH-specific metrics
+FREESWITCH_ACTIVE_CHANNELS = Gauge(
+    "freeswitch_active_channels",
+    "Number of active FreeSWITCH channels",
+)
+FREESWITCH_CALLS_PER_SECOND = Gauge(
+    "freeswitch_calls_per_second",
+    "Current calls per second rate in FreeSWITCH",
+)
+FREESWITCH_REGISTRATIONS_TOTAL = Gauge(
+    "freeswitch_registrations_total",
+    "Total number of active SIP registrations in FreeSWITCH",
+)
+FREESWITCH_SESSIONS_PEAK = Gauge(
+    "freeswitch_sessions_peak",
+    "Peak session count since FreeSWITCH started",
+)
+FREESWITCH_SESSIONS_PEAK_5MIN = Gauge(
+    "freeswitch_sessions_peak_5min",
+    "Peak session count in the last 5 minutes",
+)
+FREESWITCH_UP = Gauge(
+    "freeswitch_up",
+    "Whether FreeSWITCH is reachable (1=up, 0=down)",
+)
+
+# SMS metrics
+SMS_SENDS_TOTAL = Counter(
+    "sms_sends_total",
+    "Total SMS messages sent",
+    ["provider", "status"],
+)
+SMS_DELIVERY_FAILURES_TOTAL = Counter(
+    "sms_delivery_failures_total",
+    "Total SMS delivery failures",
+    ["provider"],
+)
+
+# Queue metrics
+QUEUE_WAIT_TIME = Histogram(
+    "queue_wait_time_seconds",
+    "Time callers wait in queue before being answered",
+    ["queue_name"],
+    buckets=(10, 30, 60, 120, 180, 300, 600),
+)
+
+# SIP trunk metrics
+SIP_TRUNK_REGISTERED = Gauge(
+    "sip_trunk_registered",
+    "Whether a SIP trunk is registered (1=yes, 0=no)",
+    ["trunk_name"],
+)
+
+# DB connection pool metrics
+DB_POOL_AVAILABLE = Gauge(
+    "db_pool_available_connections",
+    "Number of available database connections in the pool",
+)
+DB_POOL_IN_USE = Gauge(
+    "db_pool_in_use_connections",
+    "Number of database connections currently in use",
+)
+
+# Recording archive metrics
+RECORDING_ARCHIVE_LAST_SUCCESS = Gauge(
+    "recording_archive_last_success_timestamp",
+    "Timestamp of the last successful recording archive job",
+)
+
 # UUID pattern compiled once for path normalization
 _UUID_RE = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 _NUMERIC_ID_RE = re.compile(r"/\d+(?=/|$)")

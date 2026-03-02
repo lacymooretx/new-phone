@@ -59,7 +59,9 @@ async def building_webhook_inbound(webhook_id: uuid.UUID, request: Request) -> R
                 )
         else:
             logger.warning("building_webhook_no_signature", webhook_id=str(webhook_id))
-            # Still process but log the warning
+            return Response(
+                status_code=status.HTTP_401_UNAUTHORIZED, content="Missing signature"
+            )
 
         # Extract event type from payload
         event_type = payload.get("event_type") or payload.get("type") or payload.get("event")

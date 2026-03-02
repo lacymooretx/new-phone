@@ -15,7 +15,10 @@ import '../screens/settings_screen.dart';
 import '../screens/contact_detail_screen.dart';
 import '../screens/dialer_screen.dart';
 import '../screens/active_call_screen.dart';
+import '../screens/change_password_screen.dart';
 import '../screens/incoming_call_screen.dart';
+import '../screens/sms_conversations_screen.dart';
+import '../screens/sms_thread_screen.dart';
 
 /// GoRouter configuration with auth-aware redirects.
 final routerProvider = Provider<GoRouter>((ref) {
@@ -97,6 +100,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const IncomingCallScreen(),
       ),
 
+      // SMS thread — full screen over home
+      GoRoute(
+        path: '/sms/:conversationId',
+        builder: (context, state) {
+          final conversationId = state.pathParameters['conversationId'] ?? '';
+          return SmsThreadScreen(conversationId: conversationId);
+        },
+      ),
+
+      // Settings sub-routes — full screen over home
+      GoRoute(
+        path: '/settings/change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+
       // Home shell with bottom navigation
       ShellRoute(
         builder: (context, state, child) => HomeScreen(child: child),
@@ -121,6 +139,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: 'voicemail',
                 pageBuilder: (context, state) => const NoTransitionPage(
                   child: VoicemailScreen(),
+                ),
+              ),
+              GoRoute(
+                path: 'messages',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: SmsConversationsScreen(),
                 ),
               ),
               GoRoute(

@@ -65,3 +65,20 @@ freeswitch/db/
 freeswitch/recordings/
 freeswitch/storage/
 freeswitch/tls/
+
+# Mobile (Flutter)
+mobile/build/
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+
+# Desktop (Electron)
+desktop/out/
+desktop/dist/
+
+# Additional security
+*.pem
+*.key
+
+# Claude Code
+.claude/

@@ -18,6 +18,9 @@ from new_phone.services.audio_prompt_service import AudioPromptService
 
 router = APIRouter(prefix="/tenants/{tenant_id}/audio-prompts", tags=["audio-prompts"])
 
+MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 MB
+ALLOWED_CONTENT_TYPES = {"audio/wav", "audio/mpeg", "audio/ogg", "audio/x-wav"}
+
 
 def _get_storage():
     from new_phone.main import storage_service
@@ -58,6 +61,13 @@ async def upload_prompt(
 ):
     _check_tenant_access(user, tenant_id)
 
+    # Validate content type
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file type: {file.content_type}. Allowed types: {', '.join(sorted(ALLOWED_CONTENT_TYPES))}",
+        )
+
     # Get tenant slug for storage paths
     result = await db.execute(select(Tenant).where(Tenant.id == tenant_id))
     tenant = result.scalar_one_or_none()
@@ -67,6 +77,13 @@ async def upload_prompt(
     file_data = await file.read()
     if not file_data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Empty file")
+
+    # Validate file size
+    if len(file_data) > MAX_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File too large. Maximum size is {MAX_UPLOAD_SIZE // (1024 * 1024)} MB",
+        )
 
     service = AudioPromptService(db, _get_storage())
     try:

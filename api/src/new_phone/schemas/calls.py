@@ -36,3 +36,42 @@ class ExtensionLookupResponse(BaseModel):
     dnd_enabled: bool = False
     agent_status: str | None = None
     is_internal: bool = False
+
+
+class ActiveCallEntry(BaseModel):
+    """A single active call/channel from FreeSWITCH."""
+
+    uuid: str
+    direction: str
+    caller_name: str
+    caller_number: str
+    destination: str
+    state: str
+    callstate: str
+    read_codec: str
+    write_codec: str
+    secure: str
+    created: str
+    created_epoch: str
+    hostname: str
+    context: str
+
+
+class ActiveCallsResponse(BaseModel):
+    """Response for the active calls endpoint."""
+
+    total: int
+    channels: list[ActiveCallEntry]
+
+
+class FreeSwitchMetrics(BaseModel):
+    """FreeSWITCH system metrics."""
+
+    active_channels: int = 0
+    calls_per_second: float = 0.0
+    registrations_total: int = 0
+    sessions_since_startup: int = 0
+    sessions_peak: int = 0
+    sessions_peak_5min: int = 0
+    sessions_max: int = 0
+    current_sessions: int = 0

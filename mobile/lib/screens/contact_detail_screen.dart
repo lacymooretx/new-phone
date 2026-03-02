@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../models/cdr.dart';
 import '../providers/auth_provider.dart';
 import '../providers/call_provider.dart';
+import '../providers/sms_provider.dart';
 import '../services/cdr_service.dart';
 
 /// Contact / extension detail screen.
@@ -166,10 +167,24 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
                   label: 'Message',
                   color: colorScheme.primary,
                   onPressed: () {
-                    // TODO: Navigate to messaging / SMS screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Messaging coming soon')),
-                    );
+                    // Find existing conversation or go to messages tab
+                    final smsState = ref.read(smsProvider);
+                    final existing = smsState.conversations
+                        .where(
+                          (c) => c.remoteNumber == widget.phoneNumber,
+                        )
+                        .toList();
+
+                    if (existing.isNotEmpty) {
+                      ref
+                          .read(smsProvider.notifier)
+                          .selectConversation(existing.first);
+                      context.push('/sms/${existing.first.id}');
+                    } else {
+                      // Navigate to messages tab so the user can start a
+                      // conversation from there.
+                      context.go('/home/messages');
+                    }
                   },
                 ),
                 _ActionButton(
@@ -177,12 +192,7 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
                   label: 'Voicemail',
                   color: colorScheme.tertiary,
                   onPressed: () {
-                    // TODO: Navigate to voicemail for this contact
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Direct voicemail coming soon'),
-                      ),
-                    );
+                    context.go('/home/voicemail');
                   },
                 ),
               ],

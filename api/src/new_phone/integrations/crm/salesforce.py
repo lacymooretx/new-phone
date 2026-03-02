@@ -1,9 +1,14 @@
 """Salesforce CRM provider — contact lookup via REST API + SOQL."""
 
+import httpx
 import structlog
-from httpx import AsyncClient
 
-from new_phone.integrations.crm.provider_base import CRMContact, CRMProviderBase
+from new_phone.integrations.crm.provider_base import (
+    CRMContact,
+    CRMProviderBase,
+    create_crm_client,
+    crm_retry,
+)
 
 logger = structlog.get_logger()
 
@@ -17,7 +22,6 @@ class SalesforceProvider(CRMProviderBase):
         password: str,
         security_token: str,
         base_url: str | None = None,
-        timeout: int = 5,
     ):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -25,11 +29,10 @@ class SalesforceProvider(CRMProviderBase):
         self.password = password
         self.security_token = security_token
         self.login_url = base_url or "https://login.salesforce.com"
-        self.timeout = timeout
         self._instance_url: str | None = None
         self._access_token: str | None = None
 
-    async def _authenticate(self, client: AsyncClient) -> None:
+    async def _authenticate(self, client: httpx.AsyncClient) -> None:
         """Obtain OAuth token via username-password flow."""
         resp = await client.post(
             f"{self.login_url}/services/oauth2/token",
@@ -55,45 +58,55 @@ class SalesforceProvider(CRMProviderBase):
         if len(digits) < 7:
             return None
 
-        async with AsyncClient(timeout=self.timeout) as client:
-            if not self._access_token:
-                await self._authenticate(client)
+        try:
+            async with create_crm_client() as client:
+                if not self._access_token:
+                    await self._authenticate(client)
 
-            soql = (
-                "SELECT Id, Name, Phone, Account.Name, Account.AccountNumber, "
-                "Account.Type "
-                f"FROM Contact WHERE Phone LIKE '%{digits}' "
-                "OR MobilePhone LIKE '%{digits}' "
-                "OR HomePhone LIKE '%{digits}' "
-                "LIMIT 1"
-            ).replace("{digits}", digits)
+                soql = (
+                    "SELECT Id, Name, Phone, Account.Name, Account.AccountNumber, "
+                    "Account.Type "
+                    f"FROM Contact WHERE Phone LIKE '%{digits}' "
+                    "OR MobilePhone LIKE '%{digits}' "
+                    "OR HomePhone LIKE '%{digits}' "
+                    "LIMIT 1"
+                ).replace("{digits}", digits)
 
-            resp = await client.get(
-                f"{self._instance_url}/services/data/v59.0/query",
-                params={"q": soql},
-                headers={"Authorization": f"Bearer {self._access_token}"},
-            )
-            resp.raise_for_status()
-            records = resp.json().get("records", [])
+                async def _do_query():
+                    resp = await client.get(
+                        f"{self._instance_url}/services/data/v59.0/query",
+                        params={"q": soql},
+                        headers={"Authorization": f"Bearer {self._access_token}"},
+                    )
+                    resp.raise_for_status()
+                    return resp.json().get("records", [])
 
-            if not records:
-                return None
+                records = await crm_retry(_do_query, provider_name="salesforce")
 
-            rec = records[0]
-            account = rec.get("Account") or {}
-            contact_id = rec.get("Id", "")
-            return CRMContact(
-                customer_name=rec.get("Name", ""),
-                company_name=account.get("Name", ""),
-                account_number=account.get("AccountNumber", ""),
-                account_status=account.get("Type", ""),
-                contact_id=contact_id,
-                deep_link_url=f"{self._instance_url}/{contact_id}" if contact_id else "",
-            )
+                if not records:
+                    return None
+
+                rec = records[0]
+                account = rec.get("Account") or {}
+                contact_id = rec.get("Id", "")
+                return CRMContact(
+                    customer_name=rec.get("Name", ""),
+                    company_name=account.get("Name", ""),
+                    account_number=account.get("AccountNumber", ""),
+                    account_status=account.get("Type", ""),
+                    contact_id=contact_id,
+                    deep_link_url=f"{self._instance_url}/{contact_id}" if contact_id else "",
+                )
+        except (httpx.HTTPStatusError, httpx.RequestError) as exc:
+            logger.warning("salesforce_lookup_failed", phone=phone, error=str(exc))
+            return None
+        except Exception as exc:
+            logger.warning("salesforce_lookup_unexpected_error", phone=phone, error=str(exc))
+            return None
 
     async def test_connection(self) -> dict:
         try:
-            async with AsyncClient(timeout=self.timeout) as client:
+            async with create_crm_client() as client:
                 await self._authenticate(client)
                 resp = await client.get(
                     f"{self._instance_url}/services/data/v59.0/limits",

@@ -1,9 +1,14 @@
 """Zoho CRM provider — contact search via v2 API."""
 
+import httpx
 import structlog
-from httpx import AsyncClient
 
-from new_phone.integrations.crm.provider_base import CRMContact, CRMProviderBase
+from new_phone.integrations.crm.provider_base import (
+    CRMContact,
+    CRMProviderBase,
+    create_crm_client,
+    crm_retry,
+)
 
 logger = structlog.get_logger()
 
@@ -16,17 +21,15 @@ class ZohoProvider(CRMProviderBase):
         refresh_token: str,
         api_domain: str | None = None,
         base_url: str | None = None,
-        timeout: int = 5,
     ):
         self.client_id = client_id
         self.client_secret = client_secret
         self.refresh_token = refresh_token
         self.api_domain = api_domain or "https://www.zohoapis.com"
         self.accounts_url = base_url or "https://accounts.zoho.com"
-        self.timeout = timeout
         self._access_token: str | None = None
 
-    async def _authenticate(self, client: AsyncClient) -> None:
+    async def _authenticate(self, client: httpx.AsyncClient) -> None:
         """Refresh the OAuth access token."""
         resp = await client.post(
             f"{self.accounts_url}/oauth/v2/token",
@@ -51,42 +54,52 @@ class ZohoProvider(CRMProviderBase):
         if len(digits) < 7:
             return None
 
-        async with AsyncClient(timeout=self.timeout) as client:
-            if not self._access_token:
-                await self._authenticate(client)
+        try:
+            async with create_crm_client() as client:
+                if not self._access_token:
+                    await self._authenticate(client)
 
-            resp = await client.get(
-                f"{self.api_domain}/crm/v2/Contacts/search",
-                headers=self._headers(),
-                params={"phone": digits},
-            )
-            resp.raise_for_status()
-            data = resp.json().get("data", [])
+                async def _do_search():
+                    resp = await client.get(
+                        f"{self.api_domain}/crm/v2/Contacts/search",
+                        headers=self._headers(),
+                        params={"phone": digits},
+                    )
+                    resp.raise_for_status()
+                    return resp.json().get("data", [])
 
-            if not data:
-                return None
+                data = await crm_retry(_do_search, provider_name="zoho")
 
-            rec = data[0]
-            contact_id = str(rec.get("id", ""))
-            first = rec.get("First_Name", "")
-            last = rec.get("Last_Name", "")
-            account = rec.get("Account_Name", {})
-            account_name = account.get("name", "") if isinstance(account, dict) else str(account)
+                if not data:
+                    return None
 
-            return CRMContact(
-                customer_name=f"{first} {last}".strip(),
-                company_name=account_name,
-                contact_id=contact_id,
-                deep_link_url=(
-                    f"{self.api_domain.replace('zohoapis', 'zoho')}/crm/tab/Contacts/{contact_id}"
-                    if contact_id
-                    else ""
-                ),
-            )
+                rec = data[0]
+                contact_id = str(rec.get("id", ""))
+                first = rec.get("First_Name", "")
+                last = rec.get("Last_Name", "")
+                account = rec.get("Account_Name", {})
+                account_name = account.get("name", "") if isinstance(account, dict) else str(account)
+
+                return CRMContact(
+                    customer_name=f"{first} {last}".strip(),
+                    company_name=account_name,
+                    contact_id=contact_id,
+                    deep_link_url=(
+                        f"{self.api_domain.replace('zohoapis', 'zoho')}/crm/tab/Contacts/{contact_id}"
+                        if contact_id
+                        else ""
+                    ),
+                )
+        except (httpx.HTTPStatusError, httpx.RequestError) as exc:
+            logger.warning("zoho_lookup_failed", phone=phone, error=str(exc))
+            return None
+        except Exception as exc:
+            logger.warning("zoho_lookup_unexpected_error", phone=phone, error=str(exc))
+            return None
 
     async def test_connection(self) -> dict:
         try:
-            async with AsyncClient(timeout=self.timeout) as client:
+            async with create_crm_client() as client:
                 await self._authenticate(client)
                 resp = await client.get(
                     f"{self.api_domain}/crm/v2/org",

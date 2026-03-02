@@ -29,28 +29,61 @@ class TwilioProvider(SMSProviderBase):
         self.account_sid = account_sid
         self.auth_token = auth_token
 
-    async def send_message(self, from_number: str, to_number: str, body: str) -> SendResult:
+    async def send_message(
+        self, from_number: str, to_number: str, body: str, media_urls: list[str] | None = None
+    ) -> SendResult:
         segments = math.ceil(len(body) / 160) if body else 1
         url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                url,
-                auth=(self.account_sid, self.auth_token),
-                data={
-                    "From": from_number,
-                    "To": to_number,
-                    "Body": body,
-                },
-            )
-            response.raise_for_status()
-            data = response.json()
+        try:
+            form_data: list[tuple[str, str]] = [
+                ("From", from_number),
+                ("To", to_number),
+                ("Body", body),
+            ]
+            if media_urls:
+                for media_url in media_urls:
+                    form_data.append(("MediaUrl", media_url))
 
-        return SendResult(
-            provider_message_id=data.get("sid", ""),
-            status=STATUS_MAP.get(data.get("status", ""), "queued"),
-            segments=data.get("num_segments", segments),
-        )
+            async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, read=30.0)) as client:
+                response = await client.post(
+                    url,
+                    auth=(self.account_sid, self.auth_token),
+                    data=form_data,
+                )
+                response.raise_for_status()
+                data = response.json()
+
+            return SendResult(
+                provider_message_id=data.get("sid", ""),
+                status=STATUS_MAP.get(data.get("status", ""), "queued"),
+                segments=data.get("num_segments", segments),
+            )
+        except httpx.HTTPStatusError as exc:
+            logger.error(
+                "twilio_send_http_error",
+                status_code=exc.response.status_code,
+                from_number=from_number,
+                to_number=to_number,
+                error=str(exc),
+            )
+            return SendResult(provider_message_id="", status="failed", segments=segments)
+        except httpx.RequestError as exc:
+            logger.error(
+                "twilio_send_request_error",
+                from_number=from_number,
+                to_number=to_number,
+                error=str(exc),
+            )
+            return SendResult(provider_message_id="", status="failed", segments=segments)
+        except Exception as exc:
+            logger.error(
+                "twilio_send_unexpected_error",
+                from_number=from_number,
+                to_number=to_number,
+                error=str(exc),
+            )
+            return SendResult(provider_message_id="", status="failed", segments=segments)
 
     def parse_inbound_webhook(self, request_data: dict) -> InboundMessage:
         media_urls = []

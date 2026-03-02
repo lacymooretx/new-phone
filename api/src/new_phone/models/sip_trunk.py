@@ -62,6 +62,10 @@ class SIPTrunk(Base, TenantScopedMixin, TimestampMixin):
         nullable=True,
     )
 
+    # Provider-managed trunk fields
+    provider_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    provider_trunk_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     deactivated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

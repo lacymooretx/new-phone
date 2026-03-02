@@ -24,30 +24,62 @@ class ClearlyIPProvider(SMSProviderBase):
     def __init__(self, trunk_token: str):
         self.trunk_token = trunk_token
 
-    async def send_message(self, from_number: str, to_number: str, body: str) -> SendResult:
+    async def send_message(
+        self, from_number: str, to_number: str, body: str, media_urls: list[str] | None = None
+    ) -> SendResult:
         segments = math.ceil(len(body) / 160) if body else 1
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                CLEARLYIP_SMS_API_URL,
-                headers={
-                    "Authorization": f"Bearer {self.trunk_token}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "from": from_number,
-                    "to": to_number,
-                    "body": body,
-                },
-            )
-            response.raise_for_status()
-            data = response.json()
+        try:
+            payload: dict = {
+                "from": from_number,
+                "to": to_number,
+                "body": body,
+            }
+            if media_urls:
+                payload["media_urls"] = media_urls
 
-        return SendResult(
-            provider_message_id=data.get("message_id", data.get("id", "")),
-            status="sent",
-            segments=segments,
-        )
+            async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, read=30.0)) as client:
+                response = await client.post(
+                    CLEARLYIP_SMS_API_URL,
+                    headers={
+                        "Authorization": f"Bearer {self.trunk_token}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                )
+                response.raise_for_status()
+                data = response.json()
+
+            return SendResult(
+                provider_message_id=data.get("message_id", data.get("id", "")),
+                status="sent",
+                segments=segments,
+            )
+        except httpx.HTTPStatusError as exc:
+            logger.error(
+                "clearlyip_send_http_error",
+                status_code=exc.response.status_code,
+                from_number=from_number,
+                to_number=to_number,
+                error=str(exc),
+            )
+            return SendResult(provider_message_id="", status="failed", segments=segments)
+        except httpx.RequestError as exc:
+            logger.error(
+                "clearlyip_send_request_error",
+                from_number=from_number,
+                to_number=to_number,
+                error=str(exc),
+            )
+            return SendResult(provider_message_id="", status="failed", segments=segments)
+        except Exception as exc:
+            logger.error(
+                "clearlyip_send_unexpected_error",
+                from_number=from_number,
+                to_number=to_number,
+                error=str(exc),
+            )
+            return SendResult(provider_message_id="", status="failed", segments=segments)
 
     def parse_inbound_webhook(self, request_data: dict) -> InboundMessage:
         return InboundMessage(

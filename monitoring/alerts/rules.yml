@@ -15,6 +15,19 @@ groups:
           summary: "High HTTP 5xx error rate"
           description: "More than 5% of requests are returning 5xx errors over the last 5 minutes."
 
+      - alert: APIErrorRate5xx
+        expr: |
+          rate(http_requests_total{status=~"5.."}[5m])
+          /
+          rate(http_requests_total[5m])
+          > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API 5xx error rate above 1%"
+          description: "Individual path 5xx error rate exceeds 1% for the last 5 minutes."
+
       - alert: HighLatency
         expr: |
           histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
@@ -26,30 +39,87 @@ groups:
           summary: "High API p95 latency"
           description: "95th percentile request latency is above 2 seconds for the last 5 minutes."
 
-  - name: infrastructure_alerts
+  - name: telephony
     rules:
-      - alert: FreeSwitchDown
-        expr: up{job="api"} == 0
-        for: 2m
-        labels:
-          severity: critical
-        annotations:
-          summary: "FreeSWITCH target is down"
-          description: "The FreeSWITCH service has been unreachable for more than 2 minutes."
-
-      - alert: DiskSpaceWarning
-        expr: |
-          (
-            (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"})
-            /
-            node_filesystem_size_bytes{mountpoint="/"}
-          ) > 0.85
+      - alert: FreeSwitchHighCallVolume
+        expr: freeswitch_active_channels > 240
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "Disk space above 85%"
-          description: "Root filesystem usage is above 85% on {{ $labels.instance }}."
+          summary: "FreeSWITCH call volume above 80% capacity ({{ $value }} channels)"
+          description: "Active channel count has exceeded 240 (80% of 300 max) for the last 5 minutes."
+
+      - alert: FreeSwitchDown
+        expr: freeswitch_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "FreeSWITCH is down"
+          description: "FreeSWITCH has been unreachable for more than 1 minute."
+
+      - alert: SMSDeliveryFailureRate
+        expr: |
+          rate(sms_delivery_failures_total[15m])
+          /
+          rate(sms_sends_total[15m])
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "SMS delivery failure rate above 5%"
+          description: "SMS delivery failure rate has exceeded 5% over the last 15 minutes."
+
+      - alert: TrunkRegistrationDown
+        expr: sip_trunk_registered == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SIP trunk {{ $labels.trunk_name }} is not registered"
+          description: "SIP trunk {{ $labels.trunk_name }} has been unregistered for more than 2 minutes."
+
+      - alert: QueueWaitTimeHigh
+        expr: |
+          histogram_quantile(0.95, sum(rate(queue_wait_time_seconds_bucket[10m])) by (le, queue_name))
+          > 300
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Queue wait time above 5 minutes for {{ $labels.queue_name }}"
+          description: "95th percentile queue wait time has exceeded 5 minutes for the last 10 minutes."
+
+      - alert: NoActiveRegistrations
+        expr: freeswitch_registrations_total == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No active SIP registrations"
+          description: "FreeSWITCH has zero active SIP registrations for the last 5 minutes."
+
+      - alert: BackupJobFailed
+        expr: recording_archive_last_success_timestamp < (time() - 86400)
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Recording archive job hasn't succeeded in 24 hours"
+          description: "The recording archive/tiering job has not completed successfully in over 24 hours."
+
+  - name: infrastructure_alerts
+    rules:
+      - alert: DatabaseConnectionPoolExhausted
+        expr: db_pool_available_connections == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool exhausted"
+          description: "All database connections in the pool are in use. New requests will be blocked."
 
       - alert: PostgresConnectionsHigh
         expr: |
@@ -64,6 +134,15 @@ groups:
           summary: "PostgreSQL connections above 80% of max"
           description: "PostgreSQL is using {{ $value | humanizePercentage }} of max_connections."
 
+      - alert: RedisDown
+        expr: up{job="redis-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been unreachable for more than 1 minute."
+
       - alert: RedisMemoryHigh
         expr: |
           redis_memory_used_bytes
@@ -76,3 +155,92 @@ groups:
         annotations:
           summary: "Redis memory usage above 90%"
           description: "Redis is using {{ $value | humanizePercentage }} of configured maxmemory."
+
+      - alert: HighMemoryUsage
+        expr: |
+          container_memory_usage_bytes
+          /
+          container_spec_memory_limit_bytes
+          > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} memory usage above 90%"
+          description: "Container {{ $labels.name }} is using more than 90% of its memory limit."
+
+      - alert: DiskSpaceLow
+        expr: |
+          node_filesystem_avail_bytes{mountpoint="/"}
+          /
+          node_filesystem_size_bytes{mountpoint="/"}
+          < 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space below 10% on {{ $labels.instance }}"
+          description: "Root filesystem on {{ $labels.instance }} has less than 10% free space."
+
+      - alert: DiskSpaceWarning
+        expr: |
+          (
+            (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"})
+            /
+            node_filesystem_size_bytes{mountpoint="/"}
+          ) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk space above 85% on {{ $labels.instance }}"
+          description: "Root filesystem usage is above 85% on {{ $labels.instance }}."
+
+  - name: tls_and_certificates
+    rules:
+      - alert: CertificateExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "TLS certificate expiring in {{ $value | humanize }} days"
+          description: "A TLS certificate monitored by blackbox_exporter will expire in less than 30 days."
+
+      - alert: CertificateExpiryCritical
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 7
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "TLS certificate expiring in {{ $value | humanize }} days"
+          description: "A TLS certificate will expire in less than 7 days. Immediate renewal required."
+
+  - name: api_service_health
+    rules:
+      - alert: APIDown
+        expr: up{job="api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API service is down"
+          description: "The New Phone API has been unreachable for more than 2 minutes."
+
+      - alert: AIEngineDown
+        expr: up{job="ai-engine"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI Engine service is down"
+          description: "The AI Engine has been unreachable for more than 5 minutes."
+
+      - alert: HighRequestRate
+        expr: sum(rate(http_requests_total[1m])) > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API request rate above 500 req/s"
+          description: "The API is receiving more than 500 requests per second sustained over 5 minutes."

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/call_provider.dart';
+import '../services/audio_service.dart';
 import '../widgets/dial_pad.dart';
 
 /// Full-screen dial pad for originating outgoing calls.
@@ -142,7 +143,13 @@ class _DialerScreenState extends ConsumerState<DialerScreen> {
             const SizedBox(height: 24),
 
             // Dial pad
-            DialPad(onDigitPressed: _onDigitPressed),
+            DialPad(
+              onDigitPressed: _onDigitPressed,
+              playDtmfTones: true,
+              onToneRequested: (digit) {
+                ref.read(audioServiceProvider).playDtmfTone(digit);
+              },
+            ),
 
             const SizedBox(height: 24),
 

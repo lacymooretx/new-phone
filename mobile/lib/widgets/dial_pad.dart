@@ -36,12 +36,19 @@ const _keys = [
 ///
 /// Renders 12 buttons (1-9, *, 0, #) in a grid with optional letter labels.
 /// Provides haptic feedback on each press and invokes [onDigitPressed].
+///
+/// When [playDtmfTones] is true the pad invokes [onToneRequested] with the
+/// pressed digit so the caller can route it to [AudioService.playDtmfTone].
 class DialPad extends StatelessWidget {
   /// Called when a digit is pressed.
   final ValueChanged<String> onDigitPressed;
 
   /// Whether to play DTMF tones on press.
   final bool playDtmfTones;
+
+  /// Called when a DTMF tone should be played for the given digit.
+  /// Only invoked when [playDtmfTones] is true.
+  final ValueChanged<String>? onToneRequested;
 
   /// Size of each button. Defaults to 76.
   final double buttonSize;
@@ -53,6 +60,7 @@ class DialPad extends StatelessWidget {
     super.key,
     required this.onDigitPressed,
     this.playDtmfTones = false,
+    this.onToneRequested,
     this.buttonSize = 76,
     this.spacing = 16,
   });
@@ -87,8 +95,10 @@ class DialPad extends StatelessWidget {
     // Haptic feedback
     HapticFeedback.lightImpact();
 
-    // TODO: If playDtmfTones is true, play the corresponding DTMF tone
-    // via AudioService or a tone generator.
+    // Play the DTMF tone via the caller-provided callback.
+    if (playDtmfTones) {
+      onToneRequested?.call(digit);
+    }
 
     onDigitPressed(digit);
   }

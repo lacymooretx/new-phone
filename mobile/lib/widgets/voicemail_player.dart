@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 
 /// Audio player widget for voicemail playback.
 ///
@@ -8,10 +9,7 @@ import 'package:flutter/material.dart';
 /// speed selection. Calls [onListened] when playback starts for the first
 /// time so the voicemail can be marked as listened.
 ///
-/// The actual audio playback requires the `just_audio` or `audioplayers`
-/// package. Until that dependency is wired, the widget renders a fully
-/// functional UI with simulated playback state so the rest of the app
-/// can be built against it.
+/// Uses the `just_audio` package for real audio playback with auth headers.
 class VoicemailPlayer extends StatefulWidget {
   /// URL of the audio file to play.
   final String audioUrl;
@@ -38,95 +36,118 @@ class VoicemailPlayer extends StatefulWidget {
 }
 
 class _VoicemailPlayerState extends State<VoicemailPlayer> {
-  bool _isPlaying = false;
+  AudioPlayer? _player;
   bool _hasStartedOnce = false;
+  bool _isPlaying = false;
   double _position = 0; // seconds
+  double _duration = 0; // seconds
   double _playbackSpeed = 1.0;
-  Timer? _simulationTimer;
+
+  StreamSubscription<Duration>? _positionSub;
+  StreamSubscription<PlayerState>? _playerStateSub;
+  StreamSubscription<Duration?>? _durationSub;
 
   static const List<double> _speedOptions = [0.5, 1.0, 1.5, 2.0];
 
-  double get _totalDuration => widget.durationSeconds.toDouble();
+  double get _totalDuration =>
+      _duration > 0 ? _duration : widget.durationSeconds.toDouble();
 
   @override
   void dispose() {
-    _simulationTimer?.cancel();
+    _positionSub?.cancel();
+    _playerStateSub?.cancel();
+    _durationSub?.cancel();
+    _player?.dispose();
     super.dispose();
   }
 
-  void _togglePlayPause() {
-    setState(() {
-      _isPlaying = !_isPlaying;
+  /// Lazily initialise the player on first use.
+  Future<AudioPlayer> _ensurePlayer() async {
+    if (_player != null) return _player!;
+
+    final player = AudioPlayer();
+
+    // Build auth headers if a token is available.
+    final headers = <String, String>{};
+    if (widget.authToken != null) {
+      headers['Authorization'] = 'Bearer ${widget.authToken}';
+    }
+
+    await player.setUrl(widget.audioUrl, headers: headers);
+
+    // Listen to position updates.
+    _positionSub = player.positionStream.listen((pos) {
+      if (!mounted) return;
+      setState(() {
+        _position = pos.inMilliseconds / 1000.0;
+      });
     });
 
-    if (_isPlaying) {
-      if (!_hasStartedOnce) {
-        _hasStartedOnce = true;
-        widget.onListened?.call();
+    // Listen to duration updates from the player (may differ from the
+    // server-provided value once the file is loaded).
+    _durationSub = player.durationStream.listen((dur) {
+      if (!mounted || dur == null) return;
+      setState(() {
+        _duration = dur.inMilliseconds / 1000.0;
+      });
+    });
+
+    // Listen to player state for play/pause/completed transitions.
+    _playerStateSub = player.playerStateStream.listen((playerState) {
+      if (!mounted) return;
+      setState(() {
+        _isPlaying = playerState.playing;
+      });
+
+      // Reset position when playback completes.
+      if (playerState.processingState == ProcessingState.completed) {
+        player.seek(Duration.zero);
+        player.pause();
+        setState(() {
+          _position = 0;
+          _isPlaying = false;
+        });
       }
-      _startSimulation();
+    });
+
+    _player = player;
+    return player;
+  }
+
+  Future<void> _togglePlayPause() async {
+    final player = await _ensurePlayer();
+
+    if (!_hasStartedOnce) {
+      _hasStartedOnce = true;
+      widget.onListened?.call();
+    }
+
+    if (player.playing) {
+      await player.pause();
     } else {
-      _stopSimulation();
+      await player.play();
     }
   }
 
-  void _onSeek(double value) {
+  Future<void> _onSeek(double value) async {
     setState(() {
       _position = value;
     });
 
-    // TODO: Seek the actual audio player to this position
+    // Seek immediately so the slider feels responsive during drags.
+    await _player?.seek(Duration(milliseconds: (value * 1000).round()));
   }
 
-  void _onSeekEnd(double value) {
-    setState(() {
-      _position = value;
-    });
-
-    // If we were playing, resume simulation
-    if (_isPlaying) {
-      _startSimulation();
-    }
+  Future<void> _onSeekEnd(double value) async {
+    await _player?.seek(Duration(milliseconds: (value * 1000).round()));
   }
 
-  void _setPlaybackSpeed(double speed) {
+  Future<void> _setPlaybackSpeed(double speed) async {
     setState(() {
       _playbackSpeed = speed;
     });
 
-    // Restart simulation with new speed if playing
-    if (_isPlaying) {
-      _startSimulation();
-    }
-
-    // TODO: Set actual audio player speed
-  }
-
-  void _startSimulation() {
-    _stopSimulation();
-
-    // Simulate playback progress at the selected speed
-    final intervalMs = (100 / _playbackSpeed).round();
-    _simulationTimer = Timer.periodic(
-      Duration(milliseconds: intervalMs),
-      (_) {
-        if (!mounted) return;
-
-        setState(() {
-          _position += 0.1;
-          if (_position >= _totalDuration) {
-            _position = 0;
-            _isPlaying = false;
-            _stopSimulation();
-          }
-        });
-      },
-    );
-  }
-
-  void _stopSimulation() {
-    _simulationTimer?.cancel();
-    _simulationTimer = null;
+    await _player?.setSpeed(speed);
   }
 
   String _formatTime(double seconds) {

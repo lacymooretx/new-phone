@@ -136,11 +136,12 @@ class TestAuthenticate:
 
 class TestCompleteMfaChallenge:
     async def test_success(self, mock_db):
+        from new_phone.auth.encryption import encrypt_value
         from new_phone.auth.jwt import create_mfa_token
         from new_phone.auth.mfa import generate_totp_secret
 
         secret = generate_totp_secret()
-        user = make_user(id=USER_ACME_ADMIN_ID, mfa_enabled=True, mfa_secret=secret)
+        user = make_user(id=USER_ACME_ADMIN_ID, mfa_enabled=True, mfa_secret=encrypt_value(secret))
         mfa_token = create_mfa_token(USER_ACME_ADMIN_ID)
         mock_db.execute.return_value = make_scalar_result(user)
 
@@ -161,11 +162,12 @@ class TestCompleteMfaChallenge:
             await service.complete_mfa_challenge(token, "123456")
 
     async def test_wrong_code_raises(self, mock_db):
+        from new_phone.auth.encryption import encrypt_value
         from new_phone.auth.jwt import create_mfa_token
         from new_phone.auth.mfa import generate_totp_secret
 
         secret = generate_totp_secret()
-        user = make_user(id=USER_ACME_ADMIN_ID, mfa_secret=secret)
+        user = make_user(id=USER_ACME_ADMIN_ID, mfa_secret=encrypt_value(secret))
         mfa_token = create_mfa_token(USER_ACME_ADMIN_ID)
         mock_db.execute.return_value = make_scalar_result(user)
 
@@ -226,21 +228,25 @@ class TestRefreshTokens:
 
 class TestSetupMfa:
     async def test_returns_secret_and_qr(self, mock_db):
+        from new_phone.auth.encryption import decrypt_value
+
         user = make_user(email="user@acme.com")
         service = AuthService(mock_db)
         result = await service.setup_mfa(user)
         assert "secret" in result
         assert "qr_code" in result
         assert "provisioning_uri" in result
-        assert user.mfa_secret == result["secret"]
+        # mfa_secret is now stored encrypted; decrypt to compare
+        assert decrypt_value(user.mfa_secret) == result["secret"]
 
 
 class TestVerifyMfaSetup:
     async def test_success(self, mock_db):
+        from new_phone.auth.encryption import encrypt_value
         from new_phone.auth.mfa import generate_totp_secret
 
         secret = generate_totp_secret()
-        user = make_user(mfa_secret=secret, mfa_enabled=False)
+        user = make_user(mfa_secret=encrypt_value(secret), mfa_enabled=False)
 
         import pyotp
 
@@ -257,10 +263,74 @@ class TestVerifyMfaSetup:
             await service.verify_mfa_setup(user, "123456")
 
     async def test_wrong_code_raises(self, mock_db):
+        from new_phone.auth.encryption import encrypt_value
         from new_phone.auth.mfa import generate_totp_secret
 
         secret = generate_totp_secret()
-        user = make_user(mfa_secret=secret)
+        user = make_user(mfa_secret=encrypt_value(secret))
         service = AuthService(mock_db)
         with pytest.raises(ValueError, match="Invalid code"):
             await service.verify_mfa_setup(user, "000000")
+
+
+class TestChangePassword:
+    async def test_success(self, mock_db):
+        from new_phone.auth.passwords import hash_password
+
+        user = make_user(
+            id=USER_ACME_ADMIN_ID,
+            email="admin@acme.com",
+            password_hash=hash_password("old-password"),
+        )
+        mock_db.execute.return_value = make_scalar_result(user)
+        service = AuthService(mock_db)
+        result = await service.change_password(
+            USER_ACME_ADMIN_ID, "old-password", "new-password-123"
+        )
+        assert result is True
+        # Verify the hash was updated (no longer matches old password)
+        from new_phone.auth.passwords import verify_password
+
+        assert verify_password("new-password-123", user.password_hash)
+        assert not verify_password("old-password", user.password_hash)
+        mock_db.commit.assert_awaited()
+
+    async def test_wrong_current_password_raises(self, mock_db):
+        from new_phone.auth.passwords import hash_password
+
+        user = make_user(
+            id=USER_ACME_ADMIN_ID,
+            password_hash=hash_password("actual-password"),
+        )
+        mock_db.execute.return_value = make_scalar_result(user)
+        service = AuthService(mock_db)
+        with pytest.raises(ValueError, match="Current password is incorrect"):
+            await service.change_password(
+                USER_ACME_ADMIN_ID, "wrong-password", "new-password-123"
+            )
+
+    async def test_user_not_found_raises(self, mock_db):
+        mock_db.execute.return_value = make_scalar_result(None)
+        service = AuthService(mock_db)
+        with pytest.raises(ValueError, match="User not found"):
+            await service.change_password(
+                USER_ACME_ADMIN_ID, "any", "new-password-123"
+            )
+
+    async def test_inactive_user_raises(self, mock_db):
+        user = make_user(id=USER_ACME_ADMIN_ID, is_active=False)
+        mock_db.execute.return_value = make_scalar_result(user)
+        service = AuthService(mock_db)
+        with pytest.raises(ValueError, match="deactivated"):
+            await service.change_password(
+                USER_ACME_ADMIN_ID, "any", "new-password-123"
+            )
+
+    async def test_no_password_hash_raises(self, mock_db):
+        user = make_user(id=USER_ACME_ADMIN_ID, password_hash=None)
+        mock_db.execute.return_value = make_scalar_result(user)
+        service = AuthService(mock_db)
+        with pytest.raises(ValueError, match="not configured"):
+            await service.change_password(
+                USER_ACME_ADMIN_ID, "any", "new-password-123"
+            )

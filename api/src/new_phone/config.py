@@ -42,6 +42,16 @@ class Settings(BaseSettings):
     max_failed_login_attempts: int = 5
     lockout_duration_minutes: int = 15
 
+    # Rate limiting
+    rate_limit_default: str = "100/minute"
+    rate_limit_auth: str = "10/minute"
+
+    # CORS
+    cors_allowed_origins: str = ""
+
+    # Metrics
+    metrics_token: str = ""
+
     # SIP Trunk encryption (Fernet key — generate with Fernet.generate_key())
     trunk_encryption_key: str = "change-me-generate-with-fernet"
 
@@ -65,6 +75,12 @@ class Settings(BaseSettings):
 
     # AI Engine
     ai_engine_url: str = "http://localhost:8091"
+
+    # Telephony Providers
+    clearlyip_api_url: str = ""
+    clearlyip_api_key: str = ""
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
 
     # SMTP (voicemail-to-email)
     smtp_host: str = "localhost"

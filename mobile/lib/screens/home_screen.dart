@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../providers/sms_provider.dart';
 import '../providers/voicemail_provider.dart';
 
-/// Main home screen with bottom navigation bar and four tabs.
+/// Main home screen with bottom navigation bar and five tabs.
 ///
 /// The tab content is provided by the ShellRoute child. The Contacts and
 /// Settings tabs are now fully implemented in their own screen files
@@ -19,8 +20,9 @@ class HomeScreen extends ConsumerWidget {
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/home/voicemail')) return 1;
-    if (location.startsWith('/home/contacts')) return 2;
-    if (location.startsWith('/home/settings')) return 3;
+    if (location.startsWith('/home/messages')) return 2;
+    if (location.startsWith('/home/contacts')) return 3;
+    if (location.startsWith('/home/settings')) return 4;
     return 0; // /home or /home/calls
   }
 
@@ -31,8 +33,10 @@ class HomeScreen extends ConsumerWidget {
       case 1:
         context.go('/home/voicemail');
       case 2:
-        context.go('/home/contacts');
+        context.go('/home/messages');
       case 3:
+        context.go('/home/contacts');
+      case 4:
         context.go('/home/settings');
     }
   }
@@ -41,7 +45,9 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = _currentIndex(context);
     final vmState = ref.watch(voicemailProvider);
-    final unreadCount = vmState.totalUnreadCount;
+    final vmUnread = vmState.totalUnreadCount;
+    final smsState = ref.watch(smsProvider);
+    final smsUnread = smsState.totalUnreadCount;
 
     return Scaffold(
       body: child,
@@ -62,19 +68,34 @@ class HomeScreen extends ConsumerWidget {
             label: 'Calls',
           ),
           NavigationDestination(
-            icon: unreadCount > 0
+            icon: vmUnread > 0
                 ? Badge(
-                    label: Text(unreadCount > 99 ? '99+' : '$unreadCount'),
+                    label: Text(vmUnread > 99 ? '99+' : '$vmUnread'),
                     child: const Icon(Icons.voicemail_outlined),
                   )
                 : const Icon(Icons.voicemail_outlined),
-            selectedIcon: unreadCount > 0
+            selectedIcon: vmUnread > 0
                 ? Badge(
-                    label: Text(unreadCount > 99 ? '99+' : '$unreadCount'),
+                    label: Text(vmUnread > 99 ? '99+' : '$vmUnread'),
                     child: const Icon(Icons.voicemail),
                   )
                 : const Icon(Icons.voicemail),
             label: 'Voicemail',
+          ),
+          NavigationDestination(
+            icon: smsUnread > 0
+                ? Badge(
+                    label: Text(smsUnread > 99 ? '99+' : '$smsUnread'),
+                    child: const Icon(Icons.message_outlined),
+                  )
+                : const Icon(Icons.message_outlined),
+            selectedIcon: smsUnread > 0
+                ? Badge(
+                    label: Text(smsUnread > 99 ? '99+' : '$smsUnread'),
+                    child: const Icon(Icons.message),
+                  )
+                : const Icon(Icons.message),
+            label: 'Messages',
           ),
           const NavigationDestination(
             icon: Icon(Icons.contacts_outlined),

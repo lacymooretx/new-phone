@@ -14,6 +14,7 @@ class SettingsState {
   final bool voicemailNotifications;
   final bool smsNotifications;
   final String defaultAudioOutput; // 'earpiece' | 'speaker'
+  final String ringtone; // 'default' | 'classic' | 'digital' | 'gentle' | 'urgent'
 
   const SettingsState({
     this.themeMode = ThemeMode.system,
@@ -22,6 +23,7 @@ class SettingsState {
     this.voicemailNotifications = true,
     this.smsNotifications = true,
     this.defaultAudioOutput = 'earpiece',
+    this.ringtone = 'default',
   });
 
   SettingsState copyWith({
@@ -31,6 +33,7 @@ class SettingsState {
     bool? voicemailNotifications,
     bool? smsNotifications,
     String? defaultAudioOutput,
+    String? ringtone,
   }) =>
       SettingsState(
         themeMode: themeMode ?? this.themeMode,
@@ -40,6 +43,7 @@ class SettingsState {
             voicemailNotifications ?? this.voicemailNotifications,
         smsNotifications: smsNotifications ?? this.smsNotifications,
         defaultAudioOutput: defaultAudioOutput ?? this.defaultAudioOutput,
+        ringtone: ringtone ?? this.ringtone,
       );
 
   @override
@@ -52,7 +56,8 @@ class SettingsState {
           pushEnabled == other.pushEnabled &&
           voicemailNotifications == other.voicemailNotifications &&
           smsNotifications == other.smsNotifications &&
-          defaultAudioOutput == other.defaultAudioOutput;
+          defaultAudioOutput == other.defaultAudioOutput &&
+          ringtone == other.ringtone;
 
   @override
   int get hashCode => Object.hash(
@@ -62,6 +67,7 @@ class SettingsState {
         voicemailNotifications,
         smsNotifications,
         defaultAudioOutput,
+        ringtone,
       );
 }
 
@@ -75,6 +81,7 @@ const _keyPush = 'np_settings_push';
 const _keyVoicemailNotif = 'np_settings_voicemail_notif';
 const _keySmsNotif = 'np_settings_sms_notif';
 const _keyAudioOutput = 'np_settings_audio_output';
+const _keyRingtone = 'np_settings_ringtone';
 
 // ---------------------------------------------------------------------------
 // Settings provider
@@ -113,6 +120,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       final vmNotifStr = await _storage.read(key: _keyVoicemailNotif);
       final smsNotifStr = await _storage.read(key: _keySmsNotif);
       final audioOutput = await _storage.read(key: _keyAudioOutput);
+      final ringtone = await _storage.read(key: _keyRingtone);
 
       state = SettingsState(
         themeMode: _parseThemeMode(themeModeStr),
@@ -121,6 +129,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
         voicemailNotifications: vmNotifStr != 'false', // default true
         smsNotifications: smsNotifStr != 'false', // default true
         defaultAudioOutput: audioOutput ?? 'earpiece',
+        ringtone: ringtone ?? 'default',
       );
 
       _loaded = true;
@@ -162,6 +171,11 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   Future<void> setDefaultAudioOutput(String output) async {
     state = state.copyWith(defaultAudioOutput: output);
     await _storage.write(key: _keyAudioOutput, value: output);
+  }
+
+  Future<void> setRingtone(String ringtone) async {
+    state = state.copyWith(ringtone: ringtone);
+    await _storage.write(key: _keyRingtone, value: ringtone);
   }
 
   // ---------------------------------------------------------------------------

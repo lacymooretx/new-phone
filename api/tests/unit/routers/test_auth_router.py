@@ -203,9 +203,65 @@ class TestSsoInitiate:
             )
             assert resp.status_code == 200
 
-    async def test_missing_email_400(self, client):
+    async def test_missing_email_422(self, client):
         resp = await client.post("/api/v1/auth/sso/initiate", json={"email": ""})
-        assert resp.status_code == 400
+        assert resp.status_code == 422
+
+
+class TestChangePassword:
+    async def test_success(self, client):
+        with patch("new_phone.routers.auth.AuthService") as MockService:
+            mock_svc = MockService.return_value
+            mock_svc.change_password = AsyncMock(return_value=True)
+
+            resp = await client.post(
+                "/api/v1/auth/change-password",
+                json={
+                    "current_password": "old-password",
+                    "new_password": "new-password-123",
+                },
+            )
+            assert resp.status_code == 200
+            assert resp.json()["message"] == "Password changed successfully"
+
+    async def test_wrong_current_password_400(self, client):
+        with patch("new_phone.routers.auth.AuthService") as MockService:
+            mock_svc = MockService.return_value
+            mock_svc.change_password = AsyncMock(
+                side_effect=ValueError("Current password is incorrect")
+            )
+
+            resp = await client.post(
+                "/api/v1/auth/change-password",
+                json={
+                    "current_password": "wrong",
+                    "new_password": "new-password-123",
+                },
+            )
+            assert resp.status_code == 400
+            assert "incorrect" in resp.json()["detail"]
+
+    async def test_same_password_422(self, client):
+        """Pydantic validator rejects new_password == current_password."""
+        resp = await client.post(
+            "/api/v1/auth/change-password",
+            json={
+                "current_password": "same-password",
+                "new_password": "same-password",
+            },
+        )
+        assert resp.status_code == 422
+
+    async def test_short_password_422(self, client):
+        """Pydantic validator rejects passwords shorter than 8 chars."""
+        resp = await client.post(
+            "/api/v1/auth/change-password",
+            json={
+                "current_password": "old-password",
+                "new_password": "short",
+            },
+        )
+        assert resp.status_code == 422
 
 
 class TestSsoComplete:

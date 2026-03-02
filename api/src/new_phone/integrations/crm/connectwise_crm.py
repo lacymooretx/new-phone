@@ -2,10 +2,15 @@
 
 import base64
 
+import httpx
 import structlog
-from httpx import AsyncClient
 
-from new_phone.integrations.crm.provider_base import CRMContact, CRMProviderBase
+from new_phone.integrations.crm.provider_base import (
+    CRMContact,
+    CRMProviderBase,
+    create_crm_client,
+    crm_retry,
+)
 
 logger = structlog.get_logger()
 
@@ -18,14 +23,12 @@ class ConnectWiseCRMProvider(CRMProviderBase):
         private_key: str,
         client_id: str,
         base_url: str | None = None,
-        timeout: int = 5,
     ):
         self.company_id = company_id
         self.public_key = public_key
         self.private_key = private_key
         self.client_id = client_id
         self.base_url = (base_url or "https://na.myconnectwise.net").rstrip("/")
-        self.timeout = timeout
 
     def _headers(self) -> dict[str, str]:
         creds = f"{self.company_id}+{self.public_key}:{self.private_key}"
@@ -44,50 +47,60 @@ class ConnectWiseCRMProvider(CRMProviderBase):
         if len(digits) < 7:
             return None
 
-        async with AsyncClient(timeout=self.timeout) as client:
-            # Search contacts by phone
-            resp = await client.get(
-                f"{self.base_url}/v4_6_release/apis/3.0/company/contacts",
-                headers=self._headers(),
-                params={
-                    "conditions": (
-                        f"communicationItems/value like '%{digits}' "
-                        f"AND communicationItems/communicationType = 'Phone'"
+        try:
+            async with create_crm_client() as client:
+
+                async def _do_lookup():
+                    resp = await client.get(
+                        f"{self.base_url}/v4_6_release/apis/3.0/company/contacts",
+                        headers=self._headers(),
+                        params={
+                            "conditions": (
+                                f"communicationItems/value like '%{digits}' "
+                                f"AND communicationItems/communicationType = 'Phone'"
+                            ),
+                            "pageSize": 1,
+                            "fields": "id,firstName,lastName,company",
+                        },
+                    )
+                    resp.raise_for_status()
+                    return resp.json()
+
+                contacts = await crm_retry(_do_lookup, provider_name="connectwise")
+
+                if not contacts:
+                    return None
+
+                contact = contacts[0]
+                contact_id = str(contact.get("id", ""))
+                first = contact.get("firstName", "")
+                last = contact.get("lastName", "")
+                company = contact.get("company", {})
+                company_name = company.get("name", "") if isinstance(company, dict) else ""
+                company_id = str(company.get("id", "")) if isinstance(company, dict) else ""
+
+                return CRMContact(
+                    customer_name=f"{first} {last}".strip(),
+                    company_name=company_name,
+                    contact_id=contact_id,
+                    account_number=company_id,
+                    deep_link_url=(
+                        f"{self.base_url}/v4_6_release/ConnectWise.aspx"
+                        f"?locale=en_US&contactRec={contact_id}"
+                        if contact_id
+                        else ""
                     ),
-                    "pageSize": 1,
-                    "fields": "id,firstName,lastName,company",
-                },
-            )
-            resp.raise_for_status()
-            contacts = resp.json()
-
-            if not contacts:
-                return None
-
-            contact = contacts[0]
-            contact_id = str(contact.get("id", ""))
-            first = contact.get("firstName", "")
-            last = contact.get("lastName", "")
-            company = contact.get("company", {})
-            company_name = company.get("name", "") if isinstance(company, dict) else ""
-            company_id = str(company.get("id", "")) if isinstance(company, dict) else ""
-
-            return CRMContact(
-                customer_name=f"{first} {last}".strip(),
-                company_name=company_name,
-                contact_id=contact_id,
-                account_number=company_id,
-                deep_link_url=(
-                    f"{self.base_url}/v4_6_release/ConnectWise.aspx"
-                    f"?locale=en_US&contactRec={contact_id}"
-                    if contact_id
-                    else ""
-                ),
-            )
+                )
+        except (httpx.HTTPStatusError, httpx.RequestError) as exc:
+            logger.warning("connectwise_lookup_failed", phone=phone, error=str(exc))
+            return None
+        except Exception as exc:
+            logger.warning("connectwise_lookup_unexpected_error", phone=phone, error=str(exc))
+            return None
 
     async def test_connection(self) -> dict:
         try:
-            async with AsyncClient(timeout=self.timeout) as client:
+            async with create_crm_client() as client:
                 resp = await client.get(
                     f"{self.base_url}/v4_6_release/apis/3.0/system/info",
                     headers=self._headers(),
