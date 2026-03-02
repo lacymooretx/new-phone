@@ -66,6 +66,9 @@ freeswitch/recordings/
 freeswitch/storage/
 freeswitch/tls/
 
+# Rust
+rust/target/
+
 # Mobile (Flutter)
 mobile/build/
 mobile/.dart_tool/
