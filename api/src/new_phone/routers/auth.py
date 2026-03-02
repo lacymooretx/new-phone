@@ -175,22 +175,31 @@ async def sso_initiate(
 
 @router.get("/sso/callback")
 async def sso_callback(
-    code: Annotated[str, Query()],
-    state: Annotated[str, Query()],
     db: Annotated[AsyncSession, Depends(get_admin_db)],
+    code: Annotated[str | None, Query()] = None,
+    state: Annotated[str | None, Query()] = None,
     error: Annotated[str | None, Query()] = None,
     error_description: Annotated[str | None, Query()] = None,
+    admin_consent: Annotated[str | None, Query()] = None,
 ):
     """Handle OIDC callback from IdP — exchanges code for tokens, redirects to frontend."""
     from urllib.parse import quote
 
     from new_phone.main import redis_client as _redis
 
+    # Admin consent flow redirect — no code/state, just redirect to login
+    if admin_consent:
+        return RedirectResponse(url=f"{settings.sso_frontend_url}/login")
+
     if error:
-        # IdP returned an error — redirect to frontend with URL-encoded error
         safe_error = quote(error_description or error)
         return RedirectResponse(
             url=f"{settings.sso_frontend_url}/login?sso_error={safe_error}"
+        )
+
+    if not code or not state:
+        return RedirectResponse(
+            url=f"{settings.sso_frontend_url}/login?sso_error=Missing%20code%20or%20state"
         )
 
     service = SSOService(db, _redis)
