@@ -79,3 +79,46 @@ export function useDeleteSipTrunk() {
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.sipTrunks.all(tenantId) }),
   })
 }
+
+// --- Provider operations ---
+
+export interface TrunkProvisionRequest {
+  provider: "clearlyip" | "twilio"
+  name: string
+  region: string
+  channels?: number
+}
+
+export interface TrunkTestResult {
+  status: "ok" | "error"
+  latency_ms: number | null
+  message: string
+}
+
+export function useProvisionTrunk() {
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: TrunkProvisionRequest) =>
+      apiClient.post<SIPTrunk>(`tenants/${tenantId}/trunks/provision`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.sipTrunks.all(tenantId) }),
+  })
+}
+
+export function useDeprovisionTrunk() {
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.post<void>(`tenants/${tenantId}/trunks/${id}/deprovision`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.sipTrunks.all(tenantId) }),
+  })
+}
+
+export function useTestTrunk() {
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.post<TrunkTestResult>(`tenants/${tenantId}/trunks/${id}/test`),
+  })
+}

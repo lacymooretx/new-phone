@@ -69,3 +69,63 @@ export function useDeleteDid() {
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.dids.all(tenantId) }),
   })
 }
+
+// --- Provider operations ---
+
+export interface DIDSearchParams {
+  area_code?: string
+  state?: string
+  quantity?: number
+  provider?: string
+}
+
+export interface DIDSearchResult {
+  number: string
+  monthly_cost: number
+  setup_cost: number
+  provider: string
+  capabilities: string[]
+  region: string
+}
+
+export interface DIDPurchaseRequest {
+  number: string
+  provider: string
+}
+
+export function useSearchDids(params: DIDSearchParams, enabled = false) {
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
+  return useQuery({
+    queryKey: queryKeys.dids.search(tenantId, params),
+    queryFn: () =>
+      apiClient.get<DIDSearchResult[]>(
+        `tenants/${tenantId}/dids/search`,
+        Object.fromEntries(
+          Object.entries(params)
+            .filter(([, v]) => v != null && v !== "")
+            .map(([k, v]) => [k, String(v)])
+        )
+      ),
+    enabled: enabled && !!tenantId,
+  })
+}
+
+export function usePurchaseDid() {
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: DIDPurchaseRequest) =>
+      apiClient.post<DID>(`tenants/${tenantId}/dids/purchase`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.dids.all(tenantId) }),
+  })
+}
+
+export function useReleaseDid() {
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.post<void>(`tenants/${tenantId}/dids/${id}/release`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.dids.all(tenantId) }),
+  })
+}

@@ -86,12 +86,12 @@ export function MSPOverviewPage() {
           <div className="flex flex-wrap gap-3">
             <HealthBadge
               label="PostgreSQL"
-              status={health?.database ?? "unknown"}
+              status={health?.services?.postgres?.status ?? "unknown"}
             />
-            <HealthBadge label="Redis" status={health?.redis ?? "unknown"} />
+            <HealthBadge label="Redis" status={health?.services?.redis?.status ?? "unknown"} />
             <HealthBadge
               label="FreeSWITCH"
-              status={health?.freeswitch ?? "unknown"}
+              status={health?.services?.freeswitch?.status ?? "unknown"}
             />
           </div>
         </CardContent>

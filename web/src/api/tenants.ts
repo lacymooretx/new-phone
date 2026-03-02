@@ -24,12 +24,23 @@ export interface TenantUpdate {
   is_active?: boolean
 }
 
+export interface ServiceHealth {
+  status: string
+  error?: string
+  info?: string
+}
+
 export interface HealthResponse {
   status: string
-  database: string
-  redis: string
-  freeswitch: string
-  minio: string
+  services: {
+    postgres: ServiceHealth
+    redis: ServiceHealth
+    freeswitch: ServiceHealth
+    minio: ServiceHealth
+    smtp: ServiceHealth
+    ai_engine: ServiceHealth
+    sms_provider: ServiceHealth
+  }
 }
 
 export function useTenants() {

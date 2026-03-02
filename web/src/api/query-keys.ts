@@ -75,6 +75,13 @@ export const queryKeys = {
     all: (tenantId: string) => ["dids", tenantId] as const,
     list: (tenantId: string) => [...queryKeys.dids.all(tenantId), "list"] as const,
     detail: (tenantId: string, id: string) => [...queryKeys.dids.all(tenantId), "detail", id] as const,
+    search: (tenantId: string, params?: Record<string, unknown>) => [...queryKeys.dids.all(tenantId), "search", params] as const,
+  },
+  portRequests: {
+    all: (tenantId: string) => ["portRequests", tenantId] as const,
+    list: (tenantId: string) => [...queryKeys.portRequests.all(tenantId), "list"] as const,
+    detail: (tenantId: string, id: string) => [...queryKeys.portRequests.all(tenantId), "detail", id] as const,
+    history: (tenantId: string, id: string) => [...queryKeys.portRequests.all(tenantId), "history", id] as const,
   },
   inboundRoutes: {
     all: (tenantId: string) => ["inboundRoutes", tenantId] as const,

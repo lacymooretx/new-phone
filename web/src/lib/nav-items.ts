@@ -16,6 +16,7 @@ import {
   Hash,
   ArrowDownToLine,
   ArrowUpFromLine,
+  ArrowRightLeft,
   Music,
   Clock,
   CalendarDays,
@@ -90,6 +91,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { labelKey: "nav.dids", path: ROUTES.DIDS, icon: Hash, permission: PERMISSIONS.VIEW_DIDS },
       { labelKey: "nav.inboundRoutes", path: ROUTES.INBOUND_ROUTES, icon: ArrowDownToLine, permission: PERMISSIONS.VIEW_INBOUND_ROUTES },
       { labelKey: "nav.outboundRoutes", path: ROUTES.OUTBOUND_ROUTES, icon: ArrowUpFromLine, permission: PERMISSIONS.VIEW_OUTBOUND_ROUTES },
+      { labelKey: "nav.portRequests", path: ROUTES.PORT_REQUESTS, icon: ArrowRightLeft, permission: PERMISSIONS.VIEW_DIDS },
     ],
   },
   {

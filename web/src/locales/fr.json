@@ -48,6 +48,7 @@
     "workforce": "Effectifs",
     "wfmShifts": "Quarts",
     "wfmSchedule": "Horaire",
+    "portRequests": "Demandes de Portage",
     "wfmTimeOff": "Cong\u00e9s",
     "wfmAnalytics": "Pr\u00e9visions"
   },
@@ -726,11 +727,26 @@
       "rewrite": "Réécrire",
       "usernamePlaceholder": "ex. trunk_user",
       "notes": "Notes"
-    }
+    },
+    "provisionTitle": "Provisionner Trunk",
+    "provisionProvider": "Fournisseur",
+    "provisionRegion": "R\u00e9gion",
+    "provisionChannels": "Canaux",
+    "provisionButton": "Provisionner",
+    "provisionSuccess": "Trunk provisionn\u00e9 avec succ\u00e8s",
+    "providerManual": "Manuel",
+    "testAction": "Tester la Connexion",
+    "testSuccess": "Connexion OK \u2014 latence {{latency}}ms",
+    "testFailed": "Connexion \u00e9chou\u00e9e : {{message}}",
+    "deprovisionAction": "D\u00e9provisionner",
+    "deprovisionTitle": "D\u00e9provisionner Trunk",
+    "deprovisionConfirm": "\u00cates-vous s\u00fbr de vouloir d\u00e9provisionner le trunk \u00ab {{name}} \u00bb ?",
+    "deprovisionButton": "D\u00e9provisionner",
+    "deprovisionSuccess": "Trunk d\u00e9provisionn\u00e9 avec succ\u00e8s"
   },
   "dids": {
     "title": "DID",
-    "description": "Gérer les numéros de téléphone (DID)",
+    "description": "G\u00e9rer les num\u00e9ros de t\u00e9l\u00e9phone (DID)",
     "create": "Créer un DID",
     "edit": "Modifier le DID",
     "deleteTitle": "Supprimer le DID",
@@ -772,8 +788,30 @@
       "released": "Libéré",
       "reserved": "Réservé",
       "smsQueue": "File SMS",
-      "smsQueueHelp": "Les SMS entrants vers ce DID seront acheminés vers la file sélectionnée pour le traitement de la boîte de réception partagée."
-    }
+      "smsQueueHelp": "Les SMS entrants vers ce DID seront achemin\u00e9s vers la file s\u00e9lectionn\u00e9e pour le traitement de la bo\u00eete de r\u00e9ception partag\u00e9e."
+    },
+    "buyNumbers": "Acheter des Num\u00e9ros",
+    "marketplaceTitle": "March\u00e9 DID",
+    "marketplaceAreaCode": "Indicatif R\u00e9gional",
+    "marketplaceState": "\u00c9tat",
+    "marketplaceAnyState": "Tout \u00c9tat",
+    "marketplaceQuantity": "Quantit\u00e9",
+    "marketplaceProvider": "Fournisseur",
+    "marketplaceAnyProvider": "Tout Fournisseur",
+    "marketplaceSearch": "Rechercher",
+    "marketplaceNoResults": "Aucun num\u00e9ro trouv\u00e9. Essayez d'autres crit\u00e8res.",
+    "marketplaceColNumber": "Num\u00e9ro",
+    "marketplaceColMonthlyCost": "Mensuel",
+    "marketplaceColSetupCost": "Installation",
+    "marketplaceColCapabilities": "Capacit\u00e9s",
+    "marketplacePurchase": "Acheter ({{count}})",
+    "purchaseSuccess": "{{count}} num\u00e9ro(s) achet\u00e9(s) avec succ\u00e8s",
+    "purchaseErrors": "{{count}} num\u00e9ro(s) n'ont pas pu \u00eatre achet\u00e9s",
+    "releaseAction": "Lib\u00e9rer le Num\u00e9ro",
+    "releaseTitle": "Lib\u00e9rer le DID",
+    "releaseConfirm": "\u00cates-vous s\u00fbr de vouloir lib\u00e9rer le DID \u00ab {{number}} \u00bb ?",
+    "releaseButton": "Lib\u00e9rer",
+    "releaseSuccess": "DID lib\u00e9r\u00e9 avec succ\u00e8s"
   },
   "inboundRoutes": {
     "title": "Routes Entrantes",
@@ -2099,5 +2137,49 @@
       "configSaved": "Configuration enregistr\u00e9e",
       "noData": "Aucune donn\u00e9e disponible pour la p\u00e9riode s\u00e9lectionn\u00e9e"
     }
+  },
+  "portRequests": {
+    "title": "Demandes de Portage",
+    "description": "G\u00e9rer les demandes de portage de num\u00e9ros",
+    "create": "Nouvelle Demande",
+    "createTitle": "Cr\u00e9er une Demande de Portage",
+    "createSuccess": "Demande cr\u00e9\u00e9e avec succ\u00e8s",
+    "searchPlaceholder": "Rechercher les demandes...",
+    "emptyTitle": "Aucune demande",
+    "emptyDescription": "Soumettez une demande pour transf\u00e9rer des num\u00e9ros d'un autre op\u00e9rateur.",
+    "viewAction": "Voir les D\u00e9tails",
+    "detailTitle": "D\u00e9tails de la Demande",
+    "historyTitle": "Historique du Statut",
+    "noHistory": "Aucun historique.",
+    "col": {
+      "numbers": "Num\u00e9ros",
+      "carrier": "Op\u00e9rateur Actuel",
+      "provider": "Fournisseur",
+      "status": "Statut",
+      "focDate": "Date FOC",
+      "created": "Cr\u00e9\u00e9"
+    },
+    "form": {
+      "numbers": "Num\u00e9ros de T\u00e9l\u00e9phone",
+      "numbersHelp": "Entrez un num\u00e9ro E.164 par ligne",
+      "carrier": "Op\u00e9rateur Actuel",
+      "provider": "Fournisseur Destination",
+      "requestedDate": "Date Demand\u00e9e",
+      "notes": "Notes",
+      "notesPlaceholder": "Informations suppl\u00e9mentaires...",
+      "submit": "Soumettre la Demande"
+    },
+    "loaTitle": "Lettre d'Autorisation",
+    "loaUpload": "T\u00e9l\u00e9charger LOA",
+    "loaHelp": "PDF, PNG, JPEG ou TIFF \u2014 max 10Mo",
+    "loaUploadSuccess": "LOA t\u00e9l\u00e9charg\u00e9e avec succ\u00e8s",
+    "loaFileTooLarge": "Le fichier doit \u00eatre inf\u00e9rieur \u00e0 10Mo",
+    "loaInvalidType": "Le fichier doit \u00eatre PDF, PNG, JPEG ou TIFF",
+    "checkStatus": "V\u00e9rifier le Statut",
+    "statusChecked": "Statut v\u00e9rifi\u00e9",
+    "markComplete": "Marquer Termin\u00e9e",
+    "completeSuccess": "Demande termin\u00e9e",
+    "cancelAction": "Annuler la Demande",
+    "cancelSuccess": "Demande annul\u00e9e"
   }
 }

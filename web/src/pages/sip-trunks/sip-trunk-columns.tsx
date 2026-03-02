@@ -7,18 +7,26 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, TestTube2, CloudOff } from "lucide-react"
 import i18next from "i18next"
 
 interface ColumnActions {
   onEdit: (trunk: SIPTrunk) => void
   onDelete: (trunk: SIPTrunk) => void
+  onTest: (trunk: SIPTrunk) => void
+  onDeprovision: (trunk: SIPTrunk) => void
 }
 
-export function getSipTrunkColumns({ onEdit, onDelete }: ColumnActions): ColumnDef<SIPTrunk, unknown>[] {
+const providerVariant: Record<string, "default" | "secondary" | "outline"> = {
+  clearlyip: "default",
+  twilio: "secondary",
+}
+
+export function getSipTrunkColumns({ onEdit, onDelete, onTest, onDeprovision }: ColumnActions): ColumnDef<SIPTrunk, unknown>[] {
   return [
     {
       accessorKey: "name",
@@ -43,9 +51,21 @@ export function getSipTrunkColumns({ onEdit, onDelete }: ColumnActions): ColumnD
       header: ({ column }) => <DataTableColumnHeader column={column} title={i18next.t('sipTrunks.form.maxChannels')} />,
     },
     {
-      accessorKey: "inbound_cid_mode",
-      header: i18next.t('sipTrunks.col.inboundCid', { defaultValue: 'Inbound CID' }),
-      cell: ({ row }) => <Badge variant="outline">{row.original.inbound_cid_mode}</Badge>,
+      id: "provider_badge",
+      header: i18next.t('sipTrunks.col.provider', { defaultValue: 'Provider' }),
+      cell: ({ row }) => {
+        const trunk = row.original
+        // Detect provider from host or name pattern
+        const provider = trunk.host.includes("clearlyip") ? "clearlyip"
+          : trunk.host.includes("twilio") ? "twilio"
+          : null
+        if (!provider) return <Badge variant="outline">{i18next.t('sipTrunks.providerManual')}</Badge>
+        return (
+          <Badge variant={providerVariant[provider] ?? "outline"}>
+            {provider === "clearlyip" ? "ClearlyIP" : "Twilio"}
+          </Badge>
+        )
+      },
     },
     {
       accessorKey: "is_active",
@@ -62,8 +82,15 @@ export function getSipTrunkColumns({ onEdit, onDelete }: ColumnActions): ColumnD
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onTest(row.original)}>
+              <TestTube2 className="mr-2 h-4 w-4" /> {i18next.t('sipTrunks.testAction')}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(row.original)}>
               <Pencil className="mr-2 h-4 w-4" /> {i18next.t('common.edit')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onDeprovision(row.original)} className="text-destructive">
+              <CloudOff className="mr-2 h-4 w-4" /> {i18next.t('sipTrunks.deprovisionAction')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onDelete(row.original)} className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" /> {i18next.t('common.delete')}

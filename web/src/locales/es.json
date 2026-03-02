@@ -48,6 +48,7 @@
     "workforce": "Personal",
     "wfmShifts": "Turnos",
     "wfmSchedule": "Horario",
+    "portRequests": "Solicitudes de Portabilidad",
     "wfmTimeOff": "Tiempo Libre",
     "wfmAnalytics": "Pron\u00f3sticos"
   },
@@ -726,7 +727,22 @@
       "rewrite": "Reescribir",
       "usernamePlaceholder": "ej., trunk_user",
       "notes": "Notas"
-    }
+    },
+    "provisionTitle": "Aprovisionar Troncal",
+    "provisionProvider": "Proveedor",
+    "provisionRegion": "Región",
+    "provisionChannels": "Canales",
+    "provisionButton": "Aprovisionar",
+    "provisionSuccess": "Troncal aprovisionada exitosamente",
+    "providerManual": "Manual",
+    "testAction": "Probar Conexión",
+    "testSuccess": "Conexión OK — latencia {{latency}}ms",
+    "testFailed": "Conexión fallida: {{message}}",
+    "deprovisionAction": "Desaprovisionar",
+    "deprovisionTitle": "Desaprovisionar Troncal",
+    "deprovisionConfirm": "¿Está seguro de que desea desaprovisionar la troncal \"{{name}}\"?",
+    "deprovisionButton": "Desaprovisionar",
+    "deprovisionSuccess": "Troncal desaprovisionada exitosamente"
   },
   "dids": {
     "title": "DIDs",
@@ -773,7 +789,29 @@
       "reserved": "Reservado",
       "smsQueue": "Cola de SMS",
       "smsQueueHelp": "Los SMS entrantes a este DID se enrutarán a la cola seleccionada para manejo de bandeja compartida."
-    }
+    },
+    "buyNumbers": "Comprar Números",
+    "marketplaceTitle": "Mercado de DIDs",
+    "marketplaceAreaCode": "Código de Área",
+    "marketplaceState": "Estado",
+    "marketplaceAnyState": "Cualquier Estado",
+    "marketplaceQuantity": "Cantidad",
+    "marketplaceProvider": "Proveedor",
+    "marketplaceAnyProvider": "Cualquier Proveedor",
+    "marketplaceSearch": "Buscar",
+    "marketplaceNoResults": "No se encontraron números. Intente con otros criterios.",
+    "marketplaceColNumber": "Número",
+    "marketplaceColMonthlyCost": "Mensual",
+    "marketplaceColSetupCost": "Instalación",
+    "marketplaceColCapabilities": "Capacidades",
+    "marketplacePurchase": "Comprar ({{count}})",
+    "purchaseSuccess": "{{count}} número(s) comprado(s) exitosamente",
+    "purchaseErrors": "{{count}} número(s) fallaron al comprar",
+    "releaseAction": "Liberar Número",
+    "releaseTitle": "Liberar DID",
+    "releaseConfirm": "¿Está seguro de que desea liberar el DID \"{{number}}\"?",
+    "releaseButton": "Liberar",
+    "releaseSuccess": "DID liberado exitosamente"
   },
   "inboundRoutes": {
     "title": "Rutas Entrantes",
@@ -2099,5 +2137,49 @@
       "configSaved": "Configuraci\u00f3n guardada",
       "noData": "No hay datos disponibles para el per\u00edodo seleccionado"
     }
+  },
+  "portRequests": {
+    "title": "Solicitudes de Portabilidad",
+    "description": "Administrar solicitudes de portabilidad de n\u00fameros",
+    "create": "Nueva Solicitud",
+    "createTitle": "Crear Solicitud de Portabilidad",
+    "createSuccess": "Solicitud creada exitosamente",
+    "searchPlaceholder": "Buscar solicitudes...",
+    "emptyTitle": "Sin solicitudes",
+    "emptyDescription": "Env\u00ede una solicitud para transferir n\u00fameros de otro proveedor.",
+    "viewAction": "Ver Detalles",
+    "detailTitle": "Detalles de Solicitud",
+    "historyTitle": "Historial de Estado",
+    "noHistory": "Sin historial a\u00fan.",
+    "col": {
+      "numbers": "N\u00fameros",
+      "carrier": "Operador Actual",
+      "provider": "Proveedor",
+      "status": "Estado",
+      "focDate": "Fecha FOC",
+      "created": "Creado"
+    },
+    "form": {
+      "numbers": "N\u00fameros Telef\u00f3nicos",
+      "numbersHelp": "Ingrese un n\u00famero E.164 por l\u00ednea",
+      "carrier": "Operador Actual",
+      "provider": "Proveedor Destino",
+      "requestedDate": "Fecha Solicitada",
+      "notes": "Notas",
+      "notesPlaceholder": "Informaci\u00f3n adicional...",
+      "submit": "Enviar Solicitud"
+    },
+    "loaTitle": "Carta de Autorizaci\u00f3n",
+    "loaUpload": "Subir LOA",
+    "loaHelp": "PDF, PNG, JPEG o TIFF \u2014 m\u00e1x 10MB",
+    "loaUploadSuccess": "LOA subida exitosamente",
+    "loaFileTooLarge": "El archivo debe ser menor a 10MB",
+    "loaInvalidType": "El archivo debe ser PDF, PNG, JPEG o TIFF",
+    "checkStatus": "Verificar Estado",
+    "statusChecked": "Estado verificado",
+    "markComplete": "Marcar Completada",
+    "completeSuccess": "Solicitud completada",
+    "cancelAction": "Cancelar Solicitud",
+    "cancelSuccess": "Solicitud cancelada"
   }
 }

@@ -48,6 +48,7 @@
     "workforce": "Workforce",
     "wfmShifts": "Shifts",
     "wfmSchedule": "Schedule",
+    "portRequests": "Port Requests",
     "wfmTimeOff": "Time Off",
     "wfmAnalytics": "Forecasting"
   },
@@ -726,7 +727,22 @@
       "rewrite": "Rewrite",
       "usernamePlaceholder": "e.g., trunk_user",
       "notes": "Notes"
-    }
+    },
+    "provisionTitle": "Provision Trunk",
+    "provisionProvider": "Provider",
+    "provisionRegion": "Region",
+    "provisionChannels": "Channels",
+    "provisionButton": "Provision",
+    "provisionSuccess": "Trunk provisioned successfully",
+    "providerManual": "Manual",
+    "testAction": "Test Connection",
+    "testSuccess": "Connection OK — latency {{latency}}ms",
+    "testFailed": "Connection failed: {{message}}",
+    "deprovisionAction": "Deprovision",
+    "deprovisionTitle": "Deprovision Trunk",
+    "deprovisionConfirm": "Are you sure you want to deprovision trunk \"{{name}}\"? This will release the trunk from your provider.",
+    "deprovisionButton": "Deprovision",
+    "deprovisionSuccess": "Trunk deprovisioned successfully"
   },
   "dids": {
     "title": "DIDs",
@@ -773,7 +789,29 @@
       "reserved": "Reserved",
       "smsQueue": "SMS Queue",
       "smsQueueHelp": "Inbound SMS to this DID will be routed to the selected queue for shared inbox handling."
-    }
+    },
+    "buyNumbers": "Buy Numbers",
+    "marketplaceTitle": "DID Marketplace",
+    "marketplaceAreaCode": "Area Code",
+    "marketplaceState": "State",
+    "marketplaceAnyState": "Any State",
+    "marketplaceQuantity": "Quantity",
+    "marketplaceProvider": "Provider",
+    "marketplaceAnyProvider": "Any Provider",
+    "marketplaceSearch": "Search",
+    "marketplaceNoResults": "No numbers found. Try different search criteria.",
+    "marketplaceColNumber": "Number",
+    "marketplaceColMonthlyCost": "Monthly",
+    "marketplaceColSetupCost": "Setup",
+    "marketplaceColCapabilities": "Capabilities",
+    "marketplacePurchase": "Purchase ({{count}})",
+    "purchaseSuccess": "{{count}} number(s) purchased successfully",
+    "purchaseErrors": "{{count}} number(s) failed to purchase",
+    "releaseAction": "Release Number",
+    "releaseTitle": "Release DID",
+    "releaseConfirm": "Are you sure you want to release DID \"{{number}}\"? This will return the number to your provider.",
+    "releaseButton": "Release",
+    "releaseSuccess": "DID released successfully"
   },
   "inboundRoutes": {
     "title": "Inbound Routes",
@@ -2103,5 +2141,49 @@
       "configSaved": "Forecast configuration saved",
       "noData": "No data available for the selected period"
     }
+  },
+  "portRequests": {
+    "title": "Port Requests",
+    "description": "Manage number porting requests",
+    "create": "New Port Request",
+    "createTitle": "Create Port Request",
+    "createSuccess": "Port request created successfully",
+    "searchPlaceholder": "Search port requests...",
+    "emptyTitle": "No port requests",
+    "emptyDescription": "Submit a port request to transfer numbers from another carrier.",
+    "viewAction": "View Details",
+    "detailTitle": "Port Request Details",
+    "historyTitle": "Status History",
+    "noHistory": "No status history yet.",
+    "col": {
+      "numbers": "Numbers",
+      "carrier": "Current Carrier",
+      "provider": "Provider",
+      "status": "Status",
+      "focDate": "FOC Date",
+      "created": "Created"
+    },
+    "form": {
+      "numbers": "Phone Numbers",
+      "numbersHelp": "Enter one E.164 number per line (e.g., +15125551234)",
+      "carrier": "Current Carrier",
+      "provider": "Destination Provider",
+      "requestedDate": "Requested Port Date",
+      "notes": "Notes",
+      "notesPlaceholder": "Any additional information about this port...",
+      "submit": "Submit Port Request"
+    },
+    "loaTitle": "Letter of Authorization",
+    "loaUpload": "Upload LOA",
+    "loaHelp": "PDF, PNG, JPEG, or TIFF — max 10MB",
+    "loaUploadSuccess": "LOA uploaded successfully",
+    "loaFileTooLarge": "File must be under 10MB",
+    "loaInvalidType": "File must be PDF, PNG, JPEG, or TIFF",
+    "checkStatus": "Check Status",
+    "statusChecked": "Status checked — see updated details",
+    "markComplete": "Mark Complete",
+    "completeSuccess": "Port request marked as completed",
+    "cancelAction": "Cancel Request",
+    "cancelSuccess": "Port request cancelled"
   }
 }

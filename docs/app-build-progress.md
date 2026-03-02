@@ -5181,3 +5181,37 @@ Replace all 4 "coming soon" placeholder snackbars in the Flutter mobile settings
 - `mobile/pubspec.yaml` — Added url_launcher dependency
 - `mobile/lib/config/router.dart` — Added /settings/change-password route
 - `mobile/lib/screens/settings_screen.dart` — Replaced all 4 placeholders with real implementations
+
+---
+
+## Part 5: ClearlyIP Provider UI — Trunk Provisioning, DID Marketplace, Port Requests
+
+**Status**: COMPLETE
+
+### Goal
+Add frontend UI for ClearlyIP/Twilio provider operations: trunk provisioning/deprovision/test, DID marketplace (search/purchase/release), and full port request management.
+
+### Deliverables
+
+| Item | Status | Notes |
+|------|--------|-------|
+| API hooks: sip-trunks provision/deprovision/test | Done | `api/sip-trunks.ts` |
+| API hooks: dids search/purchase/release | Done | `api/dids.ts` |
+| API hooks: port-requests full CRUD + LOA | Done | `api/port-requests.ts` (new) |
+| Query keys for portRequests + dids.search | Done | `api/query-keys.ts` |
+| Provision Trunk dialog | Done | `provision-trunk-dialog.tsx` (new) |
+| SIP Trunks page: provision button + test/deprovision | Done | Page + columns updated |
+| DID Marketplace dialog | Done | `did-marketplace-dialog.tsx` (new) |
+| DIDs page: buy numbers + release | Done | Page + columns updated |
+| Port Requests page (list + columns) | Done | `port-requests-page.tsx` (new) |
+| Create Port Request dialog | Done | `create-port-request-dialog.tsx` (new) |
+| Port Request Detail sheet | Done | `port-request-detail-dialog.tsx` (new) |
+| Route + nav entry | Done | `/port-requests` in Connectivity group |
+| i18n: en.json | Done | All keys added |
+| i18n: es.json | Done | All keys added |
+| i18n: fr.json | Done | All keys added |
+| TypeScript compilation | Done | `npx tsc --noEmit` — 0 errors |
+
+### Verification
+- `npx tsc --noEmit` — zero type errors
+- All 3 JSON locale files valid

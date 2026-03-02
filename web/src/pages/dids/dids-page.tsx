@@ -1,15 +1,16 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useDids, useCreateDid, useUpdateDid, useDeleteDid, type DID, type DIDCreate } from "@/api/dids"
+import { useDids, useCreateDid, useUpdateDid, useDeleteDid, useReleaseDid, type DID, type DIDCreate } from "@/api/dids"
 import { useBeforeUnload } from "@/hooks/use-before-unload"
 import { PageHeader } from "@/components/shared/page-header"
 import { DataTable } from "@/components/data-table/data-table"
 import { getDidColumns } from "./did-columns"
 import { DidForm } from "./did-form"
+import { DidMarketplaceDialog } from "./did-marketplace-dialog"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Plus, Hash } from "lucide-react"
+import { Plus, Hash, ShoppingCart } from "lucide-react"
 import { toast } from "sonner"
 import { EmptyState } from "@/components/shared/empty-state"
 import { exportToCsv } from "@/lib/export-csv"
@@ -20,12 +21,15 @@ export function DidsPage() {
   const createMutation = useCreateDid()
   const updateMutation = useUpdateDid()
   const deleteMutation = useDeleteDid()
+  const releaseMutation = useReleaseDid()
 
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [marketplaceOpen, setMarketplaceOpen] = useState(false)
   const [editing, setEditing] = useState<DID | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState<DID | null>(null)
   const [bulkDeleting, setBulkDeleting] = useState<DID[]>([])
+  const [releasing, setReleasing] = useState<DID | null>(null)
 
   useBeforeUnload(dialogOpen)
 
@@ -81,14 +85,33 @@ export function DidsPage() {
     })
   }
 
+  const handleRelease = (did: DID) => {
+    setReleasing(did)
+  }
+
+  const confirmRelease = () => {
+    if (!releasing) return
+    releaseMutation.mutate(releasing.id, {
+      onSuccess: () => {
+        setReleasing(null)
+        toast.success(t("dids.releaseSuccess"))
+      },
+      onError: (err) => toast.error(err.message),
+    })
+  }
+
   const columns = getDidColumns({
     onEdit: (did) => { setEditing(did); setDialogOpen(true) },
     onDelete: handleDelete,
+    onRelease: handleRelease,
   })
 
   return (
     <div className="space-y-6">
       <PageHeader title={t('dids.title')} description={t('dids.description')} breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: t('dids.title') }]}>
+        <Button variant="outline" onClick={() => setMarketplaceOpen(true)}>
+          <ShoppingCart className="mr-2 h-4 w-4" /> {t('dids.buyNumbers')}
+        </Button>
         <Button onClick={() => { setEditing(null); setDialogOpen(true) }}>
           <Plus className="mr-2 h-4 w-4" /> {t('dids.create')}
         </Button>
@@ -136,6 +159,18 @@ export function DidsPage() {
         confirmLabel={t('common.delete')}
         variant="destructive"
         onConfirm={confirmDelete}
+      />
+
+      <DidMarketplaceDialog open={marketplaceOpen} onOpenChange={setMarketplaceOpen} />
+
+      <ConfirmDialog
+        open={!!releasing}
+        onOpenChange={(open) => { if (!open) setReleasing(null) }}
+        title={t('dids.releaseTitle')}
+        description={t('dids.releaseConfirm', { number: releasing?.number })}
+        confirmLabel={t('dids.releaseButton')}
+        variant="destructive"
+        onConfirm={confirmRelease}
       />
     </div>
   )

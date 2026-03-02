@@ -1,5 +1,42 @@
 # Claude Runlog — New Phone Platform
 
+## 2026-03-02 — ClearlyIP Provider UI: Trunk Provisioning, DID Marketplace, Port Requests
+
+### Goal
+Add frontend for provider operations: trunk provisioning/deprovision/test, DID marketplace (search/purchase/release), and full port request management.
+
+### What was done
+- **Phase 1 (API Hooks & Types)**: Added `useProvisionTrunk`, `useDeprovisionTrunk`, `useTestTrunk` to `sip-trunks.ts`. Added `useSearchDids`, `usePurchaseDid`, `useReleaseDid` to `dids.ts`. Created `api/port-requests.ts` with full CRUD + LOA upload + status check + cancel/complete hooks. Updated `query-keys.ts` with `dids.search` and `portRequests` keys.
+- **Phase 2 (Enhanced SIP Trunks)**: Added "Provision Trunk" button and dialog with provider/region/channels form. Added Test/Deprovision actions to column dropdown. Added provider badge column.
+- **Phase 3 (DID Marketplace)**: Added "Buy Numbers" button and marketplace dialog with area code/state/quantity/provider search, multi-select results table, batch purchase with progress. Added Release action (conditional on `provider_sid`). Enhanced provider badge.
+- **Phase 4 (Port Requests Page)**: Created full port requests page with DataTable, create dialog (E.164 numbers textarea, carrier, provider, date, notes), detail sheet (status, numbers, LOA upload, check status, cancel, complete, timeline history). Added route `/port-requests`, nav entry in Connectivity group.
+- **Phase 5 (i18n)**: Added all translation keys to `en.json`, `es.json`, `fr.json`.
+- **Phase 6 (Verification)**: `npx tsc --noEmit` — zero errors. All JSON locales valid.
+
+### Files created (7)
+- `web/src/api/port-requests.ts`
+- `web/src/pages/sip-trunks/provision-trunk-dialog.tsx`
+- `web/src/pages/dids/did-marketplace-dialog.tsx`
+- `web/src/pages/port-requests/port-requests-page.tsx`
+- `web/src/pages/port-requests/port-request-columns.tsx`
+- `web/src/pages/port-requests/create-port-request-dialog.tsx`
+- `web/src/pages/port-requests/port-request-detail-dialog.tsx`
+
+### Files modified (11)
+- `web/src/api/sip-trunks.ts` — provision/deprovision/test hooks
+- `web/src/api/dids.ts` — search/purchase/release hooks
+- `web/src/api/query-keys.ts` — portRequests + dids.search keys
+- `web/src/pages/sip-trunks/sip-trunks-page.tsx` — Provision button, test/deprovision handlers
+- `web/src/pages/sip-trunks/sip-trunk-columns.tsx` — Test/Deprovision/provider badge
+- `web/src/pages/dids/dids-page.tsx` — Buy Numbers button, release handler
+- `web/src/pages/dids/did-columns.tsx` — Release/provider badge
+- `web/src/lib/constants.ts` — PORT_REQUESTS route
+- `web/src/lib/nav-items.ts` — Port Requests nav entry
+- `web/src/router/index.tsx` — Port Requests route
+- `web/src/locales/en.json`, `es.json`, `fr.json` — all new i18n keys
+
+---
+
 ## 2026-03-02 — Deploy New Phone PBX to docker.aspendora.com
 
 ### Goal

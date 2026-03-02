@@ -7,15 +7,17 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, PhoneOff } from "lucide-react"
 import i18next from "i18next"
 
 interface ColumnActions {
   onEdit: (did: DID) => void
   onDelete: (did: DID) => void
+  onRelease: (did: DID) => void
 }
 
 const statusVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -25,16 +27,29 @@ const statusVariant: Record<string, "default" | "secondary" | "outline" | "destr
   released: "destructive",
 }
 
-export function getDidColumns({ onEdit, onDelete }: ColumnActions): ColumnDef<DID, unknown>[] {
+const providerVariant: Record<string, "default" | "secondary" | "outline"> = {
+  clearlyip: "default",
+  twilio: "secondary",
+}
+
+export function getDidColumns({ onEdit, onDelete, onRelease }: ColumnActions): ColumnDef<DID, unknown>[] {
   return [
     {
       accessorKey: "number",
       header: ({ column }) => <DataTableColumnHeader column={column} title={i18next.t('dids.col.number')} />,
+      cell: ({ row }) => <span className="font-mono">{row.original.number}</span>,
     },
     {
       accessorKey: "provider",
       header: ({ column }) => <DataTableColumnHeader column={column} title={i18next.t('dids.col.provider', { defaultValue: 'Provider' })} />,
-      cell: ({ row }) => <Badge variant="outline">{row.original.provider}</Badge>,
+      cell: ({ row }) => {
+        const p = row.original.provider?.toLowerCase()
+        return (
+          <Badge variant={providerVariant[p] ?? "outline"}>
+            {p === "clearlyip" ? "ClearlyIP" : p === "twilio" ? "Twilio" : row.original.provider}
+          </Badge>
+        )
+      },
     },
     {
       accessorKey: "status",
@@ -69,6 +84,15 @@ export function getDidColumns({ onEdit, onDelete }: ColumnActions): ColumnDef<DI
             <DropdownMenuItem onClick={() => onEdit(row.original)}>
               <Pencil className="mr-2 h-4 w-4" /> {i18next.t('common.edit')}
             </DropdownMenuItem>
+            {row.original.provider_sid && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onRelease(row.original)} className="text-destructive">
+                  <PhoneOff className="mr-2 h-4 w-4" /> {i18next.t('dids.releaseAction')}
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onDelete(row.original)} className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" /> {i18next.t('common.delete')}
             </DropdownMenuItem>

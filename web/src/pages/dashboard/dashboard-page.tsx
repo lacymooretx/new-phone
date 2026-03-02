@@ -60,7 +60,7 @@ export function DashboardPage() {
           title={t('dashboard.systemHealth')}
           value={health?.status === "healthy" ? t('dashboard.healthy') : health?.status ?? "..."}
           icon={Activity}
-          description={health ? `DB: ${health.database} | Redis: ${health.redis}` : undefined}
+          description={health?.services ? `DB: ${health.services.postgres?.status ?? "unknown"} | Redis: ${health.services.redis?.status ?? "unknown"}` : undefined}
         />
         {summaryLoading ? (
           <Skeleton className="h-32" />
