@@ -96,7 +96,7 @@ export interface DIDPurchaseRequest {
 export function useSearchDids(params: DIDSearchParams, enabled = false) {
   const tenantId = useAuthStore((s) => s.activeTenantId)!
   return useQuery({
-    queryKey: queryKeys.dids.search(tenantId, params),
+    queryKey: queryKeys.dids.search(tenantId, params as Record<string, unknown>),
     queryFn: () =>
       apiClient.get<DIDSearchResult[]>(
         `tenants/${tenantId}/dids/search`,

@@ -60,7 +60,7 @@ export function CreatePortRequestDialog({ open, onOpenChange }: Props) {
   const createMutation = useCreatePortRequest()
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       numbers_text: "",
       current_carrier: "",

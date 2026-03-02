@@ -56,7 +56,7 @@ export function ProvisionTrunkDialog({ open, onOpenChange }: Props) {
   const provisionMutation = useProvisionTrunk()
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       provider: "clearlyip",
       name: "",

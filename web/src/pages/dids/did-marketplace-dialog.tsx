@@ -65,7 +65,7 @@ export function DidMarketplaceDialog({ open, onOpenChange }: Props) {
   const { data: results, isLoading: searching } = useSearchDids(searchParams, searchEnabled)
 
   const form = useForm<SearchFormValues>({
-    resolver: zodResolver(searchSchema),
+    resolver: zodResolver(searchSchema) as any,
     defaultValues: { area_code: "", state: "", quantity: 10, provider: "" },
   })
 
