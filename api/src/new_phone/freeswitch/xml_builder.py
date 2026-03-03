@@ -795,6 +795,20 @@ def _add_feature_codes(context: Element, domain_name: str, vm_map: dict, extensi
     _action(cond, "playback", "tone_stream://%(200,0,500,600,700)")
     _action(cond, "hangup")
 
+    # *99 — Echo test (audio verification: hear your own voice back)
+    ext = SubElement(context, "extension", name="echo-test")
+    _condition(ext, "destination_number", r"^\*99$")
+    cond = ext.find("condition")
+    _action(cond, "answer")
+    _action(cond, "echo")
+
+    # *98 — Milliwatt tone test (1004 Hz tone for audio path verification)
+    ext = SubElement(context, "extension", name="tone-test")
+    _condition(ext, "destination_number", r"^\*98$")
+    cond = ext.find("condition")
+    _action(cond, "answer")
+    _action(cond, "playback", "tone_stream://%(1000,0,1004);loops=-1")
+
     # *80[ext] — Direct intercom to single extension
     ext = SubElement(context, "extension", name="intercom")
     _condition(ext, "destination_number", r"^\*80(.+)$")
