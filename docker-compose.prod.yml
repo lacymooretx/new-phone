@@ -154,11 +154,10 @@ services:
         reservations:
           cpus: "1.0"
           memory: 1024M
-    ports:
-      - "5061:5061/tcp"       # SIP TLS
-      - "16384-16884:16384-16884/udp"  # RTP media range (500 ports = 250 concurrent calls)
-      # WSS proxied through web nginx — no host port needed
-      # ESL port NOT exposed in production
+    # Ports and networks managed by base compose (network_mode: host).
+    # Host networking required for WebRTC — Docker's userland proxy
+    # rewrites UDP source IPs, breaking ICE connectivity checks.
+    ports: !reset []
     healthcheck:
       interval: 30s
       timeout: 10s
@@ -169,9 +168,6 @@ services:
       options:
         max-size: "50m"
         max-file: "5"
-    networks:
-      - backend
-      - frontend  # Needed for web nginx WSS proxy
 
   # ─── AI Engine ──────────────────────────────────────────────────────
 
@@ -207,6 +203,8 @@ services:
   sip-proxy:
     image: ${NP_REGISTRY:-ghcr.io/new-phone}/sip-proxy:${NP_VERSION:-latest}
     restart: unless-stopped
+    extra_hosts:
+      - "freeswitch:host-gateway"
     deploy:
       resources:
         limits:
@@ -246,6 +244,8 @@ services:
   rtp-relay:
     image: ${NP_REGISTRY:-ghcr.io/new-phone}/rtp-relay:${NP_VERSION:-latest}
     restart: unless-stopped
+    extra_hosts:
+      - "freeswitch:host-gateway"
     deploy:
       resources:
         limits:
@@ -318,6 +318,8 @@ services:
   event-router:
     image: ${NP_REGISTRY:-ghcr.io/new-phone}/event-router:${NP_VERSION:-latest}
     restart: unless-stopped
+    extra_hosts:
+      - "freeswitch:host-gateway"
     deploy:
       resources:
         limits:
@@ -355,6 +357,8 @@ services:
   parking-manager:
     image: ${NP_REGISTRY:-ghcr.io/new-phone}/parking-manager:${NP_VERSION:-latest}
     restart: unless-stopped
+    extra_hosts:
+      - "freeswitch:host-gateway"
     deploy:
       resources:
         limits:
