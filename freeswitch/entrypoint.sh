@@ -30,10 +30,17 @@ sed -i 's|<!-- <param name="rtp-start-port" value="16384"/> -->|<param name="rtp
 sed -i 's|<!-- <param name="rtp-end-port" value="32768"/> -->|<param name="rtp-end-port" value="16884"/>|' /etc/freeswitch/autoload_configs/switch.conf.xml
 echo "Set RTP port range to 16384-16884"
 
-# Add apply-candidate-acl to internal profile so ICE candidates use the
-# external IP (ext-rtp-ip) instead of the Docker container IP.
-# Without this, WebRTC ICE candidates advertise 192.168.112.x which is
-# unreachable from browsers.
+# Bind SIP/RTP to all interfaces (0.0.0.0) so FreeSWITCH is reachable from
+# Docker bridge containers (web nginx WSS proxy, API ESL) while still
+# advertising the public IP via ext-rtp-ip/ext-sip-ip for external clients.
+# Vanilla config uses $${local_ip_v4} which only binds to the primary interface.
+sed -i 's|<param name="sip-ip" value="\$\${local_ip_v4}"/>|<param name="sip-ip" value="0.0.0.0"/>|' /etc/freeswitch/sip_profiles/internal.xml
+sed -i 's|<param name="rtp-ip" value="\$\${local_ip_v4}"/>|<param name="rtp-ip" value="0.0.0.0"/>|' /etc/freeswitch/sip_profiles/internal.xml
+echo "Bound internal profile to 0.0.0.0"
+
+# Filter ICE candidates to only include public IPs (wan_v4.auto denies
+# RFC1918 ranges). With rtp-ip=0.0.0.0, candidates for all interfaces
+# are generated; this ACL ensures only the public IP is advertised.
 sed -i '/<param name="ext-rtp-ip"/a\    <param name="apply-candidate-acl" value="wan_v4.auto"/>' /etc/freeswitch/sip_profiles/internal.xml
 echo "Added apply-candidate-acl for WebRTC ICE candidates"
 
