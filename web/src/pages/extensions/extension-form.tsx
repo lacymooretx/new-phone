@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { useUsers } from "@/api/users"
 import { useVoicemailBoxes } from "@/api/voicemail"
 import type { Extension, ExtensionCreate } from "@/api/extensions"
+import { useCreateVoicemailBox } from "@/api/voicemail"
 import { SiteSelector } from "@/components/shared/site-selector"
 
 const extensionSchema = z.object({
@@ -56,6 +57,7 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
   const { t } = useTranslation()
   const { data: users } = useUsers()
   const { data: voicemailBoxes } = useVoicemailBoxes()
+  const createVoicemailBox = useCreateVoicemailBox()
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -159,12 +161,32 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
         </div>
         <div className="space-y-2">
           <Label>{t('extensions.form.voicemailBox')}</Label>
-          <Select value={watch("voicemail_box_id") || "_none_"} onValueChange={(v) => setValue("voicemail_box_id", v === "_none_" ? "" : v)}>
+          <Select
+            value={watch("voicemail_box_id") || "_none_"}
+            onValueChange={(v) => {
+              if (v === "_create_new_") {
+                const extNum = watch("extension_number")
+                const mailboxNum = extNum || String(Date.now()).slice(-6)
+                const pin = String(Math.floor(1000 + Math.random() * 9000))
+                createVoicemailBox.mutate(
+                  { mailbox_number: mailboxNum, pin },
+                  {
+                    onSuccess: (box) => {
+                      setValue("voicemail_box_id", box.id)
+                    },
+                  }
+                )
+              } else {
+                setValue("voicemail_box_id", v === "_none_" ? "" : v)
+              }
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder={t('extensions.form.noVoicemail')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="_none_">{t('common.none')}</SelectItem>
+              <SelectItem value="_create_new_">{t('extensions.form.createVoicemailBox')}</SelectItem>
               {voicemailBoxes?.map((vm) => (
                 <SelectItem key={vm.id} value={vm.id}>
                   Mailbox {vm.mailbox_number}
@@ -179,6 +201,7 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
         <div className="space-y-2">
           <Label htmlFor="internal_cid_number">{t('extensions.form.internalCid')}</Label>
           <Input id="internal_cid_number" placeholder={t('extensions.form.internalCidPlaceholder')} {...register("internal_cid_number")} />
+          <p className="text-xs text-muted-foreground">{t('extensions.form.internalCidHelp')}</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="external_cid_number">{t('extensions.form.externalCid')}</Label>

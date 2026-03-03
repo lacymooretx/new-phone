@@ -114,7 +114,7 @@ export function ExtensionsPage() {
       />
 
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) { setEditing(null); setDuplicateFrom(null) }; setDialogOpen(open) }}>
-        <DialogContent className="max-w-2xl" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>{editing ? t('extensions.edit') : duplicateFrom ? t('extensions.duplicate') : t('extensions.create')}</DialogTitle>
           </DialogHeader>
