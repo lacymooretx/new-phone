@@ -22,6 +22,7 @@ services:
       NP_CORS_ALLOWED_ORIGINS: ${NP_CORS_ALLOWED_ORIGINS:-https://ucc.aspendora.com}
       NP_SSO_CALLBACK_URL: ${NP_SSO_CALLBACK_URL:-https://ucc.aspendora.com/api/v1/auth/sso/callback}
       NP_SSO_FRONTEND_URL: ${NP_SSO_FRONTEND_URL:-https://ucc.aspendora.com}
+      NP_FREESWITCH_HOST: freeswitch
       NP_SMTP_HOST: ""
       NP_SMTP_PORT: "587"
     healthcheck:
