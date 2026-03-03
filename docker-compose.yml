@@ -68,6 +68,7 @@ services:
     # With host networking, FreeSWITCH sees real client IPs and
     # generates correct ICE candidates with the server's public IP.
     network_mode: host
+    networks: []
     extra_hosts:
       - "api:127.0.0.1"   # xml_curl reaches API via host-mapped port
     volumes:
