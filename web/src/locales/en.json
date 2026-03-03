@@ -50,7 +50,8 @@
     "wfmSchedule": "Schedule",
     "portRequests": "Port Requests",
     "wfmTimeOff": "Time Off",
-    "wfmAnalytics": "Forecasting"
+    "wfmAnalytics": "Forecasting",
+    "telephonyProviders": "Telephony Providers"
   },
   "common": {
     "save": "Save",
@@ -1096,6 +1097,54 @@
     "deactivateConfirm": "Are you sure you want to deactivate \"{{name}}\"? This will stop SMS sending through this provider.",
     "deactivated": "Provider deactivated",
     "deactivateTitle": "Deactivate Provider"
+  },
+  "telephonyProviders": {
+    "title": "Telephony Providers",
+    "description": "Manage platform-level telephony provider credentials",
+    "tenantDescription": "View and manage telephony provider credentials for this tenant",
+    "create": "Add Provider",
+    "edit": "Edit Provider",
+    "addOverride": "Add Override",
+    "tenantOverrides": "Tenant Overrides",
+    "searchPlaceholder": "Search providers...",
+    "emptyTitle": "No telephony providers configured",
+    "emptyDescription": "Add a telephony provider to enable SIP trunk and DID provisioning.",
+    "deactivateTitle": "Deactivate Provider",
+    "deactivateConfirm": "Are you sure you want to deactivate \"{{name}}\"? Provisioning will fall back to the next available credential source.",
+    "deactivateButton": "Deactivate",
+    "deactivated": "Provider deactivated",
+    "col": {
+      "provider": "Provider",
+      "label": "Label",
+      "default": "Default",
+      "status": "Status",
+      "created": "Created"
+    },
+    "form": {
+      "provider": "Provider Type",
+      "clearlyIP": "ClearlyIP",
+      "twilio": "Twilio",
+      "label": "Label",
+      "labelPlaceholder": "e.g., ClearlyIP Production",
+      "apiUrl": "API URL",
+      "apiUrlPlaceholder": "https://api.clearlyip.com",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "Enter ClearlyIP API key",
+      "accountSid": "Account SID",
+      "authToken": "Auth Token",
+      "authTokenPlaceholder": "Enter Twilio auth token",
+      "setDefault": "Set as default provider",
+      "notesPlaceholder": "Optional notes..."
+    },
+    "effective": {
+      "title": "Effective Provider Status",
+      "tenant": "Using tenant config",
+      "msp": "Using MSP default",
+      "env_var": "Using env var",
+      "none": "Not configured",
+      "envConfigured": "Configured via environment",
+      "notConfigured": "Not configured"
+    }
   },
   "users": {
     "title": "Users",

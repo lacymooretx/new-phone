@@ -220,6 +220,11 @@ export const queryKeys = {
     detail: (tenantId: string, id: string) => [...queryKeys.sites.all(tenantId), "detail", id] as const,
     summaries: (tenantId: string) => [...queryKeys.sites.all(tenantId), "summaries"] as const,
   },
+  telephonyProviders: {
+    platform: () => ["telephonyProviders", "platform"] as const,
+    tenant: (tenantId: string) => ["telephonyProviders", "tenant", tenantId] as const,
+    effective: (tenantId: string) => ["telephonyProviders", "effective", tenantId] as const,
+  },
   wfm: {
     all: (tenantId: string) => ["wfm", tenantId] as const,
     shifts: (tenantId: string) => [...queryKeys.wfm.all(tenantId), "shifts"] as const,

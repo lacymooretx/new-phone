@@ -44,6 +44,7 @@ export const ROUTES = {
   WFM_TIME_OFF: "/wfm/time-off",
   WFM_ANALYTICS: "/wfm/analytics",
   PORT_REQUESTS: "/port-requests",
+  MSP_TELEPHONY_PROVIDERS: "/msp/telephony-providers",
 } as const
 
 export type Role = "msp_super_admin" | "msp_tech" | "tenant_admin" | "tenant_manager" | "tenant_user"

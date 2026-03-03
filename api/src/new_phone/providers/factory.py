@@ -80,3 +80,30 @@ async def get_tenant_provider(
         provider_type="clearlyip",
     )
     return get_provider("clearlyip")
+
+
+async def resolve_provider_credentials(
+    db: AsyncSession, tenant_id: uuid.UUID, provider_type: str
+) -> dict | None:
+    """Resolve credentials from the two-tier DB store (tenant -> MSP -> None).
+
+    Uses admin session to query across tenant/MSP scopes.
+    Returns decrypted credential dict, or None (caller falls back to env vars).
+    """
+    from new_phone.services.telephony_provider_config_service import (
+        TelephonyProviderConfigService,
+    )
+
+    service = TelephonyProviderConfigService(db)
+    return await service.resolve_credentials(tenant_id, provider_type)
+
+
+async def get_provider_for_tenant(
+    db: AsyncSession, tenant_id: uuid.UUID, provider_type: str
+) -> TelephonyProvider:
+    """Return a provider instance with two-tier credential resolution.
+
+    Resolution order: tenant DB config -> MSP DB config -> env var fallback.
+    """
+    creds = await resolve_provider_credentials(db, tenant_id, provider_type)
+    return get_provider(provider_type, credentials=creds)

@@ -47,6 +47,7 @@ from new_phone.models.queue import Queue, QueueMember  # noqa: F401
 from new_phone.models.recording import Recording  # noqa: F401
 from new_phone.models.ring_group import RingGroup, RingGroupMember  # noqa: F401
 from new_phone.models.sip_trunk import SIPTrunk  # noqa: F401
+from new_phone.models.telephony_provider_config import TelephonyProviderConfig  # noqa: F401
 from new_phone.models.site import Site  # noqa: F401
 from new_phone.models.sms import (  # noqa: F401
     Conversation,

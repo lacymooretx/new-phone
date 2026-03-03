@@ -52,6 +52,7 @@ const WfmSchedulePage = lazy(() => import("@/pages/workforce-management/wfm-sche
 const WfmTimeOffPage = lazy(() => import("@/pages/workforce-management/wfm-time-off-page").then((m) => ({ default: m.WfmTimeOffPage })))
 const WfmAnalyticsPage = lazy(() => import("@/pages/workforce-management/wfm-analytics-page").then((m) => ({ default: m.WfmAnalyticsPage })))
 const PortRequestsPage = lazy(() => import("@/pages/port-requests/port-requests-page").then((m) => ({ default: m.PortRequestsPage })))
+const TelephonyProvidersPage = lazy(() => import("@/pages/msp/telephony-providers-page").then((m) => ({ default: m.TelephonyProvidersPage })))
 const NotFoundPage = lazy(() => import("@/pages/not-found/not-found-page").then((m) => ({ default: m.NotFoundPage })))
 
 function LazyPage({ children }: { children: React.ReactNode }) {
@@ -125,6 +126,7 @@ export const router = createBrowserRouter([
           { path: "wfm/time-off", element: <LazyPage><WfmTimeOffPage /></LazyPage> },
           { path: "wfm/analytics", element: <LazyPage><WfmAnalyticsPage /></LazyPage> },
           { path: "port-requests", element: <LazyPage><PortRequestsPage /></LazyPage> },
+          { path: "msp/telephony-providers", element: <LazyPage><TelephonyProvidersPage /></LazyPage> },
           { path: "profile", element: <LazyPage><ProfilePage /></LazyPage> },
           { path: "*", element: <LazyPage><NotFoundPage /></LazyPage> },
         ],

@@ -9,7 +9,7 @@ from new_phone.auth.encryption import encrypt_value
 from new_phone.db.rls import set_tenant_context
 from new_phone.models.sip_trunk import SIPTrunk, TrunkAuthType, TrunkTransport
 from new_phone.providers.base import TrunkProvisionRequest, TrunkTestResult
-from new_phone.providers.factory import get_provider
+from new_phone.providers.factory import get_provider, get_provider_for_tenant
 from new_phone.schemas.sip_trunk import SIPTrunkCreate, SIPTrunkUpdate
 
 logger = structlog.get_logger()
@@ -108,7 +108,7 @@ class SIPTrunkService:
         """Create a trunk at the provider and persist a local DB record."""
         await set_tenant_context(self.db, tenant_id)
 
-        provider = get_provider(provider_type)
+        provider = await get_provider_for_tenant(self.db, tenant_id, provider_type)
         provision_req = TrunkProvisionRequest(
             name=name,
             provider=provider_type,
@@ -166,7 +166,7 @@ class SIPTrunkService:
 
         # Delete at provider if we have a provider_trunk_id
         if trunk.provider_trunk_id and trunk.provider_type:
-            provider = get_provider(trunk.provider_type)
+            provider = await get_provider_for_tenant(self.db, tenant_id, trunk.provider_type)
             deleted = await provider.delete_trunk(trunk.provider_trunk_id)
             if not deleted:
                 logger.warning(
@@ -207,7 +207,7 @@ class SIPTrunkService:
                 error="Trunk is not provider-managed — no remote test available",
             )
 
-        provider = get_provider(trunk.provider_type)
+        provider = await get_provider_for_tenant(self.db, tenant_id, trunk.provider_type)
         logger.info(
             "trunk_test_start",
             tenant_id=str(tenant_id),

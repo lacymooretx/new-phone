@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from new_phone.db.rls import set_tenant_context
 from new_phone.models.did import DID, DIDProvider, DIDStatus
 from new_phone.providers.base import DIDSearchResult as ProviderDIDSearchResult
-from new_phone.providers.factory import get_provider, get_tenant_provider
+from new_phone.providers.factory import get_provider_for_tenant
 from new_phone.schemas.did import DIDCreate, DIDUpdate
 
 logger = structlog.get_logger()
@@ -94,8 +94,11 @@ class DIDService:
     ) -> list[ProviderDIDSearchResult]:
         """Search for available DIDs from the tenant's provider."""
         if provider_type:
-            provider = get_provider(provider_type)
+            provider = await get_provider_for_tenant(self.db, tenant_id, provider_type)
         else:
+            # Determine provider from existing trunks, default to clearlyip
+            from new_phone.providers.factory import get_tenant_provider
+
             provider = await get_tenant_provider(self.db, tenant_id)
 
         logger.info(
@@ -121,7 +124,7 @@ class DIDService:
         if existing.scalar_one_or_none():
             raise ValueError(f"DID '{number}' already exists in the system")
 
-        provider = get_provider(provider_type)
+        provider = await get_provider_for_tenant(self.db, tenant_id, provider_type)
         logger.info(
             "did_purchase_start",
             tenant_id=str(tenant_id),
@@ -162,7 +165,7 @@ class DIDService:
 
         # Release at provider if we have a provider_sid
         if did.provider_sid and did.provider != DIDProvider.MANUAL:
-            provider = get_provider(did.provider)
+            provider = await get_provider_for_tenant(self.db, tenant_id, did.provider)
             released = await provider.release_did(did.provider_sid)
             if not released:
                 logger.warning(
@@ -207,7 +210,7 @@ class DIDService:
 
         # Push config to provider if managed
         if did.provider_sid and did.provider != DIDProvider.MANUAL:
-            provider = get_provider(did.provider)
+            provider = await get_provider_for_tenant(self.db, tenant_id, did.provider)
             config = {
                 "destination_type": destination_type,
                 "destination_id": destination_id,

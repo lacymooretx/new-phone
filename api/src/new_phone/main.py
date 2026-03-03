@@ -233,6 +233,7 @@ def create_app() -> FastAPI:
         ivr_menus,
         onboarding,
         outbound_routes,
+        platform_telephony_providers,
         page_groups,
         paging_zones,
         panic_alerts,
@@ -251,6 +252,7 @@ def create_app() -> FastAPI:
         sms_provider_configs,
         sso_config,
         ten_dlc,
+        tenant_telephony_providers,
         tenants,
         time_conditions,
         users,
@@ -313,6 +315,8 @@ def create_app() -> FastAPI:
     app.include_router(building_webhooks.router, prefix="/api/v1")
     app.include_router(ten_dlc.router, prefix="/api/v1")
     app.include_router(port_requests.router, prefix="/api/v1")
+    app.include_router(platform_telephony_providers.router, prefix="/api/v1")
+    app.include_router(tenant_telephony_providers.router, prefix="/api/v1")
     app.include_router(onboarding.router, prefix="/api/v1")
     app.include_router(analytics.msp_router, prefix="/api/v1")
 

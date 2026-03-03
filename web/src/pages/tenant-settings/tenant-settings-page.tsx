@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useTenant, useUpdateTenant } from "@/api/tenants"
 import { SSOSettingsCard } from "./sso-settings-card"
 import { ConnectWiseSettingsCard } from "./connectwise-settings-card"
+import { TelephonyProvidersCard } from "./telephony-providers-card"
 import { useAuthStore } from "@/stores/auth-store"
 import { PageHeader } from "@/components/shared/page-header"
 import {
@@ -182,6 +183,8 @@ export function TenantSettingsPage() {
           </Form>
         </CardContent>
       </Card>
+
+      <TelephonyProvidersCard />
 
       <SSOSettingsCard />
 

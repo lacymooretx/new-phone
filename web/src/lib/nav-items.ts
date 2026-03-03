@@ -37,6 +37,7 @@ import {
   BarChart4,
   TrendingUp,
   CalendarOff,
+  Server,
 } from "lucide-react"
 import { ROUTES, PERMISSIONS, type Permission } from "./constants"
 import type { LucideIcon } from "lucide-react"
@@ -143,6 +144,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { labelKey: "nav.tenants", path: ROUTES.TENANTS, icon: Building2, permission: null },
       { labelKey: "nav.mspOverview", path: ROUTES.MSP_OVERVIEW, icon: Globe, permission: null },
+      { labelKey: "nav.telephonyProviders", path: ROUTES.MSP_TELEPHONY_PROVIDERS, icon: Server, permission: null },
     ],
   },
 ]

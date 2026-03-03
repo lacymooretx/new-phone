@@ -50,7 +50,8 @@
     "wfmSchedule": "Horaire",
     "portRequests": "Demandes de Portage",
     "wfmTimeOff": "Cong\u00e9s",
-    "wfmAnalytics": "Pr\u00e9visions"
+    "wfmAnalytics": "Pr\u00e9visions",
+    "telephonyProviders": "Fournisseurs T\u00e9l\u00e9phoniques"
   },
   "common": {
     "save": "Enregistrer",
@@ -1096,6 +1097,54 @@
     "deactivateConfirm": "Êtes-vous sûr de vouloir désactiver « {{name}} » ? Cela arrêtera l'envoi de SMS via ce fournisseur.",
     "deactivated": "Fournisseur désactivé",
     "deactivateTitle": "Désactiver le Fournisseur"
+  },
+  "telephonyProviders": {
+    "title": "Fournisseurs T\u00e9l\u00e9phoniques",
+    "description": "G\u00e9rer les identifiants des fournisseurs de t\u00e9l\u00e9phonie au niveau plateforme",
+    "tenantDescription": "Voir et g\u00e9rer les identifiants des fournisseurs de t\u00e9l\u00e9phonie pour ce locataire",
+    "create": "Ajouter un Fournisseur",
+    "edit": "Modifier le Fournisseur",
+    "addOverride": "Ajouter un Remplacement",
+    "tenantOverrides": "Remplacements du Locataire",
+    "searchPlaceholder": "Rechercher des fournisseurs...",
+    "emptyTitle": "Aucun fournisseur de t\u00e9l\u00e9phonie configur\u00e9",
+    "emptyDescription": "Ajoutez un fournisseur de t\u00e9l\u00e9phonie pour activer le provisionnement des trunks SIP et DID.",
+    "deactivateTitle": "D\u00e9sactiver le Fournisseur",
+    "deactivateConfirm": "\u00cates-vous s\u00fbr de vouloir d\u00e9sactiver \u00ab {{name}} \u00bb ?",
+    "deactivateButton": "D\u00e9sactiver",
+    "deactivated": "Fournisseur d\u00e9sactiv\u00e9",
+    "col": {
+      "provider": "Fournisseur",
+      "label": "Libell\u00e9",
+      "default": "Par d\u00e9faut",
+      "status": "Statut",
+      "created": "Cr\u00e9\u00e9"
+    },
+    "form": {
+      "provider": "Type de Fournisseur",
+      "clearlyIP": "ClearlyIP",
+      "twilio": "Twilio",
+      "label": "Libell\u00e9",
+      "labelPlaceholder": "ex., ClearlyIP Production",
+      "apiUrl": "URL de l'API",
+      "apiUrlPlaceholder": "https://api.clearlyip.com",
+      "apiKey": "Cl\u00e9 API",
+      "apiKeyPlaceholder": "Entrez la cl\u00e9 API ClearlyIP",
+      "accountSid": "Account SID",
+      "authToken": "Auth Token",
+      "authTokenPlaceholder": "Entrez le token d'authentification Twilio",
+      "setDefault": "D\u00e9finir comme fournisseur par d\u00e9faut",
+      "notesPlaceholder": "Notes optionnelles..."
+    },
+    "effective": {
+      "title": "Statut Effectif du Fournisseur",
+      "tenant": "Utilisant config. locataire",
+      "msp": "Utilisant d\u00e9faut MSP",
+      "env_var": "Utilisant var. d'environnement",
+      "none": "Non configur\u00e9",
+      "envConfigured": "Configur\u00e9 via environnement",
+      "notConfigured": "Non configur\u00e9"
+    }
   },
   "users": {
     "title": "Utilisateurs",

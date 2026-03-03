@@ -1,5 +1,33 @@
 # Claude Runlog — New Phone Platform
 
+## 2026-03-03 — Two-Tier Telephony Provider Credential Management
+
+### Goal
+Add MSP-level defaults + per-tenant overrides for telephony provider credentials (ClearlyIP, Twilio), stored encrypted in DB. Resolution: tenant → MSP → env var fallback.
+
+### Steps Completed
+1. Created `TelephonyProviderConfig` model with nullable `tenant_id` (NULL = MSP), partial unique indexes
+2. Created migrations 0061 (table) and 0062 (RLS policies with MSP/tenant visibility rules)
+3. Registered model in `alembic/env.py`
+4. Created Pydantic schemas (Create, Update, Response, Effective)
+5. Created `TelephonyProviderConfigService` with CRUD + `resolve_credentials()` + `get_effective_providers()`
+6. Added `get_provider_for_tenant()` and `resolve_provider_credentials()` to factory.py
+7. Updated 3 call sites in `sip_trunk_service.py` and 4 in `did_service.py`
+8. Created MSP router (`/platform/telephony-providers`) with MANAGE_PLATFORM permission
+9. Created tenant router (`/tenants/{tid}/telephony-providers`) with MANAGE_TRUNKS + `/effective` endpoint
+10. Registered both routers in `main.py`
+11. Created frontend API hooks with React Query (platform + tenant)
+12. Created MSP page with DataTable + reusable dialog component
+13. Created tenant settings card with effective status display + override management
+14. Added route, nav item, constants, and i18n keys (en/es/fr)
+
+### Verification
+- `npx tsc --noEmit` — 0 errors
+- `uv run python -c "..."` — all imports successful
+- 10 files created, 11 files modified
+
+---
+
 ## 2026-03-02 — ClearlyIP Provider UI: Trunk Provisioning, DID Marketplace, Port Requests
 
 ### Goal

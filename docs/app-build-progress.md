@@ -5215,3 +5215,75 @@ Add frontend UI for ClearlyIP/Twilio provider operations: trunk provisioning/dep
 ### Verification
 - `npx tsc --noEmit` — zero type errors
 - All 3 JSON locale files valid
+
+---
+
+## Phase: Two-Tier Telephony Provider Credential Management
+
+**Status**: COMPLETE
+**Date**: 2026-03-03
+
+### Goal
+Add a two-tier credential system for telephony providers: MSP-level defaults + per-tenant overrides, stored encrypted in the database. Resolution order: Tenant config → MSP default → env var fallback.
+
+### Deliverables
+
+| Item | Status | Notes |
+|------|--------|-------|
+| DB model: TelephonyProviderConfig | Done | `models/telephony_provider_config.py` — nullable tenant_id, partial unique indexes |
+| Migration 0061: create table | Done | `0061_telephony_provider_configs.py` |
+| Migration 0062: RLS policies | Done | `0062_telephony_provider_configs_rls.py` — MSP rows visible only without tenant context |
+| Alembic env.py: import model | Done | Added import |
+| Pydantic schemas | Done | `schemas/telephony_provider_config.py` — Create, Update, Response, Effective |
+| Service: TelephonyProviderConfigService | Done | `services/telephony_provider_config_service.py` — CRUD + resolve_credentials + get_effective_providers |
+| Factory: get_provider_for_tenant() | Done | `providers/factory.py` — two-tier credential resolution |
+| SIP trunk service: 3 call sites updated | Done | provision, deprovision, test_trunk |
+| DID service: 4 call sites updated | Done | search_available, purchase, release, configure_routing |
+| MSP router: /platform/telephony-providers | Done | `routers/platform_telephony_providers.py` — MANAGE_PLATFORM |
+| Tenant router: /tenants/{tid}/telephony-providers | Done | `routers/tenant_telephony_providers.py` — MANAGE_TRUNKS + /effective |
+| main.py: register both routers | Done | |
+| Frontend API hooks | Done | `api/telephony-providers.ts` — platform + tenant hooks |
+| Query keys | Done | `api/query-keys.ts` — telephonyProviders.platform/tenant/effective |
+| MSP page: TelephonyProvidersPage | Done | `pages/msp/telephony-providers-page.tsx` |
+| Reusable dialog: TelephonyProviderDialog | Done | `pages/msp/telephony-provider-dialog.tsx` |
+| Tenant settings: TelephonyProvidersCard | Done | `pages/tenant-settings/telephony-providers-card.tsx` |
+| Route + nav entry | Done | `/msp/telephony-providers` in MSP group |
+| Constants: MSP_TELEPHONY_PROVIDERS route | Done | `lib/constants.ts` |
+| i18n: en.json | Done | Full telephonyProviders.* keys |
+| i18n: es.json | Done | Full Spanish translations |
+| i18n: fr.json | Done | Full French translations |
+| TypeScript compilation | Done | `npx tsc --noEmit` — 0 errors |
+| Python imports | Done | `uv run python -c "..."` — all imports successful |
+
+### Files Created (10)
+- `api/src/new_phone/models/telephony_provider_config.py`
+- `api/alembic/versions/0061_telephony_provider_configs.py`
+- `api/alembic/versions/0062_telephony_provider_configs_rls.py`
+- `api/src/new_phone/schemas/telephony_provider_config.py`
+- `api/src/new_phone/services/telephony_provider_config_service.py`
+- `api/src/new_phone/routers/platform_telephony_providers.py`
+- `api/src/new_phone/routers/tenant_telephony_providers.py`
+- `web/src/api/telephony-providers.ts`
+- `web/src/pages/msp/telephony-providers-page.tsx`
+- `web/src/pages/msp/telephony-provider-dialog.tsx`
+- `web/src/pages/tenant-settings/telephony-providers-card.tsx`
+
+### Files Modified (11)
+- `api/alembic/env.py` — import TelephonyProviderConfig
+- `api/src/new_phone/main.py` — register both routers
+- `api/src/new_phone/providers/factory.py` — add resolve_provider_credentials + get_provider_for_tenant
+- `api/src/new_phone/services/sip_trunk_service.py` — 3 call sites updated
+- `api/src/new_phone/services/did_service.py` — 4 call sites updated
+- `web/src/api/query-keys.ts` — telephonyProviders keys
+- `web/src/lib/constants.ts` — MSP_TELEPHONY_PROVIDERS route
+- `web/src/lib/nav-items.ts` — MSP nav entry with Server icon
+- `web/src/router/index.tsx` — lazy route for TelephonyProvidersPage
+- `web/src/pages/tenant-settings/tenant-settings-page.tsx` — added TelephonyProvidersCard
+- `web/src/locales/en.json`, `es.json`, `fr.json` — i18n keys
+
+### Verification
+- `npx tsc --noEmit` — zero type errors
+- `uv run python -c "..."` — all imports successful
+- All 3 JSON locale files valid
+
+**PHASE COMPLETE — awaiting approval to proceed.**
