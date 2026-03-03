@@ -1432,6 +1432,7 @@
       "error": "Error"
     },
     "noDevices": "No audio devices found",
+    "noAudioDevices": "No audio devices detected. Check browser permissions.",
     "ringing": "Ringing...",
     "headset": {
       "connected": "Headset Connected",

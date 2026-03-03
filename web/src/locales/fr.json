@@ -1432,6 +1432,7 @@
       "error": "Erreur"
     },
     "noDevices": "Aucun périphérique audio trouvé",
+    "noAudioDevices": "Aucun périphérique audio détecté. Vérifiez les autorisations du navigateur.",
     "ringing": "Sonnerie...",
     "headset": {
       "connected": "Casque Connecté",

@@ -74,7 +74,6 @@ services:
       - ./freeswitch/conf/autoload_configs/event_socket.conf.xml:/custom-conf/autoload_configs/event_socket.conf.xml:ro
       - ./freeswitch/conf/autoload_configs/xml_curl.conf.xml:/custom-conf/autoload_configs/xml_curl.conf.xml:ro
       - ./freeswitch/conf/autoload_configs/modules.conf.xml:/custom-conf/autoload_configs/modules.conf.xml:ro
-      - ./freeswitch/conf/sip_profiles/tls.xml:/custom-conf/sip_profiles/tls.xml:ro
       - ./freeswitch/tls:/custom-tls:ro
     healthcheck:
       test: ["CMD", "fs_cli", "-x", "status"]

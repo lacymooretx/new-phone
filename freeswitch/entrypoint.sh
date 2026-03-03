@@ -14,6 +14,16 @@ if [ -d /custom-conf ]; then
     echo "Applied custom config overlay"
 fi
 
+# Enable TLS on internal profile so it handles WSS (port 7443) for WebRTC.
+# The vanilla config defaults to internal_ssl_enable=false.
+sed -i 's/internal_ssl_enable=false/internal_ssl_enable=true/' /etc/freeswitch/vars.xml
+echo "Enabled TLS on internal profile"
+
+# Remove any standalone TLS profile — the internal profile handles TLS/WSS.
+# A separate tls.xml steals the WSS port and lacks auth/registration config.
+rm -f /etc/freeswitch/sip_profiles/tls.xml
+echo "Removed standalone TLS profile (internal handles WSS)"
+
 # Install TLS certs (mounted at /custom-tls)
 if [ -d /custom-tls ] && [ -f /custom-tls/agent.pem ]; then
     mkdir -p /etc/freeswitch/tls

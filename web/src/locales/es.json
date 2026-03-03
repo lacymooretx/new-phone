@@ -1432,6 +1432,7 @@
       "error": "Error"
     },
     "noDevices": "No se encontraron dispositivos de audio",
+    "noAudioDevices": "No se detectaron dispositivos de audio. Verifique los permisos del navegador.",
     "ringing": "Timbrando...",
     "headset": {
       "connected": "Auricular Conectado",
