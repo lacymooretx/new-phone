@@ -1804,7 +1804,10 @@
       "cidName": "CID Name",
       "cidNamePlaceholder": "Company Name",
       "cidNumber": "CID Number",
-      "cidNumberPlaceholder": "+15551234567"
+      "cidNumberPlaceholder": "+15551234567",
+      "selectSite": "Select a site...",
+      "noSite": "(No site)",
+      "site": "Site"
     }
   },
   "parking": {
@@ -2094,13 +2097,6 @@
       "screening": "Assistant screens calls before connecting to executive",
       "vipBypass": "VIP callers ring executive directly, all others go to assistant",
       "dndOverride": "Assistant can override executive's DND status"
-    }
-  },
-  "sites": {
-    "form": {
-      "selectSite": "Select a site...",
-      "noSite": "(No site)",
-      "site": "Site"
     }
   },
   "wfm": {
