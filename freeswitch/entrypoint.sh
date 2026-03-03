@@ -30,6 +30,13 @@ sed -i 's|<!-- <param name="rtp-start-port" value="16384"/> -->|<param name="rtp
 sed -i 's|<!-- <param name="rtp-end-port" value="32768"/> -->|<param name="rtp-end-port" value="16884"/>|' /etc/freeswitch/autoload_configs/switch.conf.xml
 echo "Set RTP port range to 16384-16884"
 
+# Add apply-candidate-acl to internal profile so ICE candidates use the
+# external IP (ext-rtp-ip) instead of the Docker container IP.
+# Without this, WebRTC ICE candidates advertise 192.168.112.x which is
+# unreachable from browsers.
+sed -i '/<param name="ext-rtp-ip"/a\    <param name="apply-candidate-acl" value="wan_v4.auto"/>' /etc/freeswitch/sip_profiles/internal.xml
+echo "Added apply-candidate-acl for WebRTC ICE candidates"
+
 # Install TLS certs (mounted at /custom-tls)
 if [ -d /custom-tls ] && [ -f /custom-tls/agent.pem ]; then
     mkdir -p /etc/freeswitch/tls
