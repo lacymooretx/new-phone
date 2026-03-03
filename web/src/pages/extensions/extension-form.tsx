@@ -38,7 +38,7 @@ const extensionSchema = z.object({
   dnd_enabled: z.boolean().default(false),
   call_waiting: z.boolean().default(true),
   max_registrations: z.coerce.number().min(1).max(10).default(3),
-  outbound_cid_mode: z.string().default("internal_cid"),
+  outbound_cid_mode: z.string().default("internal"),
   class_of_service: z.string().default("domestic"),
   recording_policy: z.string().default("never"),
   notes: z.string().optional().or(z.literal("")),
@@ -85,7 +85,7 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
       dnd_enabled: extension?.dnd_enabled ?? false,
       call_waiting: extension?.call_waiting ?? true,
       max_registrations: extension?.max_registrations ?? 3,
-      outbound_cid_mode: extension?.outbound_cid_mode ?? "internal_cid",
+      outbound_cid_mode: extension?.outbound_cid_mode ?? "internal",
       class_of_service: extension?.class_of_service ?? "domestic",
       recording_policy: extension?.recording_policy ?? "never",
       notes: extension?.notes ?? "",
@@ -234,8 +234,8 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="internal_cid">{t('extensions.form.internalCidMode')}</SelectItem>
-              <SelectItem value="external_cid">{t('extensions.form.externalCidMode')}</SelectItem>
+              <SelectItem value="internal">{t('extensions.form.internalCidMode')}</SelectItem>
+              <SelectItem value="external">{t('extensions.form.externalCidMode')}</SelectItem>
               <SelectItem value="custom">{t('extensions.form.customCidMode')}</SelectItem>
             </SelectContent>
           </Select>
