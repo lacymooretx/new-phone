@@ -7,7 +7,7 @@ services:
 
   api:
     restart: unless-stopped
-    ports: !reset
+    ports: !override
       - "127.0.0.1:8010:8000"  # FreeSWITCH xml_curl (host networking needs host-accessible port)
     deploy:
       resources:
