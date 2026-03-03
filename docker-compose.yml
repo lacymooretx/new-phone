@@ -3,6 +3,7 @@ name: new-phone
 services:
   postgres:
     image: postgres:17-bookworm
+    networks: [app]
     environment:
       POSTGRES_DB: new_phone
       POSTGRES_USER: new_phone_admin
@@ -20,6 +21,7 @@ services:
 
   redis:
     image: redis:7-bookworm
+    networks: [app]
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
@@ -33,6 +35,7 @@ services:
 
   minio:
     image: minio/minio:latest
+    networks: [app]
     command: server /data --console-address ":9001"
     ports:
       - "9000:9000"
@@ -50,6 +53,7 @@ services:
 
   mailhog:
     image: mailhog/mailhog:latest
+    networks: [app]
     ports:
       - "1025:1025"   # SMTP
       - "8025:8025"   # Web UI
@@ -68,7 +72,6 @@ services:
     # With host networking, FreeSWITCH sees real client IPs and
     # generates correct ICE candidates with the server's public IP.
     network_mode: host
-    networks: []
     extra_hosts:
       - "api:127.0.0.1"   # xml_curl reaches API via host-mapped port
     volumes:
@@ -94,6 +97,7 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
+    networks: [app]
     extra_hosts:
       - "freeswitch:host-gateway"   # FreeSWITCH is on host network
     ports:
@@ -151,6 +155,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY:-}
+    networks: [app]
     extra_hosts:
       - "freeswitch:host-gateway"   # FreeSWITCH is on host network
     ports:
@@ -168,6 +173,7 @@ services:
     build:
       context: ./ai-engine
       dockerfile: Dockerfile
+    networks: [app]
     ports:
       - "${NP_AI_WS_HOST_PORT:-8090}:8090"
       - "${NP_AI_API_HOST_PORT:-8091}:8091"
@@ -197,6 +203,7 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.51.0
+    networks: [app]
     ports:
       - "9090:9090"
     volumes:
@@ -216,6 +223,7 @@ services:
 
   grafana:
     image: grafana/grafana:10.4.0
+    networks: [app]
     ports:
       - "3001:3000"
     environment:
@@ -237,6 +245,7 @@ services:
 
   alertmanager:
     image: prom/alertmanager:v0.27.0
+    networks: [app]
     ports:
       - "9093:9093"
     volumes:
@@ -252,6 +261,7 @@ services:
 
   node-exporter:
     image: prom/node-exporter:v1.7.0
+    networks: [app]
     ports:
       - "9100:9100"
     volumes:
@@ -266,6 +276,7 @@ services:
 
   redis-exporter:
     image: oliver006/redis_exporter:v1.58.0
+    networks: [app]
     ports:
       - "9121:9121"
     environment:
@@ -276,6 +287,7 @@ services:
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:v0.15.0
+    networks: [app]
     ports:
       - "9187:9187"
     environment:
@@ -301,5 +313,5 @@ volumes:
     name: new_phone_grafana_data
 
 networks:
-  default:
+  app:
     name: new_phone_net
