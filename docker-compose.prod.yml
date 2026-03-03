@@ -155,8 +155,8 @@ services:
           memory: 1024M
     ports:
       - "5061:5061/tcp"       # SIP TLS
-      - "7443:7443/tcp"       # WSS (WebRTC)
       - "10000-20000:10000-20000/udp"  # RTP media range
+      # WSS proxied through web nginx — no host port needed
       # ESL port NOT exposed in production
     healthcheck:
       interval: 30s
@@ -170,6 +170,7 @@ services:
         max-file: "5"
     networks:
       - backend
+      - frontend  # Needed for web nginx WSS proxy
 
   # ─── AI Engine ──────────────────────────────────────────────────────
 

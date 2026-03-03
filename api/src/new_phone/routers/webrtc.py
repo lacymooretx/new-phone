@@ -28,14 +28,22 @@ def _build_credentials(ext: Extension) -> WebRTCCredentials:
         )
 
     sip_password = decrypt_value(ext.encrypted_sip_password)
-    wss_url = f"wss://{settings.freeswitch_wss_host}:{settings.freeswitch_wss_port}"
+
+    # WSS URL: use explicit config if set, otherwise /wss (browser resolves relative to page origin)
+    if settings.freeswitch_wss_url:
+        wss_url = settings.freeswitch_wss_url
+    else:
+        wss_url = "/wss"
+
+    # SIP domain: use the FreeSWITCH internal hostname for SIP REGISTER
+    sip_domain = settings.freeswitch_host
 
     display_name = ext.internal_cid_name or f"Ext {ext.extension_number}"
 
     return WebRTCCredentials(
         sip_username=ext.sip_username,
         sip_password=sip_password,
-        sip_domain=settings.freeswitch_wss_host,
+        sip_domain=sip_domain,
         wss_url=wss_url,
         extension_number=ext.extension_number,
         extension_id=ext.id,

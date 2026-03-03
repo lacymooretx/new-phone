@@ -21,10 +21,17 @@ export function useSoftphoneInit(remoteAudioRef: React.RefObject<HTMLAudioElemen
     if (!credentials || !remoteAudioRef.current) return
     if (connectedRef.current) return
 
+    // Resolve relative WSS URL (e.g. "/wss") to full wss:// URL
+    let wssUrl = credentials.wss_url
+    if (wssUrl.startsWith("/")) {
+      const proto = window.location.protocol === "https:" ? "wss:" : "ws:"
+      wssUrl = `${proto}//${window.location.host}${wssUrl}`
+    }
+
     connectedRef.current = true
     connect(
       {
-        wssUrl: credentials.wss_url,
+        wssUrl,
         sipUsername: credentials.sip_username,
         sipPassword: credentials.sip_password,
         sipDomain: credentials.sip_domain,

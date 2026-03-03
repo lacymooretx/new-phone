@@ -27,7 +27,8 @@ class Settings(BaseSettings):
     freeswitch_esl_port: int = 8021
     freeswitch_esl_password: str = "ClueCon"
     freeswitch_wss_port: int = 7443
-    freeswitch_wss_host: str = "localhost"  # Browser-accessible hostname for WSS
+    freeswitch_wss_host: str = "localhost"  # FreeSWITCH container hostname (internal)
+    freeswitch_wss_url: str = ""  # Browser-accessible WSS URL (e.g. wss://ucc.aspendora.com/wss). If empty, uses /wss relative path.
 
     # API
     api_host: str = "0.0.0.0"
