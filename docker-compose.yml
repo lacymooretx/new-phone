@@ -99,7 +99,7 @@ services:
       dockerfile: Dockerfile
 
     extra_hosts:
-      - "freeswitch:host-gateway"   # FreeSWITCH is on host network
+      - "freeswitch:${NP_EXTERNAL_IP:-host-gateway}"
     ports:
       - "8000:8000"
     environment:
@@ -157,7 +157,7 @@ services:
         VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY:-}
 
     extra_hosts:
-      - "freeswitch:host-gateway"   # FreeSWITCH is on host network
+      - "freeswitch:${NP_EXTERNAL_IP:-host-gateway}"
     ports:
       - "3000:80"
     depends_on:
