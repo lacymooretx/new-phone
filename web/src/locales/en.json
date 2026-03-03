@@ -1798,6 +1798,7 @@
       "address": "Address",
       "street": "Street Address",
       "streetPlaceholder": "123 Main St",
+      "addressSearch": "Search Address",
       "addressSearchPlaceholder": "Start typing an address...",
       "addressSearchHelp": "Type to search — address fields fill automatically",
       "city": "City",

@@ -1798,6 +1798,7 @@
       "address": "Adresse",
       "street": "Adresse",
       "streetPlaceholder": "123 Rue Principale",
+      "addressSearch": "Rechercher une Adresse",
       "addressSearchPlaceholder": "Commencez à saisir une adresse...",
       "addressSearchHelp": "Tapez pour rechercher — les champs d'adresse se remplissent automatiquement",
       "city": "Ville",
