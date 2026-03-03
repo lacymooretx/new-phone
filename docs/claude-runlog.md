@@ -1747,3 +1747,69 @@ Replace all "coming soon" placeholder snackbars in the settings screen with func
 
 ### Result
 All 4 settings completions implemented. No "coming soon" snackbars remain in settings_screen.dart.
+
+## 2026-03-03 — ClearlyIP Keycode-Based Activation (Replace Hypothetical REST API)
+
+### Goal
+Replace the hypothetical ClearlyIP REST API implementation with keycode-based activation that mirrors how ClearlyIP actually works: location keycodes that return full SIP config from the Unity API.
+
+### Steps Completed
+
+#### Phase 1: Backend Provider Layer
+1. Added `ClearlyIPLocationConfig` dataclass and `KeycodeActivationProvider` ABC to `base.py`
+2. Complete rewrite of `clearlyip.py` — now implements `KeycodeActivationProvider` (not `TelephonyProvider`), single Unity API call
+3. Updated `factory.py` — `get_provider("clearlyip")` raises ValueError directing to keycode activation, added `get_clearlyip_provider()`
+4. Updated `config.py` — replaced `clearlyip_api_url`/`clearlyip_api_key` with `clearlyip_keycode`
+
+#### Phase 2: Schemas
+5. Added `KeycodeActivateRequest`, `KeycodeActivateResult`, `KeycodeRefreshResult` to `schemas/providers.py`
+
+#### Phase 3: Service Layer
+6. Added `activate_clearlyip_keycode()` to `SIPTrunkService` — creates primary+secondary trunks, imports DIDs, stores keycode
+7. Added `refresh_clearlyip()` to `SIPTrunkService` — re-fetches Unity API, diffs trunks/DIDs
+8. Guarded `DIDService.search_available()`, `purchase()`, `release()`, `configure_routing()` for ClearlyIP
+9. Updated `telephony_provider_config_service.py` env-var check from `clearlyip_api_key` to `clearlyip_keycode`
+
+#### Phase 4: Router Layer
+10. Added `POST /tenants/{tid}/trunks/activate-keycode` endpoint
+11. Added `POST /tenants/{tid}/trunks/refresh-clearlyip` endpoint
+12. Guarded `POST /provision` to reject `provider=clearlyip`
+13. Guarded `POST /{id}/deprovision` for ClearlyIP trunks (local-only deactivation)
+
+#### Phase 5-6: Frontend
+14. Added keycode types + `useActivateKeycode()`, `useRefreshClearlyip()` hooks to `sip-trunks.ts`
+15. Reworked `provision-trunk-dialog.tsx` with discriminated union — ClearlyIP shows keycode input, Twilio shows standard form
+16. Updated `telephony-provider-dialog.tsx` — ClearlyIP fields changed from base_url+api_key to single keycode
+17. Added "Refresh from ClearlyIP" button to `sip-trunks-page.tsx`
+
+#### Phase 7: i18n + Cleanup
+18. Updated en.json, es.json, fr.json — new keycode labels/messages, removed apiUrl/apiKey keys
+19. Added telephony provider env vars section to `.env.example`
+
+### Files Modified (16)
+- `api/src/new_phone/providers/base.py`
+- `api/src/new_phone/providers/clearlyip.py` (complete rewrite)
+- `api/src/new_phone/providers/factory.py`
+- `api/src/new_phone/config.py`
+- `api/src/new_phone/schemas/providers.py`
+- `api/src/new_phone/services/sip_trunk_service.py`
+- `api/src/new_phone/services/did_service.py`
+- `api/src/new_phone/services/telephony_provider_config_service.py`
+- `api/src/new_phone/routers/sip_trunks.py`
+- `web/src/api/sip-trunks.ts`
+- `web/src/pages/sip-trunks/provision-trunk-dialog.tsx` (complete rewrite)
+- `web/src/pages/sip-trunks/sip-trunks-page.tsx`
+- `web/src/pages/msp/telephony-provider-dialog.tsx`
+- `web/src/locales/en.json`
+- `web/src/locales/es.json`
+- `web/src/locales/fr.json`
+- `.env.example`
+
+### Verification
+- `npx tsc --noEmit` — zero type errors
+- All Python imports validate correctly
+- No stale references to `clearlyip_api_url`, `clearlyip_api_key`, `base_url`, or `api_key` in provider code
+- ClearlyIP provider correctly raises ValueError when accessed via standard `get_provider()` path
+
+### Key Risk
+Unity API response field names are inferred from FreePBX module behavior. Parser uses flexible field access with multiple possible key names. Raw response is logged for debugging. Testing with a real keycode is critical.

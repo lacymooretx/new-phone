@@ -79,3 +79,34 @@ class TrunkTestResultSchema(BaseModel):
     status: str
     latency_ms: float | None
     error: str | None
+
+
+# ------------------------------------------------------------------
+# ClearlyIP keycode activation
+# ------------------------------------------------------------------
+
+
+class KeycodeActivateRequest(BaseModel):
+    """Request body to activate a ClearlyIP location via keycode."""
+
+    keycode: str = Field(..., min_length=1, description="ClearlyIP location keycode (bearer token)")
+    name_prefix: str = Field("ClearlyIP", max_length=100, description="Prefix for auto-generated trunk names")
+    import_dids: bool = Field(True, description="Import assigned DIDs from the location")
+
+
+class KeycodeActivateResult(BaseModel):
+    """Result of a successful ClearlyIP keycode activation."""
+
+    primary_trunk_id: str = Field(..., description="UUID of the created primary trunk")
+    secondary_trunk_id: str | None = Field(None, description="UUID of the created secondary trunk")
+    imported_dids: list[str] = Field(default_factory=list)
+    location_name: str
+
+
+class KeycodeRefreshResult(BaseModel):
+    """Result of refreshing ClearlyIP config from the Unity API."""
+
+    trunks_updated: int
+    dids_added: list[str]
+    dids_removed: list[str]
+    credentials_changed: bool

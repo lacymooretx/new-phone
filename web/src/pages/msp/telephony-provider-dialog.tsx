@@ -15,8 +15,7 @@ interface TelephonyProviderFormData {
   is_default: boolean
   notes: string
   // ClearlyIP
-  base_url: string
-  api_key: string
+  keycode: string
   // Twilio
   account_sid: string
   auth_token: string
@@ -27,8 +26,7 @@ const INITIAL_FORM: TelephonyProviderFormData = {
   label: "",
   is_default: false,
   notes: "",
-  base_url: "",
-  api_key: "",
+  keycode: "",
   account_sid: "",
   auth_token: "",
 }
@@ -36,8 +34,7 @@ const INITIAL_FORM: TelephonyProviderFormData = {
 function buildCredentials(form: TelephonyProviderFormData): Record<string, string> {
   if (form.provider_type === "clearlyip") {
     const creds: Record<string, string> = {}
-    if (form.api_key) creds.api_key = form.api_key
-    if (form.base_url) creds.base_url = form.base_url
+    if (form.keycode) creds.keycode = form.keycode
     return creds
   }
   const creds: Record<string, string> = {}
@@ -52,8 +49,7 @@ function editToFormData(config: TelephonyProviderConfig): TelephonyProviderFormD
     label: config.label,
     is_default: config.is_default,
     notes: config.notes || "",
-    base_url: "",
-    api_key: "",
+    keycode: "",
     account_sid: "",
     auth_token: "",
   }
@@ -143,25 +139,18 @@ export function TelephonyProviderDialog({
           </div>
 
           {form.provider_type === "clearlyip" ? (
-            <>
-              <div className="space-y-2">
-                <Label>{t("telephonyProviders.form.apiUrl")}</Label>
-                <Input
-                  value={form.base_url}
-                  onChange={(e) => setForm({ ...form, base_url: e.target.value })}
-                  placeholder={t("telephonyProviders.form.apiUrlPlaceholder")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("telephonyProviders.form.apiKey")}</Label>
-                <Input
-                  value={form.api_key}
-                  onChange={(e) => setForm({ ...form, api_key: e.target.value })}
-                  placeholder={t("telephonyProviders.form.apiKeyPlaceholder")}
-                  type="password"
-                />
-              </div>
-            </>
+            <div className="space-y-2">
+              <Label>{t("telephonyProviders.form.keycode")}</Label>
+              <Input
+                value={form.keycode}
+                onChange={(e) => setForm({ ...form, keycode: e.target.value })}
+                placeholder={t("telephonyProviders.form.keycodePlaceholder")}
+                type="password"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("telephonyProviders.form.keycodeHelp")}
+              </p>
+            </div>
           ) : (
             <>
               <div className="space-y-2">

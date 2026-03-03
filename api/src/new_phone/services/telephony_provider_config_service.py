@@ -245,7 +245,7 @@ class TelephonyProviderConfigService:
 
             has_env = False
             if provider_type == "clearlyip":
-                has_env = bool(settings.clearlyip_api_key)
+                has_env = bool(settings.clearlyip_keycode)
             elif provider_type == "twilio":
                 has_env = bool(settings.twilio_account_sid and settings.twilio_auth_token)
 

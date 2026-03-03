@@ -93,10 +93,15 @@ class DIDService:
         provider_type: str | None = None,
     ) -> list[ProviderDIDSearchResult]:
         """Search for available DIDs from the tenant's provider."""
+        if provider_type and provider_type.lower() == "clearlyip":
+            raise ValueError(
+                "ClearlyIP DIDs are managed in the ClearlyIP portal. "
+                "Use keycode activation to import existing DIDs."
+            )
+
         if provider_type:
             provider = await get_provider_for_tenant(self.db, tenant_id, provider_type)
         else:
-            # Determine provider from existing trunks, default to clearlyip
             from new_phone.providers.factory import get_tenant_provider
 
             provider = await get_tenant_provider(self.db, tenant_id)
@@ -117,6 +122,12 @@ class DIDService:
         provider_type: str,
     ) -> DID:
         """Purchase a DID from the provider and create a local DB record."""
+        if provider_type.lower() == "clearlyip":
+            raise ValueError(
+                "ClearlyIP DIDs are managed in the ClearlyIP portal. "
+                "Purchase DIDs there, then use keycode activation to import them."
+            )
+
         await set_tenant_context(self.db, tenant_id)
 
         # Check it doesn't already exist
@@ -163,8 +174,8 @@ class DIDService:
         if did.status == DIDStatus.RELEASED:
             raise ValueError("DID is already released")
 
-        # Release at provider if we have a provider_sid
-        if did.provider_sid and did.provider != DIDProvider.MANUAL:
+        # Release at provider if we have a provider_sid (skip for ClearlyIP — no release API)
+        if did.provider_sid and did.provider not in (DIDProvider.MANUAL, DIDProvider.CLEARLYIP):
             provider = await get_provider_for_tenant(self.db, tenant_id, did.provider)
             released = await provider.release_did(did.provider_sid)
             if not released:
@@ -178,6 +189,12 @@ class DIDService:
                     f"Failed to release DID at provider ({did.provider}). "
                     "The provider may be unreachable — try again later."
                 )
+        if did.provider == DIDProvider.CLEARLYIP:
+            logger.info(
+                "did_release_clearlyip_local_only",
+                did_id=str(did_id),
+                number=did.number,
+            )
 
         did.status = DIDStatus.RELEASED
         did.is_active = False
@@ -208,8 +225,8 @@ class DIDService:
         if not did.is_active:
             raise ValueError("Cannot configure routing on an inactive DID")
 
-        # Push config to provider if managed
-        if did.provider_sid and did.provider != DIDProvider.MANUAL:
+        # Push config to provider if managed (skip ClearlyIP — routing handled by our PBX)
+        if did.provider_sid and did.provider not in (DIDProvider.MANUAL, DIDProvider.CLEARLYIP):
             provider = await get_provider_for_tenant(self.db, tenant_id, did.provider)
             config = {
                 "destination_type": destination_type,

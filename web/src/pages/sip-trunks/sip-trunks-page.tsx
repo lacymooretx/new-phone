@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useSipTrunks, useCreateSipTrunk, useUpdateSipTrunk, useDeleteSipTrunk, useTestTrunk, useDeprovisionTrunk, type SIPTrunk, type SIPTrunkCreate } from "@/api/sip-trunks"
+import { useSipTrunks, useCreateSipTrunk, useUpdateSipTrunk, useDeleteSipTrunk, useTestTrunk, useDeprovisionTrunk, useRefreshClearlyip, type SIPTrunk, type SIPTrunkCreate } from "@/api/sip-trunks"
 import { useBeforeUnload } from "@/hooks/use-before-unload"
 import { PageHeader } from "@/components/shared/page-header"
 import { DataTable } from "@/components/data-table/data-table"
@@ -10,7 +10,7 @@ import { ProvisionTrunkDialog } from "./provision-trunk-dialog"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Plus, Network, CloudUpload } from "lucide-react"
+import { Plus, Network, CloudUpload, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { EmptyState } from "@/components/shared/empty-state"
 import { exportToCsv } from "@/lib/export-csv"
@@ -23,6 +23,7 @@ export function SipTrunksPage() {
   const deleteMutation = useDeleteSipTrunk()
   const testMutation = useTestTrunk()
   const deprovisionMutation = useDeprovisionTrunk()
+  const refreshClearlyipMutation = useRefreshClearlyip()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [provisionOpen, setProvisionOpen] = useState(false)
@@ -116,6 +117,24 @@ export function SipTrunksPage() {
     })
   }
 
+  const hasClearlyipTrunks = (sipTrunks ?? []).some(
+    (t) => t.name?.toLowerCase().includes("clearlyip") || false
+  )
+
+  const handleRefreshClearlyip = () => {
+    refreshClearlyipMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        const parts: string[] = []
+        if (result.trunks_updated > 0) parts.push(t("sipTrunks.refreshTrunksUpdated", { count: result.trunks_updated }))
+        if (result.dids_added.length > 0) parts.push(t("sipTrunks.refreshDidsAdded", { count: result.dids_added.length }))
+        if (result.dids_removed.length > 0) parts.push(t("sipTrunks.refreshDidsRemoved", { count: result.dids_removed.length }))
+        if (result.credentials_changed) parts.push(t("sipTrunks.refreshCredsChanged"))
+        toast.success(parts.length > 0 ? parts.join(", ") : t("sipTrunks.refreshNoChanges"))
+      },
+      onError: (err) => toast.error(err.message),
+    })
+  }
+
   const columns = getSipTrunkColumns({
     onEdit: (trunk) => { setEditing(trunk); setDialogOpen(true) },
     onDelete: handleDelete,
@@ -126,6 +145,16 @@ export function SipTrunksPage() {
   return (
     <div className="space-y-6">
       <PageHeader title={t('sipTrunks.title')} description={t('sipTrunks.description')} breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: t('sipTrunks.title') }]}>
+        {hasClearlyipTrunks && (
+          <Button
+            variant="outline"
+            onClick={handleRefreshClearlyip}
+            disabled={refreshClearlyipMutation.isPending}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${refreshClearlyipMutation.isPending ? "animate-spin" : ""}`} />
+            {t('sipTrunks.refreshClearlyip')}
+          </Button>
+        )}
         <Button variant="outline" onClick={() => setProvisionOpen(true)}>
           <CloudUpload className="mr-2 h-4 w-4" /> {t('sipTrunks.provisionTitle')}
         </Button>

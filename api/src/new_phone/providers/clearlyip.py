@@ -1,321 +1,146 @@
-"""ClearlyIP Trunking API provider implementation."""
+"""ClearlyIP keycode-based provider implementation.
 
-import time
+ClearlyIP uses a keycode (per-location bearer token) model:
+  1. Customer creates a "location" in the ClearlyIP portal -> auto-generates a keycode
+  2. GET https://unity.clearlyip.com/trunking/v1/location  with  X-Token: {keycode}
+  3. Returns full SIP config: username, password, server addresses, assigned DIDs
+  4. DID management happens in the ClearlyIP portal only — no API for search/purchase/release
+  5. The same keycode authenticates SMS API (sms.clearlyip.com) and Fax API (fax.sendfax.to)
+"""
 
 import httpx
 import structlog
 
-from new_phone.providers.base import (
-    DIDPurchaseResult,
-    DIDSearchResult,
-    TelephonyProvider,
-    TrunkProvisionRequest,
-    TrunkProvisionResult,
-    TrunkTestResult,
-)
+from new_phone.providers.base import ClearlyIPLocationConfig, KeycodeActivationProvider
 
 logger = structlog.get_logger()
 
+UNITY_BASE_URL = "https://unity.clearlyip.com/trunking/v1"
 _TIMEOUT = httpx.Timeout(30.0, connect=10.0)
 
 
-class ClearlyIPProvider(TelephonyProvider):
-    """ClearlyIP Trunking API implementation.
+class ClearlyIPProvider(KeycodeActivationProvider):
+    """ClearlyIP keycode-based provider.
 
-    Authenticates with ``X-API-Key`` header.  Base URL and key are provided
-    at construction time (sourced from ``NP_CLEARLYIP_*`` env vars via config).
+    Does NOT implement :class:`TelephonyProvider` — ClearlyIP has no CRUD
+    API for trunks/DIDs.  All provisioning is keycode-based.
     """
 
-    def __init__(self, base_url: str, api_key: str) -> None:
-        self.base_url = base_url.rstrip("/")
-        self.api_key = api_key
+    async def fetch_location_config(self, keycode: str) -> ClearlyIPLocationConfig:
+        """Call the Unity API to retrieve full location SIP config."""
+        if not keycode:
+            raise ValueError("ClearlyIP keycode is required")
 
-    def _check_configured(self) -> None:
-        if not self.base_url or not self.api_key:
-            raise ValueError(
-                "ClearlyIP provider is not configured. "
-                "Set NP_CLEARLYIP_API_URL and NP_CLEARLYIP_API_KEY environment variables."
-            )
-
-    def _headers(self) -> dict[str, str]:
-        return {
-            "X-API-Key": self.api_key,
+        headers = {
+            "X-Token": keycode,
             "Accept": "application/json",
-            "Content-Type": "application/json",
         }
-
-    # ------------------------------------------------------------------
-    # DID operations
-    # ------------------------------------------------------------------
-
-    async def search_dids(
-        self,
-        area_code: str | None,
-        state: str | None,
-        quantity: int,
-    ) -> list[DIDSearchResult]:
-        self._check_configured()
-        params: dict[str, str | int] = {"limit": quantity}
-        if area_code:
-            params["area_code"] = area_code
-        if state:
-            params["state"] = state
 
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
                 resp = await client.get(
-                    f"{self.base_url}/v1/dids/available",
-                    headers=self._headers(),
-                    params=params,
+                    f"{UNITY_BASE_URL}/location",
+                    headers=headers,
                 )
                 resp.raise_for_status()
                 data = resp.json()
             except httpx.HTTPStatusError as exc:
                 logger.error(
-                    "clearlyip_search_dids_error",
+                    "clearlyip_fetch_location_error",
                     status=exc.response.status_code,
-                    body=exc.response.text,
+                    body=exc.response.text[:500],
                 )
-                raise
-            except httpx.RequestError as exc:
-                logger.error("clearlyip_search_dids_network_error", error=str(exc))
-                raise
-
-        results: list[DIDSearchResult] = []
-        for item in data.get("numbers", []):
-            results.append(
-                DIDSearchResult(
-                    number=item["number"],
-                    monthly_cost=float(item.get("monthly_cost", 0)),
-                    setup_cost=float(item.get("setup_cost", 0)),
-                    provider="clearlyip",
-                    capabilities={
-                        "sms": item.get("sms_enabled", False),
-                        "mms": item.get("mms_enabled", False),
-                        "voice": item.get("voice_enabled", True),
-                        "fax": item.get("fax_enabled", False),
-                    },
-                )
-            )
-        return results
-
-    async def purchase_did(self, number: str) -> DIDPurchaseResult:
-        self._check_configured()
-        async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
-            try:
-                resp = await client.post(
-                    f"{self.base_url}/v1/dids/order",
-                    headers=self._headers(),
-                    json={"number": number},
-                )
-                resp.raise_for_status()
-                data = resp.json()
-            except httpx.HTTPStatusError as exc:
-                logger.error(
-                    "clearlyip_purchase_did_error",
-                    number=number,
-                    status=exc.response.status_code,
-                    body=exc.response.text,
-                )
+                if exc.response.status_code == 401:
+                    raise ValueError("Invalid or expired ClearlyIP keycode") from exc
                 raise
             except httpx.RequestError as exc:
                 logger.error(
-                    "clearlyip_purchase_did_network_error",
-                    number=number,
+                    "clearlyip_fetch_location_network_error",
                     error=str(exc),
                 )
                 raise
 
-        return DIDPurchaseResult(
-            number=data.get("number", number),
-            provider_sid=data["sid"],
-            provider="clearlyip",
+        # Log raw response for debugging — exact field names may need
+        # real-world validation since they are inferred from FreePBX module
+        logger.info(
+            "clearlyip_raw_response",
+            keys=list(data.keys()) if isinstance(data, dict) else "non-dict",
         )
 
-    async def release_did(self, provider_sid: str) -> bool:
-        self._check_configured()
-        async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
-            try:
-                resp = await client.delete(
-                    f"{self.base_url}/v1/dids/{provider_sid}",
-                    headers=self._headers(),
-                )
-                resp.raise_for_status()
-                return True
-            except httpx.HTTPStatusError as exc:
-                logger.error(
-                    "clearlyip_release_did_error",
-                    provider_sid=provider_sid,
-                    status=exc.response.status_code,
-                    body=exc.response.text,
-                )
-                return False
-            except httpx.RequestError as exc:
-                logger.error(
-                    "clearlyip_release_did_network_error",
-                    provider_sid=provider_sid,
-                    error=str(exc),
-                )
-                return False
+        return self._parse_location_response(data)
 
-    async def configure_did(self, provider_sid: str, config: dict) -> bool:
-        self._check_configured()
-        async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
-            try:
-                resp = await client.put(
-                    f"{self.base_url}/v1/dids/{provider_sid}/config",
-                    headers=self._headers(),
-                    json=config,
-                )
-                resp.raise_for_status()
-                return True
-            except httpx.HTTPStatusError as exc:
-                logger.error(
-                    "clearlyip_configure_did_error",
-                    provider_sid=provider_sid,
-                    status=exc.response.status_code,
-                    body=exc.response.text,
-                )
-                return False
-            except httpx.RequestError as exc:
-                logger.error(
-                    "clearlyip_configure_did_network_error",
-                    provider_sid=provider_sid,
-                    error=str(exc),
-                )
-                return False
+    async def validate_keycode(self, keycode: str) -> bool:
+        """Lightweight check — just verify we get a 200 from Unity."""
+        if not keycode:
+            return False
 
-    # ------------------------------------------------------------------
-    # Trunk operations
-    # ------------------------------------------------------------------
-
-    async def create_trunk(self, config: TrunkProvisionRequest) -> TrunkProvisionResult:
-        self._check_configured()
-        payload = {
-            "name": config.name,
-            "region": config.region,
-            "channels": config.channels,
-            "transport": "tls",
-            **config.config,
+        headers = {
+            "X-Token": keycode,
+            "Accept": "application/json",
         }
-        async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
-            try:
-                resp = await client.post(
-                    f"{self.base_url}/v1/trunks",
-                    headers=self._headers(),
-                    json=payload,
-                )
-                resp.raise_for_status()
-                data = resp.json()
-            except httpx.HTTPStatusError as exc:
-                logger.error(
-                    "clearlyip_create_trunk_error",
-                    status=exc.response.status_code,
-                    body=exc.response.text,
-                )
-                raise
-            except httpx.RequestError as exc:
-                logger.error("clearlyip_create_trunk_network_error", error=str(exc))
-                raise
 
-        return TrunkProvisionResult(
-            provider_trunk_id=data["trunk_id"],
-            host=data["host"],
-            port=int(data.get("port", 5061)),
-            username=data.get("username", ""),
-            password=data.get("password", ""),
-        )
-
-    async def delete_trunk(self, provider_trunk_id: str) -> bool:
-        self._check_configured()
-        async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
-            try:
-                resp = await client.delete(
-                    f"{self.base_url}/v1/trunks/{provider_trunk_id}",
-                    headers=self._headers(),
-                )
-                resp.raise_for_status()
-                return True
-            except httpx.HTTPStatusError as exc:
-                logger.error(
-                    "clearlyip_delete_trunk_error",
-                    provider_trunk_id=provider_trunk_id,
-                    status=exc.response.status_code,
-                    body=exc.response.text,
-                )
-                return False
-            except httpx.RequestError as exc:
-                logger.error(
-                    "clearlyip_delete_trunk_network_error",
-                    provider_trunk_id=provider_trunk_id,
-                    error=str(exc),
-                )
-                return False
-
-    async def get_trunk_status(self, provider_trunk_id: str) -> str:
-        self._check_configured()
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             try:
                 resp = await client.get(
-                    f"{self.base_url}/v1/trunks/{provider_trunk_id}",
-                    headers=self._headers(),
+                    f"{UNITY_BASE_URL}/location",
+                    headers=headers,
                 )
-                resp.raise_for_status()
-                data = resp.json()
-                return str(data.get("status", "unknown"))
-            except httpx.HTTPStatusError as exc:
-                logger.error(
-                    "clearlyip_get_trunk_status_error",
-                    provider_trunk_id=provider_trunk_id,
-                    status=exc.response.status_code,
-                )
-                return "error"
-            except httpx.RequestError as exc:
-                logger.error(
-                    "clearlyip_get_trunk_status_network_error",
-                    provider_trunk_id=provider_trunk_id,
-                    error=str(exc),
-                )
-                return "unreachable"
+                return resp.status_code == 200
+            except httpx.RequestError:
+                return False
 
-    async def test_trunk(self, provider_trunk_id: str) -> TrunkTestResult:
-        self._check_configured()
-        start = time.monotonic()
-        async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
-            try:
-                resp = await client.post(
-                    f"{self.base_url}/v1/trunks/{provider_trunk_id}/test",
-                    headers=self._headers(),
-                )
-                elapsed_ms = (time.monotonic() - start) * 1000
-                resp.raise_for_status()
-                data = resp.json()
-                return TrunkTestResult(
-                    status=data.get("status", "ok"),
-                    latency_ms=data.get("latency_ms", elapsed_ms),
-                    error=data.get("error"),
-                )
-            except httpx.HTTPStatusError as exc:
-                elapsed_ms = (time.monotonic() - start) * 1000
-                logger.error(
-                    "clearlyip_test_trunk_error",
-                    provider_trunk_id=provider_trunk_id,
-                    status=exc.response.status_code,
-                )
-                return TrunkTestResult(
-                    status="error",
-                    latency_ms=elapsed_ms,
-                    error=f"HTTP {exc.response.status_code}: {exc.response.text[:200]}",
-                )
-            except httpx.RequestError as exc:
-                elapsed_ms = (time.monotonic() - start) * 1000
-                logger.error(
-                    "clearlyip_test_trunk_network_error",
-                    provider_trunk_id=provider_trunk_id,
-                    error=str(exc),
-                )
-                return TrunkTestResult(
-                    status="unreachable",
-                    latency_ms=elapsed_ms,
-                    error=str(exc),
-                )
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _parse_location_response(data: dict) -> ClearlyIPLocationConfig:
+        """Parse the Unity API response into our dataclass.
+
+        Field names are inferred from the FreePBX ClearlyIP module behaviour.
+        We access them flexibly and fall back to sensible defaults.
+        """
+        # Try multiple possible field names for each value
+        def _get(keys: list[str], default: object = "") -> object:
+            for k in keys:
+                if k in data and data[k] is not None:
+                    return data[k]
+            return default
+
+        location_name = str(_get(["location_name", "name", "locationName"], "ClearlyIP Location"))
+        sip_username = str(_get(["username", "sip_username", "sipUsername"], ""))
+        sip_password = str(_get(["password", "sip_password", "sipPassword"], ""))
+        primary_server = str(_get(["primary_server", "server", "primaryServer", "host"], ""))
+        secondary_server = str(_get(["secondary_server", "secondaryServer", "backup_server", "backupServer"], ""))
+        primary_port = int(_get(["primary_port", "port", "primaryPort"], 5061))
+        secondary_port = int(_get(["secondary_port", "secondaryPort", "backup_port"], 5061))
+
+        # DIDs can be a list of strings, list of dicts, or a single string
+        raw_dids = _get(["dids", "numbers", "assigned_numbers", "assignedNumbers"], [])
+        dids: list[str] = []
+        if isinstance(raw_dids, list):
+            for d in raw_dids:
+                if isinstance(d, str):
+                    dids.append(d)
+                elif isinstance(d, dict):
+                    dids.append(str(d.get("number", d.get("did", ""))))
+        elif isinstance(raw_dids, str):
+            dids = [raw_dids] if raw_dids else []
+
+        # E911 config (optional)
+        e911_config = _get(["e911", "e911_config", "e911Config"], {})
+        if not isinstance(e911_config, dict):
+            e911_config = {}
+
+        return ClearlyIPLocationConfig(
+            location_name=location_name,
+            sip_username=sip_username,
+            sip_password=sip_password,
+            primary_server=primary_server,
+            secondary_server=secondary_server,
+            primary_port=primary_port,
+            secondary_port=secondary_port,
+            dids=dids,
+            e911_config=e911_config,
+            raw_response=data,
+        )

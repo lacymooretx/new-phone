@@ -8,7 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from new_phone.auth.rbac import Permission, is_msp_role
 from new_phone.deps.auth import get_admin_db, require_permission
 from new_phone.models.user import User
-from new_phone.schemas.providers import TrunkProvisionRequestSchema, TrunkTestResultSchema
+from new_phone.schemas.providers import (
+    KeycodeActivateRequest,
+    KeycodeActivateResult,
+    KeycodeRefreshResult,
+    TrunkProvisionRequestSchema,
+    TrunkTestResultSchema,
+)
 from new_phone.schemas.sip_trunk import SIPTrunkCreate, SIPTrunkResponse, SIPTrunkUpdate
 from new_phone.services.sip_trunk_service import SIPTrunkService
 
@@ -151,6 +157,16 @@ async def provision_trunk(
 ):
     """Provision a new SIP trunk via a telephony provider."""
     _check_tenant_access(user, tenant_id)
+
+    if body.provider == "clearlyip":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "ClearlyIP uses keycode-based activation, not standard provisioning. "
+                "Use POST /tenants/{tenant_id}/trunks/activate-keycode instead."
+            ),
+        )
+
     service = SIPTrunkService(db)
     try:
         trunk = await service.provision(
@@ -188,7 +204,12 @@ async def deprovision_trunk(
     _check_tenant_access(user, tenant_id)
     service = SIPTrunkService(db)
     try:
-        trunk = await service.deprovision(tenant_id, trunk_id)
+        # For ClearlyIP trunks, just deactivate locally (no provider API)
+        existing = await service.get_trunk(tenant_id, trunk_id)
+        if existing and existing.provider_type == "clearlyip":
+            trunk = await service.deactivate_trunk(tenant_id, trunk_id)
+        else:
+            trunk = await service.deprovision(tenant_id, trunk_id)
         if trunk:
             from sqlalchemy import select as sa_select
 
@@ -202,6 +223,65 @@ async def deprovision_trunk(
         return trunk
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from None
+
+
+@router.post("/activate-keycode", response_model=KeycodeActivateResult, status_code=status.HTTP_201_CREATED)
+async def activate_keycode(
+    tenant_id: uuid.UUID,
+    body: KeycodeActivateRequest,
+    user: Annotated[User, Depends(require_permission(Permission.MANAGE_TRUNKS))],
+    db: Annotated[AsyncSession, Depends(get_admin_db)],
+):
+    """Activate a ClearlyIP location via keycode — creates trunks and imports DIDs."""
+    _check_tenant_access(user, tenant_id)
+    service = SIPTrunkService(db)
+    try:
+        result = await service.activate_clearlyip_keycode(
+            tenant_id,
+            keycode=body.keycode,
+            name_prefix=body.name_prefix,
+            import_dids=body.import_dids,
+        )
+        await _sync_gateway_create()
+        return KeycodeActivateResult(**result)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from None
+    except Exception as e:
+        logger.error(
+            "keycode_activation_failed",
+            error=str(e),
+            tenant_id=str(tenant_id),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"ClearlyIP keycode activation failed: {e}",
+        ) from None
+
+
+@router.post("/refresh-clearlyip", response_model=KeycodeRefreshResult)
+async def refresh_clearlyip(
+    tenant_id: uuid.UUID,
+    user: Annotated[User, Depends(require_permission(Permission.MANAGE_TRUNKS))],
+    db: Annotated[AsyncSession, Depends(get_admin_db)],
+):
+    """Re-fetch ClearlyIP config and sync trunks + DIDs."""
+    _check_tenant_access(user, tenant_id)
+    service = SIPTrunkService(db)
+    try:
+        result = await service.refresh_clearlyip(tenant_id)
+        return KeycodeRefreshResult(**result)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from None
+    except Exception as e:
+        logger.error(
+            "clearlyip_refresh_failed",
+            error=str(e),
+            tenant_id=str(tenant_id),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"ClearlyIP refresh failed: {e}",
+        ) from None
 
 
 @router.post("/{trunk_id}/test", response_model=TrunkTestResultSchema)

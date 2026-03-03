@@ -123,3 +123,51 @@ export function useTestTrunk() {
       apiClient.post<TrunkTestResult>(`tenants/${tenantId}/trunks/${id}/test`),
   })
 }
+
+// --- ClearlyIP keycode activation ---
+
+export interface KeycodeActivateRequest {
+  keycode: string
+  name_prefix?: string
+  import_dids?: boolean
+}
+
+export interface KeycodeActivateResult {
+  primary_trunk_id: string
+  secondary_trunk_id: string | null
+  imported_dids: string[]
+  location_name: string
+}
+
+export interface KeycodeRefreshResult {
+  trunks_updated: number
+  dids_added: string[]
+  dids_removed: string[]
+  credentials_changed: boolean
+}
+
+export function useActivateKeycode() {
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: KeycodeActivateRequest) =>
+      apiClient.post<KeycodeActivateResult>(`tenants/${tenantId}/trunks/activate-keycode`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sipTrunks.all(tenantId) })
+      qc.invalidateQueries({ queryKey: queryKeys.dids.all(tenantId) })
+    },
+  })
+}
+
+export function useRefreshClearlyip() {
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () =>
+      apiClient.post<KeycodeRefreshResult>(`tenants/${tenantId}/trunks/refresh-clearlyip`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sipTrunks.all(tenantId) })
+      qc.invalidateQueries({ queryKey: queryKeys.dids.all(tenantId) })
+    },
+  })
+}

@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from new_phone.config import settings
-from new_phone.providers.base import TelephonyProvider
+from new_phone.providers.base import KeycodeActivationProvider, TelephonyProvider
 from new_phone.providers.clearlyip import ClearlyIPProvider
 from new_phone.providers.twilio import TwilioProvider
 
@@ -30,9 +30,9 @@ def get_provider(provider_type: str, credentials: dict | None = None) -> Telepho
     ptype = provider_type.lower()
 
     if ptype == "clearlyip":
-        return ClearlyIPProvider(
-            base_url=creds.get("base_url", settings.clearlyip_api_url),
-            api_key=creds.get("api_key", settings.clearlyip_api_key),
+        raise ValueError(
+            "ClearlyIP does not use the standard provider interface. "
+            "Use the keycode activation endpoint: POST /tenants/{tid}/trunks/activate-keycode"
         )
 
     if ptype == "twilio":
@@ -42,6 +42,11 @@ def get_provider(provider_type: str, credentials: dict | None = None) -> Telepho
         )
 
     raise ValueError(f"Unknown provider type: {provider_type}")
+
+
+def get_clearlyip_provider() -> ClearlyIPProvider:
+    """Return a ClearlyIP keycode-based provider instance."""
+    return ClearlyIPProvider()
 
 
 async def get_tenant_provider(
@@ -66,6 +71,11 @@ async def get_tenant_provider(
     )
     trunk = result.scalar_one_or_none()
     if trunk and trunk.provider_type:
+        if trunk.provider_type == "clearlyip":
+            raise ValueError(
+                "ClearlyIP does not use the standard provider interface. "
+                "Use the keycode activation endpoint."
+            )
         logger.debug(
             "tenant_provider_from_trunk",
             tenant_id=str(tenant_id),
@@ -73,13 +83,13 @@ async def get_tenant_provider(
         )
         return get_provider(trunk.provider_type)
 
-    # Default to ClearlyIP
+    # Default to Twilio (ClearlyIP uses keycode activation, not this path)
     logger.debug(
         "tenant_provider_default",
         tenant_id=str(tenant_id),
-        provider_type="clearlyip",
+        provider_type="twilio",
     )
-    return get_provider("clearlyip")
+    return get_provider("twilio")
 
 
 async def resolve_provider_credentials(
@@ -105,5 +115,10 @@ async def get_provider_for_tenant(
 
     Resolution order: tenant DB config -> MSP DB config -> env var fallback.
     """
+    if provider_type.lower() == "clearlyip":
+        raise ValueError(
+            "ClearlyIP does not use the standard provider interface. "
+            "Use the keycode activation endpoint: POST /tenants/{tid}/trunks/activate-keycode"
+        )
     creds = await resolve_provider_credentials(db, tenant_id, provider_type)
     return get_provider(provider_type, credentials=creds)

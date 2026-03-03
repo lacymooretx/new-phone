@@ -55,6 +55,34 @@ class TrunkTestResult:
     error: str | None
 
 
+@dataclass
+class ClearlyIPLocationConfig:
+    """Parsed result from the ClearlyIP Unity API keycode activation."""
+
+    location_name: str
+    sip_username: str
+    sip_password: str
+    primary_server: str
+    secondary_server: str
+    primary_port: int
+    secondary_port: int
+    dids: list[str]
+    e911_config: dict
+    raw_response: dict
+
+
+class KeycodeActivationProvider(abc.ABC):
+    """ABC for providers that use keycode-based activation (ClearlyIP)."""
+
+    @abc.abstractmethod
+    async def fetch_location_config(self, keycode: str) -> ClearlyIPLocationConfig:
+        """Fetch full SIP config from the provider using a location keycode."""
+
+    @abc.abstractmethod
+    async def validate_keycode(self, keycode: str) -> bool:
+        """Check whether a keycode is valid without full activation."""
+
+
 class TelephonyProvider(abc.ABC):
     """Abstract interface that every telephony provider must implement."""
 

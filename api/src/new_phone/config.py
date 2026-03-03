@@ -77,8 +77,7 @@ class Settings(BaseSettings):
     ai_engine_url: str = "http://localhost:8091"
 
     # Telephony Providers
-    clearlyip_api_url: str = ""
-    clearlyip_api_key: str = ""
+    clearlyip_keycode: str = ""
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""
 
