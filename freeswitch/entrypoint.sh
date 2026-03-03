@@ -52,7 +52,9 @@ fi
 trap '/usr/bin/freeswitch -stop' SIGTERM
 
 # Start FreeSWITCH
-/usr/bin/freeswitch -nc -nf -nonat &
+# Do NOT use -nonat: it disables NAT traversal which prevents FreeSWITCH
+# from generating external IP candidates for WebRTC ICE behind Docker NAT.
+/usr/bin/freeswitch -nc -nf &
 pid="$!"
 wait $pid
 exit 0
