@@ -63,12 +63,13 @@ services:
     build:
       context: ./freeswitch
       dockerfile: Dockerfile
-    ports:
-      - "5061:5061/tcp"   # SIP TLS
-      - "5066:5066/tcp"   # WS (WebRTC SIP.js — dev)
-      - "7443:7443/tcp"   # WSS (WebRTC SIP.js — production)
-      - "${NP_FS_ESL_HOST_PORT:-8022}:8021/tcp"   # ESL
-      - "16384-16884:16384-16884/udp"   # RTP media (WebRTC audio)
+    # Host networking is required for WebRTC: Docker's userland proxy
+    # rewrites UDP source IPs, breaking ICE connectivity checks.
+    # With host networking, FreeSWITCH sees real client IPs and
+    # generates correct ICE candidates with the server's public IP.
+    network_mode: host
+    extra_hosts:
+      - "api:127.0.0.1"   # xml_curl reaches API via host-mapped port
     volumes:
       - fs_data:/var/lib/freeswitch
       - recordings:/recordings
@@ -92,6 +93,8 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
+    extra_hosts:
+      - "freeswitch:host-gateway"   # FreeSWITCH is on host network
     ports:
       - "8000:8000"
     environment:
@@ -147,6 +150,8 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY:-}
+    extra_hosts:
+      - "freeswitch:host-gateway"   # FreeSWITCH is on host network
     ports:
       - "3000:80"
     depends_on:
