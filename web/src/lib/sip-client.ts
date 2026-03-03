@@ -8,9 +8,10 @@ import {
   SessionState,
   URI,
 } from "sip.js"
-import type { UserAgentOptions } from "sip.js"
+import type { UserAgentOptions, SessionDescriptionHandlerModifier } from "sip.js"
 import {
   SessionDescriptionHandler,
+  addMidLines,
 } from "sip.js/lib/platform/web"
 
 export type RegistrationStatus = "disconnected" | "connecting" | "registered" | "error"
@@ -36,6 +37,8 @@ export class SipClient {
   private events: SipClientEvents
   private config: SipClientConfig
   private remoteAudio: HTMLAudioElement | null = null
+  // FreeSWITCH omits a=mid: from SDP answers — addMidLines fixes this for Chrome
+  private sdpModifiers: SessionDescriptionHandlerModifier[] = [addMidLines]
 
   constructor(config: SipClientConfig, events: SipClientEvents) {
     this.config = config
@@ -62,6 +65,11 @@ export class SipClient {
       authorizationUsername: this.config.sipUsername,
       authorizationPassword: this.config.sipPassword,
       displayName: this.config.displayName,
+      sessionDescriptionHandlerFactoryOptions: {
+        peerConnectionConfiguration: {
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        },
+      },
       delegate: {
         onInvite: (invitation: Invitation) => {
           this.session = invitation
@@ -135,6 +143,7 @@ export class SipClient {
       sessionDescriptionHandlerOptions: {
         constraints: { audio: true, video: false },
       },
+      sessionDescriptionHandlerModifiers: this.sdpModifiers,
     })
 
     this.session = inviter
@@ -150,6 +159,7 @@ export class SipClient {
       sessionDescriptionHandlerOptions: {
         constraints: { audio: true, video: false },
       },
+      sessionDescriptionHandlerModifiers: this.sdpModifiers,
     })
   }
 
@@ -267,11 +277,69 @@ export class SipClient {
 
       if (state === SessionState.Established) {
         this._attachRemoteAudio(session)
+        this._monitorIceState(session)
       }
       if (state === SessionState.Terminated) {
         this.session = null
       }
     })
+  }
+
+  private _monitorIceState(session: Session): void {
+    const sdh = session.sessionDescriptionHandler as SessionDescriptionHandler | undefined
+    if (!sdh?.peerConnection) return
+
+    const pc = sdh.peerConnection
+    console.log(`[WebRTC] ICE state: ${pc.iceConnectionState}, gathering: ${pc.iceGatheringState}`)
+    console.log(`[WebRTC] Connection state: ${pc.connectionState}`)
+    console.log(`[WebRTC] Signaling state: ${pc.signalingState}`)
+
+    // Log senders/receivers
+    const senders = pc.getSenders()
+    const receivers = pc.getReceivers()
+    senders.forEach((s, i) => {
+      console.log(`[WebRTC] Sender[${i}]: kind=${s.track?.kind} enabled=${s.track?.enabled} readyState=${s.track?.readyState} muted=${s.track?.muted}`)
+    })
+    receivers.forEach((r, i) => {
+      console.log(`[WebRTC] Receiver[${i}]: kind=${r.track?.kind} readyState=${r.track?.readyState}`)
+    })
+
+    // Log transceivers
+    const transceivers = pc.getTransceivers()
+    transceivers.forEach((t, i) => {
+      console.log(`[WebRTC] Transceiver[${i}]: mid=${t.mid} direction=${t.direction} currentDirection=${t.currentDirection}`)
+    })
+
+    pc.oniceconnectionstatechange = () => {
+      console.log(`[WebRTC] ICE state changed: ${pc.iceConnectionState}`)
+    }
+    pc.onconnectionstatechange = () => {
+      console.log(`[WebRTC] Connection state changed: ${pc.connectionState}`)
+    }
+
+    // Log stats every 2 seconds for debugging
+    const statsInterval = setInterval(async () => {
+      if (pc.connectionState === "closed" || !this.session) {
+        clearInterval(statsInterval)
+        return
+      }
+      try {
+        const stats = await pc.getStats()
+        stats.forEach((report) => {
+          if (report.type === "outbound-rtp" && report.kind === "audio") {
+            console.log(`[WebRTC] Outbound audio: packets=${report.packetsSent} bytes=${report.bytesSent}`)
+          }
+          if (report.type === "inbound-rtp" && report.kind === "audio") {
+            console.log(`[WebRTC] Inbound audio: packets=${report.packetsReceived} bytes=${report.bytesReceived}`)
+          }
+          if (report.type === "candidate-pair" && report.nominated) {
+            console.log(`[WebRTC] Active pair: state=${report.state} local=${report.localCandidateId} remote=${report.remoteCandidateId}`)
+          }
+        })
+      } catch {
+        clearInterval(statsInterval)
+      }
+    }, 2000)
   }
 
   private _attachRemoteAudio(session: Session): void {
