@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { TimezonePicker } from "@/components/shared/timezone-picker"
+import { AddressAutocomplete, type AddressFields } from "@/components/shared/address-autocomplete"
 import { Plus, Building2 } from "lucide-react"
 import { toast } from "sonner"
 import { exportToCsv } from "@/lib/export-csv"
@@ -109,7 +111,7 @@ interface SiteFormProps {
 
 function SiteForm({ site, onSubmit, isLoading }: SiteFormProps) {
   const { t } = useTranslation()
-  const { register, handleSubmit, formState: { errors } } = useForm<SiteCreate>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<SiteCreate>({
     defaultValues: {
       name: site?.name ?? "",
       description: site?.description ?? "",
@@ -123,6 +125,22 @@ function SiteForm({ site, onSubmit, isLoading }: SiteFormProps) {
       outbound_cid_number: site?.outbound_cid_number ?? "",
     },
   })
+
+  const addressValue: AddressFields = {
+    street: watch("address_street") || "",
+    city: watch("address_city") || "",
+    state: watch("address_state") || "",
+    zip: watch("address_zip") || "",
+    country: watch("address_country") || "US",
+  }
+
+  const handleAddressChange = (fields: AddressFields) => {
+    setValue("address_street", fields.street)
+    setValue("address_city", fields.city)
+    setValue("address_state", fields.state)
+    setValue("address_zip", fields.zip)
+    setValue("address_country", fields.country)
+  }
 
   const submitHandler = (values: SiteCreate) => {
     onSubmit({
@@ -141,13 +159,16 @@ function SiteForm({ site, onSubmit, isLoading }: SiteFormProps) {
     <form onSubmit={handleSubmit(submitHandler)} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="name">{t("sites.form.name")} *</Label>
+          <Label htmlFor="name" required>{t("sites.form.name")}</Label>
           <Input id="name" {...register("name", { required: t("common.required") })} placeholder={t("sites.form.namePlaceholder")} />
           {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="timezone">{t("sites.form.timezone")} *</Label>
-          <Input id="timezone" {...register("timezone", { required: t("common.required") })} placeholder="America/New_York" />
+          <Label required>{t("sites.form.timezone")}</Label>
+          <TimezonePicker
+            value={watch("timezone") || "America/New_York"}
+            onChange={(tz) => setValue("timezone", tz)}
+          />
           {errors.timezone && <p className="text-xs text-destructive">{errors.timezone.message}</p>}
         </div>
       </div>
@@ -160,30 +181,7 @@ function SiteForm({ site, onSubmit, isLoading }: SiteFormProps) {
       <Separator />
       <h3 className="text-sm font-medium">{t("sites.form.address")}</h3>
 
-      <div className="space-y-2">
-        <Label htmlFor="address_street">{t("sites.form.street")}</Label>
-        <Input id="address_street" {...register("address_street")} placeholder={t("sites.form.streetPlaceholder")} />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="address_city">{t("sites.form.city")}</Label>
-          <Input id="address_city" {...register("address_city")} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="address_state">{t("sites.form.state")}</Label>
-          <Input id="address_state" {...register("address_state")} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="address_zip">{t("sites.form.zip")}</Label>
-          <Input id="address_zip" {...register("address_zip")} />
-        </div>
-      </div>
-
-      <div className="max-w-xs space-y-2">
-        <Label htmlFor="address_country">{t("sites.form.country")}</Label>
-        <Input id="address_country" {...register("address_country")} placeholder="US" />
-      </div>
+      <AddressAutocomplete value={addressValue} onChange={handleAddressChange} />
 
       <Separator />
       <h3 className="text-sm font-medium">{t("sites.form.callerIdSection")}</h3>

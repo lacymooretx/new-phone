@@ -14,6 +14,7 @@ import { useVoicemailBoxes } from "@/api/voicemail"
 import type { Extension, ExtensionCreate } from "@/api/extensions"
 import { useCreateVoicemailBox } from "@/api/voicemail"
 import { SiteSelector } from "@/components/shared/site-selector"
+import { AddressAutocomplete, type AddressFields } from "@/components/shared/address-autocomplete"
 
 const extensionSchema = z.object({
   extension_number: z.string().min(1, "Required").max(20),
@@ -117,6 +118,22 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
       site_id: values.site_id || null,
     }
     onSubmit(data)
+  }
+
+  const e911Address: AddressFields = {
+    street: watch("e911_street") || "",
+    city: watch("e911_city") || "",
+    state: watch("e911_state") || "",
+    zip: watch("e911_zip") || "",
+    country: watch("e911_country") || "",
+  }
+
+  const handleE911AddressChange = (fields: AddressFields) => {
+    setValue("e911_street", fields.street)
+    setValue("e911_city", fields.city)
+    setValue("e911_state", fields.state)
+    setValue("e911_zip", fields.zip)
+    setValue("e911_country", fields.country)
   }
 
   return (
@@ -325,31 +342,7 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="e911_street">{t('extensions.form.streetAddress')}</Label>
-        <Input id="e911_street" placeholder={t('extensions.form.streetPlaceholder')} {...register("e911_street")} />
-        <p className="text-xs text-muted-foreground">{t('extensions.form.streetHelp')}</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="e911_city">{t('extensions.form.city')}</Label>
-          <Input id="e911_city" placeholder={t('extensions.form.cityPlaceholder')} {...register("e911_city")} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="e911_state">{t('extensions.form.state')}</Label>
-          <Input id="e911_state" placeholder={t('extensions.form.statePlaceholder')} {...register("e911_state")} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="e911_zip">{t('extensions.form.zip')}</Label>
-          <Input id="e911_zip" placeholder={t('extensions.form.zipPlaceholder')} {...register("e911_zip")} />
-        </div>
-      </div>
-
-      <div className="max-w-xs space-y-2">
-        <Label htmlFor="e911_country">{t('extensions.form.country')}</Label>
-        <Input id="e911_country" placeholder={t('extensions.form.countryPlaceholder')} {...register("e911_country")} />
-      </div>
+      <AddressAutocomplete value={e911Address} onChange={handleE911AddressChange} />
 
       {/* Notes */}
       <Separator />

@@ -1,6 +1,8 @@
 # Stage 1: Build
 FROM node:22-alpine AS build
 WORKDIR /app
+ARG VITE_GOOGLE_MAPS_API_KEY=""
+ENV VITE_GOOGLE_MAPS_API_KEY=${VITE_GOOGLE_MAPS_API_KEY}
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
