@@ -155,7 +155,7 @@ services:
           memory: 1024M
     ports:
       - "5061:5061/tcp"       # SIP TLS
-      - "10000-20000:10000-20000/udp"  # RTP media range
+      - "16384-16884:16384-16884/udp"  # RTP media range (500 ports = 250 concurrent calls)
       # WSS proxied through web nginx — no host port needed
       # ESL port NOT exposed in production
     healthcheck:
@@ -254,12 +254,12 @@ services:
           cpus: "1.0"
           memory: 512M
     ports:
-      - "10000-10999:10000-10999/udp"  # RTP port range
+      - "17000-17500:17000-17500/udp"  # RTP port range (relay-managed)
     environment:
       FREESWITCH_HOST: freeswitch
       REDIS_URL: redis://redis:6379/0
-      RTP_PORT_MIN: 10000
-      RTP_PORT_MAX: 10999
+      RTP_PORT_MIN: 17000
+      RTP_PORT_MAX: 17500
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
       test: ["CMD", "/app/healthcheck"]
