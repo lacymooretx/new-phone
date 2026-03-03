@@ -24,6 +24,12 @@ echo "Enabled TLS on internal profile"
 rm -f /etc/freeswitch/sip_profiles/tls.xml
 echo "Removed standalone TLS profile (internal handles WSS)"
 
+# Set RTP port range to match Docker exposed ports (16384-16884).
+# The vanilla config has these commented out, defaulting to 16384-32768.
+sed -i 's|<!-- <param name="rtp-start-port" value="16384"/> -->|<param name="rtp-start-port" value="16384"/>|' /etc/freeswitch/autoload_configs/switch.conf.xml
+sed -i 's|<!-- <param name="rtp-end-port" value="32768"/> -->|<param name="rtp-end-port" value="16884"/>|' /etc/freeswitch/autoload_configs/switch.conf.xml
+echo "Set RTP port range to 16384-16884"
+
 # Install TLS certs (mounted at /custom-tls)
 if [ -d /custom-tls ] && [ -f /custom-tls/agent.pem ]; then
     mkdir -p /etc/freeswitch/tls
