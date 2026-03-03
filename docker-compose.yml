@@ -68,6 +68,7 @@ services:
       - "5066:5066/tcp"   # WS (WebRTC SIP.js — dev)
       - "7443:7443/tcp"   # WSS (WebRTC SIP.js — production)
       - "${NP_FS_ESL_HOST_PORT:-8022}:8021/tcp"   # ESL
+      - "16384-16884:16384-16884/udp"   # RTP media (WebRTC audio)
     volumes:
       - fs_data:/var/lib/freeswitch
       - recordings:/recordings

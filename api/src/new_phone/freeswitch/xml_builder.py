@@ -164,6 +164,14 @@ def build_dialplan(
     section = SubElement(doc, "section", name="dialplan")
     context = SubElement(section, "context", name=context_name)
 
+    # Global channel variables for all calls in this context.
+    # include_external_ip=true adds ext-rtp-ip as an ICE candidate so WebRTC
+    # clients can reach FreeSWITCH media when it's behind Docker NAT.
+    global_ext = SubElement(context, "extension", name="global-vars")
+    global_ext.set("continue", "true")
+    global_cond = SubElement(global_ext, "condition")
+    _action(global_cond, "set", "include_external_ip=true")
+
     # Build lookup maps
     ext_map = {str(e.id): e for e in extensions}
     vm_map = {str(v.id): v for v in voicemail_boxes}
