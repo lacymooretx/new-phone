@@ -84,7 +84,17 @@ async function request<T>(method: string, path: string, options?: { body?: unkno
     let type: string | undefined
     try {
       const err = await res.json()
-      detail = err.detail || err.title || detail
+      if (Array.isArray(err.detail)) {
+        // FastAPI validation errors: [{loc: [...], msg: "...", type: "..."}, ...]
+        detail = err.detail.map((e: { msg?: string; loc?: string[] }) => {
+          const field = e.loc?.filter((l) => l !== "body").join(".") || ""
+          return field ? `${field}: ${e.msg}` : (e.msg || "Validation error")
+        }).join("; ")
+      } else if (typeof err.detail === "object" && err.detail !== null) {
+        detail = err.detail.msg || err.detail.message || JSON.stringify(err.detail)
+      } else {
+        detail = err.detail || err.title || detail
+      }
       type = err.type
     } catch { /* ignore */ }
 
