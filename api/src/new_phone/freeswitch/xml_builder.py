@@ -67,7 +67,7 @@ def build_directory_user(
     _param(
         params,
         "dial-string",
-        "{^^:sip_invite_domain=${dialed_domain}:presence_id=${dialed_user}@${dialed_domain}}${sofia_contact(*/{{dialed_user}}@${dialed_domain})}",
+        "{^^:sip_invite_domain=${dialed_domain}:presence_id=${dialed_user}@${dialed_domain}}${sofia_contact(*/${dialed_user})}",
     )
 
     # User — id must match the SIP username used in REGISTER
