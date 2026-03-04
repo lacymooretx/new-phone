@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
 import { PageHeader } from "@/components/shared/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -22,7 +21,6 @@ const statusConfig: Record<string, { icon: typeof Clock; color: string; label: s
 }
 
 export function CallbacksPage() {
-  const { t } = useTranslation()
   const [statusFilter, setStatusFilter] = useState<string>("")
   const { data, isLoading } = useCallbacks(undefined, statusFilter || undefined)
   const cancelMutation = useCancelCallback()

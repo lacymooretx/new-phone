@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
 import { PageHeader } from "@/components/shared/page-header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -233,8 +232,6 @@ function ResponsesTab() {
 }
 
 export function SurveysPage() {
-  const { t } = useTranslation()
-
   return (
     <div className="space-y-6">
       <PageHeader
