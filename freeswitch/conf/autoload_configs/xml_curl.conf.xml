@@ -10,10 +10,8 @@
       <param name="method" value="POST"/>
       <param name="timeout" value="5"/>
     </binding>
-    <binding name="configuration">
-      <param name="gateway-url" value="http://api:8010/freeswitch/configuration" bindings="configuration"/>
-      <param name="method" value="POST"/>
-      <param name="timeout" value="5"/>
-    </binding>
+    <!-- Configuration binding removed: returning not_found for sofia.conf
+         prevented FS from using static XML with X-PRE-PROCESS includes.
+         Gateways are loaded from /gateways/*.xml files via file includes. -->
   </bindings>
 </configuration>
