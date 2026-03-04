@@ -1,5 +1,83 @@
 # Claude Runlog — New Phone Platform
 
+## 2026-03-03 — Fix WebRTC Registration Persistence (TLS Profile Conflict)
+
+### Goal
+Fix registrations authenticating (200 OK) but not being stored by FreeSWITCH, causing 0 registrations, wrong dialplan context, and no call audio.
+
+### Root Cause
+A separate `tls.xml` SIP profile was stealing the WSS port (7443) from the `internal` profile. The `tls` profile had `tls=true` and `wss-binding :7443` but lacked critical settings: `force-register-domain`, `auth-calls`, `context`, `dialplan`, `challenge-realm`, etc. Meanwhile, the `internal` profile had `internal_ssl_enable=false`, so its TLS/WSS bindings were effectively broken.
+
+Result: WebSocket connections went through the bare `tls` profile, which authenticated users (200 OK) but didn't properly store registrations. When calls were made, FreeSWITCH couldn't find the stored registration/user_context, fell back to the `public` context, hit the vanilla default dialplan (catch-all `acknowledge_call`), and returned `480 Temporarily Unavailable`.
+
+### Fix Applied
+1. Deleted `freeswitch/conf/sip_profiles/tls.xml` — removed broken profile
+2. Updated `freeswitch/entrypoint.sh` — sets `internal_ssl_enable=true` in vars.xml so the `internal` profile handles TLS/WSS
+3. Entrypoint also removes any vanilla `tls.xml` as safety measure
+4. Removed `tls.xml` volume mount from `docker-compose.yml`
+5. Added missing `softphone.noAudioDevices` i18n key to en/es/fr
+
+### Verification
+- `sofia status` shows NO `tls` profile, `internal` shows both `:5060` and `:5061 (TLS)` entries
+- `internal_ssl_enable=true` confirmed
+- After user refresh: `sofia status profile internal reg` shows **1 registration** (a0000000-132, WSS-NAT, SIP.js/0.21.1)
+
+### Commits
+- `50a55a5` — "Fix WebRTC registration: remove broken TLS profile, enable TLS on internal"
+
+### Files Changed
+- `freeswitch/conf/sip_profiles/tls.xml` — DELETED
+- `freeswitch/entrypoint.sh` — Enable TLS on internal, remove tls.xml
+- `docker-compose.yml` — Remove tls.xml volume mount
+- `web/src/locales/en.json` — Add softphone.noAudioDevices key
+- `web/src/locales/es.json` — Add softphone.noAudioDevices key
+- `web/src/locales/fr.json` — Add softphone.noAudioDevices key
+
+---
+
+## 2026-03-03 — Fix WSS Via Header Mismatch
+
+### Goal
+Fix softphone going from "Connecting" to "Disconnected" — SIP REGISTER was being rejected.
+
+### Root Cause
+nginx was proxying WebSocket connections to FreeSWITCH port 5066 (WS/plain) via `http://`. SIP.js sends `Via: SIP/2.0/WSS` because the browser uses `wss://`. FreeSWITCH WS listener on port 5066 only accepts `Via: SIP/2.0/WS` and rejected with "invalid transport".
+
+### Fix
+Changed `web/nginx.conf` WSS proxy from `http://freeswitch:5066` to `https://freeswitch:7443` with `proxy_ssl_verify off`.
+
+### Commit
+- `9feb75b` — "Fix softphone WSS: proxy to FreeSWITCH WSS port 7443"
+
+---
+
+## 2026-03-03 — Softphone i18n + SIP Domain Fix
+
+### Goal
+Fix softphone registration failure and raw i18n keys showing on dashboard/softphone panel.
+
+### Steps Completed
+1. Added missing softphone status i18n keys (`connecting`, `disconnected`, `error`) to en.json, es.json, fr.json
+2. Added missing dashboard i18n keys (`extensions`, `users`, `user`, `ringGroup`, `queues`, `sipTrunks`, `callHistory`, `failedToLoadData`) to es.json, fr.json (en.json already had them)
+3. Set `NP_FREESWITCH_HOST=freeswitch` in docker-compose.prod.yml API environment so webrtc credentials endpoint returns correct SIP domain instead of `localhost`
+4. Committed: `6860c35` — "Fix softphone SIP domain and missing i18n keys"
+5. Pushed and deployed to production (rebuilt web, force-recreated API)
+6. Verified: xml_curl directory lookup works — returns user XML for extension 132 (Lacy Moore)
+7. Verified: WebSocket proxy chain is intact (nginx-proxy → web nginx → freeswitch:5066)
+8. Verified: FreeSWITCH has `force-register-domain` set so any client-sent domain is remapped for user lookup
+
+### Files Changed
+- `docker-compose.prod.yml` — added `NP_FREESWITCH_HOST: freeswitch` to API environment
+- `web/src/locales/en.json` — added softphone.status.connecting/disconnected/error
+- `web/src/locales/es.json` — added dashboard + softphone status keys
+- `web/src/locales/fr.json` — added dashboard + softphone status keys
+
+### Next Steps
+- User should test softphone by navigating to https://ucc.aspendora.com and checking if softphone shows "Registered" status
+- If still failing, check browser console for WebSocket errors and FreeSWITCH logs
+
+---
+
 ## 2026-03-03 — Two-Tier Telephony Provider Credential Management
 
 ### Goal
@@ -1813,3 +1891,147 @@ Replace the hypothetical ClearlyIP REST API implementation with keycode-based ac
 
 ### Key Risk
 Unity API response field names are inferred from FreePBX module behavior. Parser uses flexible field access with multiple possible key names. Raw response is logged for debugging. Testing with a real keycode is critical.
+
+## 2026-03-03 17:30 — WebRTC Audio Diagnostic & Fix
+
+### Context
+Softphone registers and connects calls to *99, but zero audio frames in both directions. DTLS/SRTP completes successfully. Previous session fixed WSS proxy, xml_curl port conflict, and TLS profile issues.
+
+### Investigation Steps
+
+1. **WSS connectivity test from Mac** — Both via Cloudflare and direct to FS on port 7443 work. FreeSWITCH responds to SIP OPTIONS with 200 OK.
+
+2. **SIP REGISTER + INVITE test** — Wrote Node.js test client:
+   - REGISTER: ✅ works with real credentials from `/api/v1/me/webrtc-credentials`
+   - INVITE with minimal SDP: 488 Not Acceptable Here (no ICE candidates)
+   - INVITE with ICE candidates: ✅ 200 OK, call answered, echo() executed
+
+3. **UDP bidirectional connectivity test** — FS sends STUN binding requests to our UDP socket, we receive them, we send responses, FS receives them. Confirmed by server-side tcpdump.
+
+4. **FreeSWITCH log analysis** (UUID edeaf388, browser call):
+   - Remote SDP from browser: proper ICE candidates, DTLS fingerprint, Opus codec
+   - FS selected candidate: 76.247.107.61:55629 (browser's srflx)
+   - RTP path: 149.28.251.164:16722 → 76.247.107.61:55629
+   - DTLS: OFF → HANDSHAKE → SETUP → READY (240ms)
+   - SRTP: SEND + RECV activated
+   - echo() app executed
+   - **Opus decoder: Frames[0], Opus encoder: Frames[0]** — zero audio in 3.4s call
+
+5. **Root cause identified**: FreeSWITCH's SDP answer **omits `a=mid:` attribute**. Chrome's WebRTC Unified Plan requires `a=mid:` for proper transceiver setup. Without it, Chrome accepts the SDP but doesn't send RTP.
+
+   Browser offer includes: `a=mid:0`, `a=group:BUNDLE 0`
+   FS answer includes: NEITHER `a=mid:` NOR `a=group:BUNDLE`
+
+### Fix Applied
+- Used SIP.js built-in `addMidLines` modifier that injects `a=mid:N` into SDP answers missing them
+- Added explicit STUN server configuration
+- Added ICE/connection state monitoring and WebRTC stats logging
+- Applied modifier to both outbound (Inviter) and inbound (Invitation) calls
+
+### Files Changed
+- `web/src/lib/sip-client.ts` — added addMidLines modifier, STUN config, ICE logging
+
+### Commit
+- `eb03a85` — Fix WebRTC audio: add SDP mid-line modifier for FreeSWITCH compat
+
+### Deployed
+- Web container rebuilt and restarted on production
+
+### Next Steps
+- User needs to hard refresh browser, call *99, check console for `[WebRTC]` logs
+- If audio still doesn't work, the console logs will show ICE state, connection state, sender/receiver status, and outbound/inbound RTP packet counts
+
+## 2026-03-03 — Fix three issues: system health, trunk selector, WebSocket keepalive
+
+### Issue 1: System Health showing "unhealthy"
+- **Root cause**: FreeSWITCH ESL port 8021 unreachable from API container. UFW INPUT policy is DROP, and port 8021 wasn't allowed from Docker bridge subnets (192.168.0.0/16). FS runs on `network_mode: host`, API on bridge networks.
+- **Fix**: Added UFW rules: `ufw allow from 192.168.0.0/16 to any port 8021` and `ufw allow from 172.16.0.0/12 to any port 8021`
+- **Result**: Health endpoint now returns FreeSWITCH healthy. Dashboard shows per-service health with color-coded icons.
+
+### Issue 2: Dashboard health UI improved
+- **Changed**: `web/src/pages/dashboard/dashboard-page.tsx`
+- Replaced single StatCard with expanded card showing all 7 services individually
+- Green checkmark for healthy, yellow triangle for degraded, red X for unhealthy
+
+### Issue 3: Outbound route form missing SIP trunk selector
+- **Changed**: `web/src/pages/outbound-routes/outbound-route-form.tsx`
+- Added `useSipTrunks()` hook to fetch available trunks
+- Added checkbox-based trunk selector with position numbering and up/down reordering
+- trunk_ids included in form submission payload
+- Tested: selected ClearlyIP trunk, saved successfully
+
+### Issue 4: SIP WebSocket disconnecting every ~2 minutes
+- **Root cause**: SIP.js not sending keepalive pings over WebSocket
+- **Changed**: `web/src/lib/sip-client.ts` — added `keepAliveInterval: 30` to transportOptions
+- Sends CRLF keepalive every 30 seconds to prevent idle timeout disconnects
+
+### Files changed
+- `web/src/lib/sip-client.ts` — keepAliveInterval
+- `web/src/pages/dashboard/dashboard-page.tsx` — per-service health display
+- `web/src/pages/outbound-routes/outbound-route-form.tsx` — trunk selector
+- Server UFW rules — allow ESL from Docker bridges
+
+## 2026-03-04 — Fix Outbound Calling (Gateway Loading + ClearlyIP Credentials)
+
+### Goal
+Get outbound calls working end-to-end: WebRTC softphone → FreeSWITCH → ClearlyIP SIP trunk → PSTN.
+
+### Issues Fixed
+
+#### 1. TLS not enabled on external profile
+- **Symptom**: Gateway XML parsed but gateway not in sofia status; `ERROR: unsupported transport` in FS logs
+- **Root cause**: `external_ssl_enable=false` in vars.xml; external profile couldn't handle TLS transport
+- **Fix**: Added `sed -i 's/external_ssl_enable=false/external_ssl_enable=true/'` to `freeswitch/entrypoint.sh`
+- **Commit**: `ab65bb7`
+
+#### 2. xml_curl configuration binding blocking static XML
+- **Symptom**: Gateway files present but gateways section empty in parsed XML tree
+- **Root cause**: xml_curl `configuration` binding for sofia.conf intercepted requests, returning `not_found` which prevented FS from loading static XML with X-PRE-PROCESS includes
+- **Fix**: Removed configuration binding from `freeswitch/conf/autoload_configs/xml_curl.conf.xml`; kept directory and dialplan bindings
+- **Commit**: `f87cb99`
+
+#### 3. X-PRE-PROCESS doesn't support absolute paths or symlinks for glob
+- **Symptom**: `/gateways/*.xml` include directive didn't load any files; symlink approach also failed
+- **Root cause**: FS X-PRE-PROCESS only supports relative paths and doesn't follow symlinks for glob expansion
+- **Fix**: Changed Docker volume mount strategy — mount `fs_gateways` directly at `/etc/freeswitch/sip_profiles/external/` so files appear in the existing `external/*.xml` include path
+- **Commits**: `eabeaf5` (symlink — superseded), `ad7bfc1` (direct mount)
+
+#### 4. Single-line XML silently ignored by X-PRE-PROCESS
+- **Symptom**: Pretty-printed XML loaded, but `tostring()` output (single line) was silently skipped
+- **Root cause**: FS X-PRE-PROCESS parser requires multi-line XML with newlines
+- **Fix**: Added `indent(include)` before `tostring()` in `build_gateway_file()`
+- **Commit**: `ad7bfc1`
+
+#### 5. ClearlyIP SIP credentials — discovered correct API endpoint
+- **Previous assumption**: `GET /trunking/v1/location` — returns only location metadata, not SIP credentials
+- **Discovery**: Read ClearlyIP FreePBX module source on freepbx.3endt.com (`ConfigApi.php`)
+- **Correct endpoint**: `GET https://unity.clearlyip.com/trunking/v1/config/freepbx` with `X-Token: {keycode}`
+- **Credentials obtained**: username=c0f4201ae5, password=2dbea68a4089a225, servers at `{1,2}.us-central.clearlyip.com`, port 5060, UDP protocol
+- **DB updated**: Both MSP and Acme trunk records updated with real credentials
+
+#### 6. Gateway name mismatch (triple-dash normalization)
+- **Symptom**: Trunk name "ClearlyIP - UCC (Primary)" → `msp-clearlyip---ucc-primary` (triple dash)
+- **Root cause**: " - " in trunk name becomes `---` after space→dash + existing dash + char removal
+- **Fix**: Added `re.sub(r"-{2,}", "-", sanitized)` to `gateway_fs_name()` to collapse consecutive dashes
+- **Commit**: `6912929`
+
+#### 7. Gateway volume permissions (root-owned volume)
+- **Symptom**: `[Errno 13] Permission denied: '/gateways/msp-clearlyip-ucc-primary.xml'`
+- **Root cause**: Docker volume initialized by FS container (root), unwritable by API's appuser
+- **Fix**: Added `api/entrypoint.sh` that runs as root, fixes `/gateways` ownership, then drops to appuser via `gosu`
+- **Commit**: `5b0d133`
+
+### Verification
+- Both ClearlyIP gateways registered (REGED) in FreeSWITCH:
+  - `msp-clearlyip-ucc-primary` → `1.us-central.clearlyip.com:5060`
+  - `acme-clearlyip-test-trunk-secondary` → `2.us-central.clearlyip.com:5060`
+- Dialplan bridge string matches gateway name: `sofia/gateway/msp-clearlyip-ucc-primary/${dialed_number}`
+- **Outbound call test successful**: Dialed 2819414028 from WebRTC softphone, call connected through ClearlyIP gateway, audio established, 20+ second call, clean hangup
+
+### Files changed
+- `freeswitch/entrypoint.sh` — enable external TLS, clean up gateway includes, bind to 0.0.0.0
+- `freeswitch/conf/autoload_configs/xml_curl.conf.xml` — remove configuration binding
+- `docker-compose.yml` — mount fs_gateways at external profile dir
+- `api/src/new_phone/freeswitch/xml_builder.py` — indent() for multi-line XML, gateway_fs_name() dash collapsing, credential validation
+- `api/Dockerfile` — add gosu, entrypoint
+- `api/entrypoint.sh` — new file, fixes volume permissions then drops to appuser
