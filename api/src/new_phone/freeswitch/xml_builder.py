@@ -253,11 +253,13 @@ def build_dialplan(
 
             # Call forward unconditional
             if ext.call_forward_unconditional:
+                _action(cond, "set", "ringback=${us-ring}")
                 _action(cond, "bridge", f"user/{ext.call_forward_unconditional}@{domain_name}")
             else:
                 _action(cond, "set", f"call_timeout={ext.call_forward_ring_time}")
                 _action(cond, "set", "hangup_after_bridge=true")
                 _action(cond, "set", "continue_on_fail=true")
+                _action(cond, "set", "ringback=${us-ring}")
 
                 bridge_str = f"user/{ext.extension_number}@{domain_name}"
                 _action(cond, "bridge", bridge_str)
@@ -301,6 +303,8 @@ def build_dialplan(
         _action(cond, "set", f"call_timeout={rg.ring_time}")
         _action(cond, "set", "hangup_after_bridge=true")
         _action(cond, "set", "continue_on_fail=true")
+
+        _action(cond, "set", "ringback=${us-ring}")
 
         # Music on Hold for ring group
         moh_path = _resolve_moh_path(
@@ -478,6 +482,8 @@ def build_dialplan(
         cond = dp_ext.find("condition")
 
         _action(cond, "set", "hangup_after_bridge=true")
+        _action(cond, "set", "ringback=${us-ring}")
+        _action(cond, "set", "transfer_ringback=${us-ring}")
 
         # Set outbound caller ID based on route's cid_mode
         if route.cid_mode == "custom" and route.custom_cid:
