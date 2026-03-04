@@ -663,15 +663,15 @@ function ExtensionDirectory({
       <div className="p-2 space-y-2">
         {isMsp && tenants && tenants.length > 1 && (
           <Select
-            value={selectedTenantId ?? ""}
-            onValueChange={(v) => setSelectedTenantId(v || null)}
+            value={selectedTenantId ?? "__current__"}
+            onValueChange={(v) => setSelectedTenantId(v === "__current__" ? null : v)}
           >
             <SelectTrigger className="h-7 text-xs">
               <Building2 className="h-3 w-3 mr-1 text-muted-foreground" />
               <SelectValue placeholder="All tenants" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Current tenant</SelectItem>
+              <SelectItem value="__current__">Current tenant</SelectItem>
               {tenants.map((t) => (
                 <SelectItem key={t.id} value={t.id}>
                   {t.name}
