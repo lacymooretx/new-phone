@@ -76,7 +76,7 @@ services:
       - "api:127.0.0.1"   # xml_curl reaches API via host-mapped port
     volumes:
       - fs_data:/var/lib/freeswitch
-      - fs_gateways:/gateways
+      - fs_gateways:/etc/freeswitch/sip_profiles/external
       - recordings:/recordings
       - ./freeswitch/conf/autoload_configs/event_socket.conf.xml:/custom-conf/autoload_configs/event_socket.conf.xml:ro
       - ./freeswitch/conf/autoload_configs/xml_curl.conf.xml:/custom-conf/autoload_configs/xml_curl.conf.xml:ro

@@ -4,9 +4,11 @@ All operations are best-effort: if FreeSWITCH is unreachable, the API
 operation still succeeds. Config changes will take effect on FS restart
 or next xml_curl cache expiry.
 
-Gateway XML files are written to a shared volume (/gateways/) that the
-FreeSWITCH external profile includes via X-PRE-PROCESS. Changes are
-picked up via `reloadxml` + `sofia profile external rescan`.
+Gateway XML files are written to a shared volume mounted at /gateways/
+in the API container and /etc/freeswitch/sip_profiles/external/gateways/
+in the FS container.  FS includes them via ``external/*.xml`` which
+picks up the ``gateways/`` subdirectory contents.  Changes are applied
+via ``reloadxml`` + ``sofia profile external rescan``.
 """
 
 from __future__ import annotations

@@ -29,21 +29,14 @@ echo "Enabled TLS on external profile"
 rm -f /etc/freeswitch/sip_profiles/tls.xml
 echo "Removed standalone TLS profile (internal handles WSS)"
 
-# Include gateway XML files from the shared /gateways/ volume in the external profile.
-# The API writes individual gateway files there; FS picks them up via reloadxml + rescan.
-# FS X-PRE-PROCESS only supports paths relative to /etc/freeswitch, so we create a
-# symlink from sip_profiles/gateways -> /gateways and use a relative include.
-ln -sfn /gateways /etc/freeswitch/sip_profiles/gateways
-echo "Linked /etc/freeswitch/sip_profiles/gateways -> /gateways"
-
-# Replace any old absolute /gateways/ include with relative path
+# Gateway files are loaded via the existing <X-PRE-PROCESS cmd="include" data="external/*.xml"/>
+# in external.xml. The fs_gateways Docker volume is mounted directly at
+# /etc/freeswitch/sip_profiles/external/, so API-written gateway files appear
+# alongside example.xml and are picked up by reloadxml + sofia profile rescan.
+# Remove any leftover custom gateways/ include from previous setups.
 if [ -f /etc/freeswitch/sip_profiles/external.xml ]; then
-    sed -i 's|data="/gateways/\*\.xml"|data="gateways/*.xml"|' /etc/freeswitch/sip_profiles/external.xml
-fi
-
-if [ -f /etc/freeswitch/sip_profiles/external.xml ] && ! grep -q 'data="gateways/' /etc/freeswitch/sip_profiles/external.xml; then
-    sed -i 's|<gateways>|<gateways>\n      <X-PRE-PROCESS cmd="include" data="gateways/*.xml"/>|' /etc/freeswitch/sip_profiles/external.xml
-    echo "Added gateways/*.xml include to external profile"
+    sed -i '/data="gateways\/\*\.xml"/d' /etc/freeswitch/sip_profiles/external.xml
+    sed -i '/data="\/gateways\/\*\.xml"/d' /etc/freeswitch/sip_profiles/external.xml
 fi
 
 # Bind external profile to 0.0.0.0 for outbound calls through Docker bridge networks.

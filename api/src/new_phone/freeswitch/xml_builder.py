@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING
-from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.etree.ElementTree import Element, SubElement, indent, tostring
 
 if TYPE_CHECKING:
     from new_phone.models.audio_prompt import AudioPrompt
@@ -530,7 +530,9 @@ def build_gateway_file(trunk: SIPTrunk, tenant: Tenant, password: str) -> str:
     if trunk.transport and trunk.transport != "udp":
         _param(gw, "register-transport", trunk.transport)
 
-    # No XML declaration — FS X-PRE-PROCESS include inserts file content inline
+    # Pretty-print for debuggability; no XML declaration since FS
+    # X-PRE-PROCESS include inserts file content inline.
+    indent(include)
     return tostring(include, encoding="unicode", xml_declaration=False)
 
 
