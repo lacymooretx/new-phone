@@ -19,6 +19,11 @@ fi
 sed -i 's/internal_ssl_enable=false/internal_ssl_enable=true/' /etc/freeswitch/vars.xml
 echo "Enabled TLS on internal profile"
 
+# Enable TLS on external profile so outbound SIP trunks can use TLS transport.
+# ClearlyIP and other providers require TLS for SIP registration.
+sed -i 's/external_ssl_enable=false/external_ssl_enable=true/' /etc/freeswitch/vars.xml
+echo "Enabled TLS on external profile"
+
 # Remove any standalone TLS profile — the internal profile handles TLS/WSS.
 # A separate tls.xml steals the WSS port and lacks auth/registration config.
 rm -f /etc/freeswitch/sip_profiles/tls.xml

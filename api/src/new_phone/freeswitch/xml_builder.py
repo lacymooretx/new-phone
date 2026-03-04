@@ -497,17 +497,26 @@ def gateway_fs_name(tenant_slug: str, trunk_name: str) -> str:
 def build_gateway_file(trunk: SIPTrunk, tenant: Tenant, password: str) -> str:
     """Generate a single gateway XML fragment for inclusion by FS external profile.
 
-    Returns XML like: <gateway name="..."><param .../></gateway>
+    Returns XML like: <include><gateway name="..."><param .../></gateway></include>
     Written to /gateways/{gw_name}.xml and included via X-PRE-PROCESS.
+
+    Returns empty string if the trunk lacks required fields (host, or
+    username+password when registration auth is configured).
     """
     if not trunk.host:
         return ""
+
+    needs_registration = trunk.auth_type == "registration"
+    # FS silently drops gateways that have register=true without credentials
+    if needs_registration and (not trunk.username or not password):
+        return ""
+
     gw_name = gateway_fs_name(tenant.slug, trunk.name)
     include = Element("include")
     gw = SubElement(include, "gateway", name=gw_name)
     _param(gw, "realm", trunk.host)
     _param(gw, "proxy", f"{trunk.host}:{trunk.port}")
-    _param(gw, "register", "true" if trunk.auth_type == "registration" else "false")
+    _param(gw, "register", "true" if needs_registration else "false")
 
     if trunk.username:
         _param(gw, "username", trunk.username)
@@ -515,7 +524,11 @@ def build_gateway_file(trunk: SIPTrunk, tenant: Tenant, password: str) -> str:
         _param(gw, "password", password)
 
     _param(gw, "caller-id-in-from", "true")
-    _param(gw, "register-transport", trunk.transport)
+
+    # Only set register-transport for transports FS recognizes on the profile.
+    # The external profile must have TLS enabled for "tls" transport to work.
+    if trunk.transport and trunk.transport != "udp":
+        _param(gw, "register-transport", trunk.transport)
 
     # No XML declaration — FS X-PRE-PROCESS include inserts file content inline
     return tostring(include, encoding="unicode", xml_declaration=False)
