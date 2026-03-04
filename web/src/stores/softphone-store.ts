@@ -23,6 +23,7 @@ interface SoftphoneState {
   consultRemoteIdentity: string
   consultCallState: ConsultCallState
   // UI
+  lastDialedNumber: string
   panelOpen: boolean
   panelMinimized: boolean
 
@@ -63,6 +64,7 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
   transferMode: "idle",
   consultRemoteIdentity: "",
   consultCallState: "idle",
+  lastDialedNumber: "",
   panelOpen: false,
   panelMinimized: false,
 
@@ -168,6 +170,7 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
       callState: "ringing_out",
       callDirection: "outbound",
       remoteIdentity: target,
+      lastDialedNumber: target,
       panelOpen: true,
       panelMinimized: false,
     })

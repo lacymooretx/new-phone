@@ -1,5 +1,42 @@
 # Claude Runlog — New Phone Platform
 
+## 2026-03-04 — Fix Softphone Mic, Redial, Inter-Extension Calling
+
+### Goal
+Fix four softphone issues: broken inter-extension calling, missing redial button, empty recent calls, mic not working.
+
+### What was done
+1. **Fix 1 (Critical): Inter-extension calling** — All bridge strings in `xml_builder.py` used `ext.extension_number` (e.g. `101`) but FS directory registers users by `sip_username` (e.g. `a0000000-101`). Changed all 8 locations to use `ext.sip_username`:
+   - Direct extension bridge (line ~264)
+   - Call forward unconditional (line ~257) — also added loopback fallback for external CFU targets
+   - Page group outcalls (line ~397)
+   - Queue agent contacts (line ~713)
+   - Follow-me internal destinations (line ~1042)
+   - Ring group bridge strings (3 strategy branches, lines ~1072-1081)
+   - Inbound route → extension (line ~1103)
+
+2. **Fix 4: Add Redial button** — Added `lastDialedNumber` state to softphone store, set in `makeCall()`. Added Redial button in DialpadTab (shown when idle, input empty, and a previous number exists). Added `softphone.redial` translation key.
+
+3. **Fix 2 (Mic)**: Existing uncommitted changes in `audio-device-selector.tsx` — included in this commit.
+
+4. **Fix 3 (Recent Calls)**: No code change needed — self-resolves after Fix 1 enables inter-extension calls to complete and generate CDRs.
+
+### Files changed
+- `api/src/new_phone/freeswitch/xml_builder.py` — 8 bridge string fixes
+- `web/src/stores/softphone-store.ts` — added `lastDialedNumber` state
+- `web/src/pages/softphone/softphone-page.tsx` — added Redial button, RotateCcw icon import
+- `web/src/locales/en.json` — added `softphone.redial` translation
+- `web/src/components/softphone/audio-device-selector.tsx` — existing uncommitted mic fix
+
+### Verification needed
+- Call 132 → 101: should ring and connect
+- After hangup: CDR appears in database
+- Recent calls tab populates
+- Redial button appears after making a call
+- Mic works (other party hears audio)
+
+---
+
 ## 2026-03-04 — Enable Yealink RPS Provisioning
 
 ### Goal

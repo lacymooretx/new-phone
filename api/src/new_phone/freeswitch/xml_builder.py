@@ -254,14 +254,19 @@ def build_dialplan(
             # Call forward unconditional
             if ext.call_forward_unconditional:
                 _action(cond, "set", "ringback=${us-ring}")
-                _action(cond, "bridge", f"user/{ext.call_forward_unconditional}@{domain_name}")
+                cfu_ext = ext_number_map.get(ext.call_forward_unconditional)
+                if cfu_ext:
+                    _action(cond, "bridge", f"user/{cfu_ext.sip_username}@{domain_name}")
+                else:
+                    # External number — use loopback for outbound routing
+                    _action(cond, "bridge", f"loopback/{ext.call_forward_unconditional}/{context_name}")
             else:
                 _action(cond, "set", f"call_timeout={ext.call_forward_ring_time}")
                 _action(cond, "set", "hangup_after_bridge=true")
                 _action(cond, "set", "continue_on_fail=true")
                 _action(cond, "set", "ringback=${us-ring}")
 
-                bridge_str = f"user/{ext.extension_number}@{domain_name}"
+                bridge_str = f"user/{ext.sip_username}@{domain_name}"
                 _action(cond, "bridge", bridge_str)
 
                 # Follow-me: try external destinations before voicemail
@@ -394,7 +399,7 @@ def build_dialplan(
             if ext and ext.is_active:
                 outcall_str = (
                     f"{{sip_auto_answer=true,sip_h_Call-Info=<sip:>;answer-after=0}}"
-                    f"user/{ext.extension_number}@{domain_name}"
+                    f"user/{ext.sip_username}@{domain_name}"
                 )
                 _action(cond, "conference_set_auto_outcall", outcall_str)
         # Conference with flags
@@ -710,7 +715,7 @@ def build_callcenter_config(
                     agent_el.set("type", "callback")
                     agent_el.set(
                         "contact",
-                        f"[leg_timeout={q.ring_timeout}]user/{ext.extension_number}@{domain_name}",
+                        f"[leg_timeout={q.ring_timeout}]user/{ext.sip_username}@{domain_name}",
                     )
                     agent_el.set("status", agent_status)
                     agent_el.set("no-answer-delay-time", "10")
@@ -1039,7 +1044,7 @@ def _add_follow_me_bridges(
         """Build bridge string for a follow-me destination."""
         # Check if destination is an internal extension number
         if dest_number in ext_number_map:
-            return f"user/{dest_number}@{domain_name}"
+            return f"user/{ext_number_map[dest_number].sip_username}@{domain_name}"
         # External number — use loopback to re-enter dialplan for outbound routing
         return f"loopback/{dest_number}/{context_name}"
 
@@ -1069,15 +1074,15 @@ def _ring_group_bridge_string(
 
     if rg.ring_strategy == "simultaneous":
         # Comma-separated = ring all at once
-        parts = [f"user/{e.extension_number}@{domain_name}" for e in active_members]
+        parts = [f"user/{e.sip_username}@{domain_name}" for e in active_members]
         return ",".join(parts)
     elif rg.ring_strategy == "sequential":
         # Pipe-separated = try one at a time
-        parts = [f"user/{e.extension_number}@{domain_name}" for e in active_members]
+        parts = [f"user/{e.sip_username}@{domain_name}" for e in active_members]
         return "|".join(parts)
     else:
         # Default to simultaneous for unsupported strategies
-        parts = [f"user/{e.extension_number}@{domain_name}" for e in active_members]
+        parts = [f"user/{e.sip_username}@{domain_name}" for e in active_members]
         return ",".join(parts)
 
 
@@ -1100,7 +1105,7 @@ def _add_inbound_destination(
             _action(cond, "set", f"call_timeout={dest_ext.call_forward_ring_time}")
             _action(cond, "set", "hangup_after_bridge=true")
             _action(cond, "set", "continue_on_fail=true")
-            _action(cond, "bridge", f"user/{dest_ext.extension_number}@{domain_name}")
+            _action(cond, "bridge", f"user/{dest_ext.sip_username}@{domain_name}")
             # Fallback to voicemail
             if dest_ext.voicemail_box_id:
                 vm = vm_map.get(str(dest_ext.voicemail_box_id))

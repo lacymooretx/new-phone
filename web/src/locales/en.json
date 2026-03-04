@@ -1418,6 +1418,7 @@
     "registrationFailed": "Registration Failed",
     "dial": "Dial",
     "call": "Call",
+    "redial": "Redial {{number}}",
     "hangUp": "Hang Up",
     "hold": "Hold",
     "unhold": "Resume",

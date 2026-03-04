@@ -17,6 +17,7 @@ import {
   Clock,
   Voicemail,
   History,
+  RotateCcw,
   ArrowRightLeft,
   X,
   Check,
@@ -74,7 +75,7 @@ const KEYS = [
 function DialpadTab() {
   const { t } = useTranslation()
   const [number, setNumber] = useState("")
-  const { callState, makeCall, sendDTMF } = useSoftphoneStore()
+  const { callState, makeCall, sendDTMF, lastDialedNumber } = useSoftphoneStore()
   const inCall = callState === "connected" || callState === "on_hold"
 
   const handleKey = (key: string) => {
@@ -124,6 +125,16 @@ function DialpadTab() {
         >
           <Phone className="size-4 mr-2" />
           {t("softphone.call")}
+        </Button>
+      )}
+      {!inCall && lastDialedNumber && !number.trim() && callState === "idle" && (
+        <Button
+          variant="outline"
+          onClick={() => makeCall(lastDialedNumber)}
+          className="h-9 text-sm"
+        >
+          <RotateCcw className="size-3.5 mr-2" />
+          {t("softphone.redial", { number: lastDialedNumber })}
         </Button>
       )}
     </div>
