@@ -22,6 +22,10 @@ RUN uv pip install --system -e ".[dev]"
 
 # Run as non-root user
 RUN adduser --disabled-password --gecos "" --uid 1000 appuser
+
+# Create gateway directory (shared volume with FreeSWITCH) writable by appuser
+RUN mkdir -p /gateways && chown appuser:appuser /gateways
+
 USER appuser
 
 # Default command
