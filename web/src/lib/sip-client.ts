@@ -28,12 +28,14 @@ export interface SipClientEvents {
   onRegistrationStateChanged: (status: RegistrationStatus) => void
   onIncomingCall: (session: Invitation) => void
   onSessionStateChanged: (state: SessionState) => void
+  onConsultSessionStateChanged?: (state: SessionState) => void
 }
 
 export class SipClient {
   private ua: UserAgent | null = null
   private registerer: Registerer | null = null
   private session: Session | null = null
+  private consultSession: Session | null = null
   private events: SipClientEvents
   private config: SipClientConfig
   private remoteAudio: HTMLAudioElement | null = null
@@ -274,6 +276,93 @@ export class SipClient {
     this.session.info(options)
   }
 
+  async blindTransfer(target: string): Promise<void> {
+    if (!this.session || this.session.state !== SessionState.Established) {
+      throw new Error("No active call to transfer")
+    }
+    const targetUri = UserAgent.makeURI(`sip:${target}@${this.config.sipDomain}`)
+    if (!targetUri) throw new Error("Invalid transfer target")
+
+    await this.session.refer(targetUri)
+    this.session = null
+  }
+
+  async makeConsultCall(target: string): Promise<void> {
+    if (!this.session || !this.ua) throw new Error("No active call or not connected")
+
+    // Hold the current call first
+    await this.toggleHold()
+
+    const targetUri = UserAgent.makeURI(`sip:${target}@${this.config.sipDomain}`)
+    if (!targetUri) throw new Error("Invalid target")
+
+    const inviter = new Inviter(this.ua, targetUri, {
+      sessionDescriptionHandlerOptions: {
+        constraints: { audio: this.audioConstraints, video: false },
+      },
+      sessionDescriptionHandlerModifiers: this.sdpModifiers,
+    })
+
+    this.consultSession = inviter
+    this._watchConsultSession(inviter)
+    await inviter.invite()
+  }
+
+  async completeAttendedTransfer(): Promise<void> {
+    if (!this.session || !this.consultSession) {
+      throw new Error("No sessions for attended transfer")
+    }
+    if (this.consultSession.state !== SessionState.Established) {
+      throw new Error("Consult call not established")
+    }
+
+    // REFER w/Replaces: passing a Session to refer() triggers attended transfer
+    await this.session.refer(this.consultSession)
+
+    // Clean up consult session
+    try {
+      await this.consultSession.bye()
+    } catch {
+      // ignore — may already be terminated by the REFER
+    }
+    this.consultSession = null
+    this.session = null
+  }
+
+  async cancelConsult(): Promise<void> {
+    if (!this.consultSession) return
+
+    if (this.consultSession.state === SessionState.Established) {
+      await this.consultSession.bye()
+    } else if (this.consultSession.state === SessionState.Establishing || this.consultSession.state === SessionState.Initial) {
+      if (this.consultSession instanceof Inviter) {
+        await this.consultSession.cancel()
+      }
+    }
+    this.consultSession = null
+
+    // Unhold original call
+    if (this.session) {
+      await this.toggleHold()
+    }
+  }
+
+  getConsultSession(): Session | null {
+    return this.consultSession
+  }
+
+  getConsultRemoteIdentity(): string {
+    if (!this.consultSession) return ""
+    let uri: URI | undefined
+    if (this.consultSession instanceof Invitation) {
+      uri = this.consultSession.remoteIdentity.uri
+    } else if (this.consultSession instanceof Inviter) {
+      uri = (this.consultSession as Inviter).remoteIdentity.uri
+    }
+    if (uri) return uri.user || uri.toString()
+    return ""
+  }
+
   getSession(): Session | null {
     return this.session
   }
@@ -363,6 +452,19 @@ export class SipClient {
         clearInterval(statsInterval)
       }
     }, 2000)
+  }
+
+  private _watchConsultSession(session: Session): void {
+    session.stateChange.addListener((state: SessionState) => {
+      this.events.onConsultSessionStateChanged?.(state)
+
+      if (state === SessionState.Established) {
+        this._attachRemoteAudio(session)
+      }
+      if (state === SessionState.Terminated) {
+        this.consultSession = null
+      }
+    })
   }
 
   private _attachRemoteAudio(session: Session): void {

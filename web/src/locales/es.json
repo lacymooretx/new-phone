@@ -58,6 +58,7 @@
     "billing": "Facturaci\u00f3n y Uso",
     "stirShaken": "STIR/SHAKEN",
     "migration": "Herramientas de Migraci\u00f3n",
+    "softphone": "Tel\u00e9fono",
     "receptionist": "Consola de Recepci\u00f3n",
     "hospitality": "Hospitalidad",
     "marketplace": "Marketplace",
@@ -1453,6 +1454,12 @@
       "deviceName": "Dispositivo: {{name}}",
       "vendor": "Fabricante: {{name}}",
       "notSupported": "La integración de auriculares requiere Chrome o Edge"
+    },
+    "page": {
+      "noActiveCall": "Sin llamada activa",
+      "dialToStart": "Marque un número o haga clic en una extensión para llamar",
+      "recent": "Recientes",
+      "voicemail": "Buzón de voz"
     }
   },
   "sso": {

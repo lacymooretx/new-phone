@@ -5,6 +5,8 @@ import { isDesktop, showNativeNotification } from "@/lib/desktop-bridge"
 
 export type CallState = "idle" | "ringing_in" | "ringing_out" | "connected" | "on_hold"
 export type CallDirection = "inbound" | "outbound" | null
+export type TransferMode = "idle" | "selecting" | "blind" | "consulting" | "attended"
+export type ConsultCallState = "idle" | "ringing" | "connected" | "terminated"
 
 interface SoftphoneState {
   // Registration
@@ -16,6 +18,10 @@ interface SoftphoneState {
   callStartTime: number | null
   isMuted: boolean
   isOnHold: boolean
+  // Transfer
+  transferMode: TransferMode
+  consultRemoteIdentity: string
+  consultCallState: ConsultCallState
   // UI
   panelOpen: boolean
   panelMinimized: boolean
@@ -30,9 +36,18 @@ interface SoftphoneState {
   toggleMute: () => void
   toggleHold: () => Promise<void>
   sendDTMF: (tone: string) => void
+  setMicDevice: (deviceId: string) => void
+  setSpeakerDevice: (deviceId: string) => void
   togglePanel: () => void
   minimizePanel: () => void
   expandPanel: () => void
+  // Transfer actions
+  startTransfer: () => void
+  cancelTransfer: () => void
+  blindTransfer: (target: string) => Promise<void>
+  startConsultTransfer: (target: string) => Promise<void>
+  completeAttendedTransfer: () => Promise<void>
+  cancelConsult: () => Promise<void>
 }
 
 let sipClient: SipClient | null = null
@@ -45,6 +60,9 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
   callStartTime: null,
   isMuted: false,
   isOnHold: false,
+  transferMode: "idle",
+  consultRemoteIdentity: "",
+  consultCallState: "idle",
   panelOpen: false,
   panelMinimized: false,
 
@@ -91,7 +109,31 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
               callStartTime: null,
               isMuted: false,
               isOnHold: false,
+              transferMode: "idle",
+              consultRemoteIdentity: "",
+              consultCallState: "idle",
             })
+            break
+        }
+      },
+      onConsultSessionStateChanged: (state: SessionState) => {
+        switch (state) {
+          case SessionState.Establishing:
+            set({ consultCallState: "ringing" })
+            break
+          case SessionState.Established:
+            set({
+              consultCallState: "connected",
+              transferMode: "attended",
+              consultRemoteIdentity: sipClient?.getConsultRemoteIdentity() || "",
+            })
+            break
+          case SessionState.Terminated:
+            set({ consultCallState: "idle", consultRemoteIdentity: "" })
+            // If we were consulting, revert transfer mode
+            if (get().transferMode === "consulting" || get().transferMode === "attended") {
+              set({ transferMode: "idle" })
+            }
             break
         }
       },
@@ -114,6 +156,9 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
       callStartTime: null,
       isMuted: false,
       isOnHold: false,
+      transferMode: "idle",
+      consultRemoteIdentity: "",
+      consultCallState: "idle",
     })
   },
 
@@ -154,6 +199,9 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
       callStartTime: null,
       isMuted: false,
       isOnHold: false,
+      transferMode: "idle",
+      consultRemoteIdentity: "",
+      consultCallState: "idle",
     })
   },
 
@@ -177,6 +225,14 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
     sipClient.sendDTMF(tone)
   },
 
+  setMicDevice: (deviceId: string) => {
+    if (sipClient) sipClient.setMicDevice(deviceId)
+  },
+
+  setSpeakerDevice: (deviceId: string) => {
+    if (sipClient) sipClient.setSpeakerDevice(deviceId)
+  },
+
   togglePanel: () => {
     const { panelOpen, panelMinimized } = get()
     if (!panelOpen) {
@@ -190,4 +246,73 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
 
   minimizePanel: () => set({ panelMinimized: true }),
   expandPanel: () => set({ panelMinimized: false, panelOpen: true }),
+
+  // Transfer actions
+  startTransfer: () => set({ transferMode: "selecting" }),
+  cancelTransfer: () => set({ transferMode: "idle" }),
+
+  blindTransfer: async (target) => {
+    if (!sipClient) return
+    set({ transferMode: "blind" })
+    try {
+      await sipClient.blindTransfer(target)
+      set({
+        callState: "idle",
+        callDirection: null,
+        remoteIdentity: "",
+        callStartTime: null,
+        isMuted: false,
+        isOnHold: false,
+        transferMode: "idle",
+      })
+    } catch {
+      set({ transferMode: "selecting" })
+    }
+  },
+
+  startConsultTransfer: async (target) => {
+    if (!sipClient) return
+    set({ transferMode: "consulting", consultRemoteIdentity: target })
+    try {
+      await sipClient.makeConsultCall(target)
+    } catch {
+      set({ transferMode: "selecting", consultRemoteIdentity: "", consultCallState: "idle" })
+    }
+  },
+
+  completeAttendedTransfer: async () => {
+    if (!sipClient) return
+    try {
+      await sipClient.completeAttendedTransfer()
+      set({
+        callState: "idle",
+        callDirection: null,
+        remoteIdentity: "",
+        callStartTime: null,
+        isMuted: false,
+        isOnHold: false,
+        transferMode: "idle",
+        consultRemoteIdentity: "",
+        consultCallState: "idle",
+      })
+    } catch {
+      // stay in attended mode if transfer fails
+    }
+  },
+
+  cancelConsult: async () => {
+    if (!sipClient) return
+    try {
+      await sipClient.cancelConsult()
+    } catch {
+      // ignore
+    }
+    set({
+      transferMode: "idle",
+      consultRemoteIdentity: "",
+      consultCallState: "idle",
+      isOnHold: false,
+      callState: "connected",
+    })
+  },
 }))

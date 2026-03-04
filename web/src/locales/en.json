@@ -58,6 +58,7 @@
     "billing": "Billing & Usage",
     "stirShaken": "STIR/SHAKEN",
     "migration": "Migration Tools",
+    "softphone": "Softphone",
     "receptionist": "Receptionist Console",
     "hospitality": "Hospitality",
     "marketplace": "Marketplace",
@@ -1453,6 +1454,12 @@
       "deviceName": "Device: {{name}}",
       "vendor": "Vendor: {{name}}",
       "notSupported": "Headset integration requires Chrome or Edge"
+    },
+    "page": {
+      "noActiveCall": "No active call",
+      "dialToStart": "Dial a number or click an extension to call",
+      "recent": "Recent",
+      "voicemail": "Voicemail"
     }
   },
   "sso": {

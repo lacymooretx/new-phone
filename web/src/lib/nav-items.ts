@@ -47,6 +47,7 @@ import {
   BedDouble,
   Puzzle,
   Code2,
+  Smartphone,
 } from "lucide-react"
 import { ROUTES, PERMISSIONS, type Permission } from "./constants"
 import type { LucideIcon } from "lucide-react"
@@ -151,6 +152,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: "nav.advancedFeatures",
     items: [
+      { labelKey: "nav.softphone", path: ROUTES.SOFTPHONE, icon: Smartphone, permission: null },
       { labelKey: "nav.receptionist", path: ROUTES.RECEPTIONIST, icon: MonitorDot, permission: PERMISSIONS.VIEW_EXTENSIONS },
       { labelKey: "nav.hospitality", path: ROUTES.HOSPITALITY, icon: BedDouble, permission: PERMISSIONS.MANAGE_EXTENSIONS },
       { labelKey: "nav.migration", path: ROUTES.MIGRATION, icon: FolderInput, permission: PERMISSIONS.MANAGE_TENANT },

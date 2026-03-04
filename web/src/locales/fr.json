@@ -58,6 +58,7 @@
     "billing": "Facturation et Utilisation",
     "stirShaken": "STIR/SHAKEN",
     "migration": "Outils de Migration",
+    "softphone": "T\u00e9l\u00e9phone",
     "receptionist": "Console R\u00e9ception",
     "hospitality": "H\u00f4tellerie",
     "marketplace": "Marketplace",
@@ -1453,6 +1454,12 @@
       "deviceName": "Appareil : {{name}}",
       "vendor": "Fabricant : {{name}}",
       "notSupported": "L'intégration du casque nécessite Chrome ou Edge"
+    },
+    "page": {
+      "noActiveCall": "Pas d'appel actif",
+      "dialToStart": "Composez un numéro ou cliquez sur une extension pour appeler",
+      "recent": "Récents",
+      "voicemail": "Messagerie"
     }
   },
   "sso": {

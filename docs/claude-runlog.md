@@ -1,5 +1,43 @@
 # Claude Runlog — New Phone Platform
 
+## 2026-03-04 — Full-Featured Softphone Page
+
+### Goal
+Build a dedicated full-page softphone at `/softphone` with 3-panel layout, parking visibility, MSP multi-tenant extension directory, and transfer support.
+
+### Phase 1: SIP Client Transfer Support + Store Updates
+- Added `blindTransfer()`, `makeConsultCall()`, `completeAttendedTransfer()`, `cancelConsult()` to `SipClient`
+- Added `_watchConsultSession()` for consult call state tracking
+- Added transfer state to softphone store: `transferMode`, `consultRemoteIdentity`, `consultCallState`
+- Added store actions: `startTransfer`, `cancelTransfer`, `blindTransfer`, `startConsultTransfer`, `completeAttendedTransfer`, `cancelConsult`
+- Files: `web/src/lib/sip-client.ts`, `web/src/stores/softphone-store.ts`
+
+### Phase 2: Extract Shared Components + Tenant Extensions API
+- Extracted `getExtensionStatus()` and `STATUS_CONFIG` to `web/src/lib/extension-status.ts`
+- Extracted `ExtensionTile` to `web/src/components/shared/extension-tile.tsx`
+- Extracted `ParkingPanel` to `web/src/components/shared/parking-panel.tsx` (with `onPickup` callback)
+- Created `useTenantExtensions()` hook in `web/src/api/tenant-extensions.ts` (MSP cross-tenant support)
+- Updated `receptionist-page.tsx` to use extracted components
+
+### Phase 3-4: Softphone Page
+- Created `web/src/pages/softphone/softphone-page.tsx` with:
+  - **Left panel**: Dialpad / Recent / Voicemail tabs
+  - **Center panel**: Active call display, call controls (mute/hold/transfer/park/DTMF), transfer sub-panel, incoming call banner
+  - **Right panel**: Extension BLF grid (with MSP tenant dropdown), parking panel, queue stats
+- Features: blind/attended transfer via extension search, click-to-call from recent/voicemail/extension grid, parked call pickup
+
+### Phase 5: Route, Nav, i18n
+- Added `SOFTPHONE: "/softphone"` route constant
+- Added `Smartphone` icon nav item in "Advanced Features" group
+- Added lazy route in `web/src/router/index.tsx`
+- Added i18n keys (`softphone.page.*`) in en/es/fr locales
+
+### Verification
+- `tsc --noEmit --project tsconfig.app.json` — PASS (0 errors)
+- `vite build` — PASS (softphone-page chunk: 20.45 kB / 5.28 kB gzip)
+
+---
+
 ## 2026-03-04 — Phases 29–39: All Remaining "Coming Soon" Features
 
 ### Goal

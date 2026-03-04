@@ -59,6 +59,7 @@ const SurveysPage = lazy(() => import("@/pages/surveys/surveys-page").then((m) =
 const BillingPage = lazy(() => import("@/pages/billing/billing-page").then((m) => ({ default: m.BillingPage })))
 const StirShakenPage = lazy(() => import("@/pages/stir-shaken/stir-shaken-page").then((m) => ({ default: m.StirShakenPage })))
 const MigrationPage = lazy(() => import("@/pages/migration/migration-page").then((m) => ({ default: m.MigrationPage })))
+const SoftphonePage = lazy(() => import("@/pages/softphone/softphone-page").then((m) => ({ default: m.SoftphonePage })))
 const ReceptionistPage = lazy(() => import("@/pages/receptionist/receptionist-page").then((m) => ({ default: m.ReceptionistPage })))
 const HospitalityPage = lazy(() => import("@/pages/hospitality/hospitality-page").then((m) => ({ default: m.HospitalityPage })))
 const MarketplacePage = lazy(() => import("@/pages/marketplace/marketplace-page").then((m) => ({ default: m.MarketplacePage })))
@@ -142,6 +143,7 @@ export const router = createBrowserRouter([
           { path: "billing", element: <LazyPage><BillingPage /></LazyPage> },
           { path: "stir-shaken", element: <LazyPage><StirShakenPage /></LazyPage> },
           { path: "migration", element: <LazyPage><MigrationPage /></LazyPage> },
+          { path: "softphone", element: <LazyPage><SoftphonePage /></LazyPage> },
           { path: "receptionist", element: <LazyPage><ReceptionistPage /></LazyPage> },
           { path: "hospitality", element: <LazyPage><HospitalityPage /></LazyPage> },
           { path: "marketplace", element: <LazyPage><MarketplacePage /></LazyPage> },

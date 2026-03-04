@@ -1,29 +1,22 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useExtensions } from "@/api/extensions"
-import { useParkingLots, useAllSlotStates, type SlotState } from "@/api/parking"
 import { useQueueStats } from "@/api/queues"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import {
   Phone,
   PhoneOff,
-  ParkingSquare,
   Search,
   Users,
   Headset,
   Clock,
   Star,
   CircleDot,
-  ArrowDownToLine,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { type ExtStatus, getExtensionStatus, STATUS_CONFIG } from "@/lib/extension-status"
+import { ExtensionTile } from "@/components/shared/extension-tile"
+import { ParkingPanel } from "@/components/shared/parking-panel"
 
 // ── Live Clock ──────────────────────────────────────────────────────
 function LiveClock() {
@@ -36,118 +29,6 @@ function LiveClock() {
     <span className="font-mono text-xs tabular-nums text-muted-foreground">
       {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
     </span>
-  )
-}
-
-// ── Parked Call Duration ─────────────────────────────────────────────
-function ParkedDuration({ parkedAt }: { parkedAt: string }) {
-  const [elapsed, setElapsed] = useState("")
-  useEffect(() => {
-    const start = new Date(parkedAt).getTime()
-    const tick = () => {
-      const s = Math.floor((Date.now() - start) / 1000)
-      const m = Math.floor(s / 60)
-      setElapsed(`${m}:${String(s % 60).padStart(2, "0")}`)
-    }
-    tick()
-    const id = setInterval(tick, 1000)
-    return () => clearInterval(id)
-  }, [parkedAt])
-  return <span className="font-mono text-xs tabular-nums">{elapsed}</span>
-}
-
-// ── Extension Status Logic ──────────────────────────────────────────
-type ExtStatus = "available" | "busy" | "ringing" | "dnd" | "offline"
-
-function getExtensionStatus(ext: {
-  is_active: boolean
-  dnd_enabled: boolean
-  agent_status: string | null
-}): ExtStatus {
-  if (!ext.is_active) return "offline"
-  if (ext.dnd_enabled) return "dnd"
-  if (ext.agent_status === "On Break" || ext.agent_status === "Logged Out") return "offline"
-  if (ext.agent_status === "On Call" || ext.agent_status === "In a Queue Call") return "busy"
-  if (ext.agent_status === "Available" || ext.agent_status === "Waiting") return "available"
-  // Default: if active and not DND, assume available
-  return "available"
-}
-
-const STATUS_CONFIG: Record<ExtStatus, { dot: string; border: string; bg: string; label: string }> = {
-  available: {
-    dot: "bg-emerald-400",
-    border: "border-emerald-500/30",
-    bg: "bg-emerald-500/5 hover:bg-emerald-500/10",
-    label: "Available",
-  },
-  busy: {
-    dot: "bg-red-400",
-    border: "border-red-500/30",
-    bg: "bg-red-500/5 hover:bg-red-500/10",
-    label: "On Call",
-  },
-  ringing: {
-    dot: "bg-amber-400 animate-pulse",
-    border: "border-amber-500/40",
-    bg: "bg-amber-500/5 hover:bg-amber-500/10",
-    label: "Ringing",
-  },
-  dnd: {
-    dot: "bg-zinc-400",
-    border: "border-zinc-500/20",
-    bg: "bg-zinc-500/5 hover:bg-zinc-500/8 opacity-60",
-    label: "DND",
-  },
-  offline: {
-    dot: "bg-zinc-600",
-    border: "border-zinc-700/20",
-    bg: "bg-zinc-800/5 hover:bg-zinc-500/5 opacity-40",
-    label: "Offline",
-  },
-}
-
-// ── Extension Tile ──────────────────────────────────────────────────
-function ExtensionTile({
-  extensionNumber,
-  name,
-  status,
-  onClick,
-}: {
-  extensionNumber: string
-  name: string
-  status: ExtStatus
-  onClick?: () => void
-}) {
-  const cfg = STATUS_CONFIG[status]
-  return (
-    <TooltipProvider delayDuration={200}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={onClick}
-            className={cn(
-              "relative flex flex-col items-center justify-center rounded-md border px-1 py-1.5",
-              "transition-all duration-150 cursor-pointer select-none",
-              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-              cfg.border,
-              cfg.bg
-            )}
-          >
-            <div className={cn("absolute top-1 right-1 h-1.5 w-1.5 rounded-full", cfg.dot)} />
-            <span className="font-mono text-[11px] font-semibold leading-none tracking-tight">
-              {extensionNumber}
-            </span>
-            <span className="mt-0.5 max-w-full truncate text-[9px] leading-none text-muted-foreground">
-              {name || extensionNumber}
-            </span>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="text-xs">
-          <div className="font-medium">{name || extensionNumber}</div>
-          <div className="text-muted-foreground">Ext {extensionNumber} — {cfg.label}</div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   )
 }
 
@@ -185,64 +66,12 @@ function Panel({
 
 // ── Active Calls Panel ──────────────────────────────────────────────
 function ActiveCallsPanel() {
-  // In a real implementation, this would subscribe to ESL events via WebSocket
-  // For now, show the empty state
   return (
     <Panel title="Active Calls" icon={Phone} badge={0}>
       <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
         <PhoneOff className="mb-2 h-5 w-5 opacity-40" />
         <span className="text-xs">No active calls</span>
       </div>
-    </Panel>
-  )
-}
-
-// ── Parking Panel ───────────────────────────────────────────────────
-function ParkingPanel() {
-  const { data: lots } = useParkingLots()
-  const { data: slots } = useAllSlotStates()
-  const occupiedSlots = useMemo(
-    () => (slots ?? []).filter((s: SlotState) => s.occupied),
-    [slots]
-  )
-
-  return (
-    <Panel title="Parking" icon={ParkingSquare} badge={occupiedSlots.length || undefined}>
-      {occupiedSlots.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
-          <ParkingSquare className="mb-2 h-5 w-5 opacity-40" />
-          <span className="text-xs">No parked calls</span>
-          <span className="mt-1 text-[10px] opacity-60">{lots?.length ?? 0} lots configured</span>
-        </div>
-      ) : (
-        <div className="divide-y">
-          {occupiedSlots.map((slot: SlotState) => (
-            <div key={slot.slot_number} className="flex items-center gap-2 px-3 py-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-emerald-500/10 text-emerald-500">
-                <span className="font-mono text-[10px] font-bold">{slot.slot_number}</span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-xs font-medium">
-                  {slot.caller_id_name || slot.caller_id_number || "Unknown"}
-                </div>
-                {slot.caller_id_name && slot.caller_id_number && (
-                  <div className="truncate text-[10px] text-muted-foreground font-mono">
-                    {slot.caller_id_number}
-                  </div>
-                )}
-              </div>
-              {slot.parked_at && (
-                <div className="text-muted-foreground">
-                  <ParkedDuration parkedAt={slot.parked_at} />
-                </div>
-              )}
-              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
-                <ArrowDownToLine className="h-3 w-3" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
     </Panel>
   )
 }
@@ -304,7 +133,6 @@ function QueueStatsPanel() {
 
 // ── Speed Dials Panel ───────────────────────────────────────────────
 function SpeedDialsPanel() {
-  // Placeholder — would load from user preferences
   const speedDials = [
     { label: "Front Desk", number: "100" },
     { label: "IT Support", number: "200" },

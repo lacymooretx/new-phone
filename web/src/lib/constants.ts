@@ -51,6 +51,7 @@ export const ROUTES = {
   BILLING: "/billing",
   STIR_SHAKEN: "/stir-shaken",
   MIGRATION: "/migration",
+  SOFTPHONE: "/softphone",
   RECEPTIONIST: "/receptionist",
   HOSPITALITY: "/hospitality",
   MARKETPLACE: "/marketplace",
