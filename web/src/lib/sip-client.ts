@@ -39,6 +39,8 @@ export class SipClient {
   private remoteAudio: HTMLAudioElement | null = null
   // FreeSWITCH omits a=mid: from SDP answers — addMidLines fixes this for Chrome
   private sdpModifiers: SessionDescriptionHandlerModifier[] = [addMidLines]
+  private selectedMicId: string = ""
+  private selectedSpeakerId: string = ""
 
   constructor(config: SipClientConfig, events: SipClientEvents) {
     this.config = config
@@ -49,6 +51,26 @@ export class SipClient {
     this.remoteAudio = el
   }
 
+  setMicDevice(deviceId: string): void {
+    this.selectedMicId = deviceId
+  }
+
+  setSpeakerDevice(deviceId: string): void {
+    this.selectedSpeakerId = deviceId
+    if (this.remoteAudio && "setSinkId" in this.remoteAudio) {
+      (this.remoteAudio as HTMLAudioElement & { setSinkId: (id: string) => Promise<void> })
+        .setSinkId(deviceId)
+        .catch(() => {})
+    }
+  }
+
+  private get audioConstraints(): MediaTrackConstraints | boolean {
+    if (this.selectedMicId) {
+      return { deviceId: { exact: this.selectedMicId } }
+    }
+    return true
+  }
+
   async connect(): Promise<void> {
     this.events.onRegistrationStateChanged("connecting")
 
@@ -57,6 +79,7 @@ export class SipClient {
 
     const transportOptions = {
       server: this.config.wssUrl,
+      keepAliveInterval: 30,
     }
 
     const uaOptions: UserAgentOptions = {
@@ -141,7 +164,7 @@ export class SipClient {
 
     const inviter = new Inviter(this.ua, targetUri, {
       sessionDescriptionHandlerOptions: {
-        constraints: { audio: true, video: false },
+        constraints: { audio: this.audioConstraints, video: false },
       },
       sessionDescriptionHandlerModifiers: this.sdpModifiers,
     })
@@ -157,7 +180,7 @@ export class SipClient {
     }
     await (this.session as Invitation).accept({
       sessionDescriptionHandlerOptions: {
-        constraints: { audio: true, video: false },
+        constraints: { audio: this.audioConstraints, video: false },
       },
       sessionDescriptionHandlerModifiers: this.sdpModifiers,
     })
@@ -356,6 +379,12 @@ export class SipClient {
       }
     })
     this.remoteAudio.srcObject = remoteStream
+    // Apply selected speaker device
+    if (this.selectedSpeakerId && "setSinkId" in this.remoteAudio) {
+      (this.remoteAudio as HTMLAudioElement & { setSinkId: (id: string) => Promise<void> })
+        .setSinkId(this.selectedSpeakerId)
+        .catch(() => {})
+    }
     this.remoteAudio.play().catch(() => {
       // autoplay may be blocked — user gesture will resolve
     })

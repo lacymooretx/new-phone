@@ -56,7 +56,7 @@ class FreeSwitchService:
             logger.warning("freeswitch_flush_cache_failed", error=str(e))
             return False
 
-    async def sofia_profile_rescan(self, profile: str = "tls") -> bool:
+    async def sofia_profile_rescan(self, profile: str = "external") -> bool:
         """Rescan a sofia profile to pick up gateway changes."""
         try:
             result = await self._send_command(f"api sofia profile {profile} rescan")
@@ -66,7 +66,7 @@ class FreeSwitchService:
             logger.warning("freeswitch_sofia_rescan_failed", profile=profile, error=str(e))
             return False
 
-    async def kill_gateway(self, gateway_name: str, profile: str = "tls") -> bool:
+    async def kill_gateway(self, gateway_name: str, profile: str = "external") -> bool:
         """Remove a gateway from a sofia profile."""
         try:
             result = await self._send_command(f"api sofia profile {profile} killgw {gateway_name}")

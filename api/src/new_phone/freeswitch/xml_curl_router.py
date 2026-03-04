@@ -18,7 +18,6 @@ from new_phone.freeswitch.xml_builder import (
     build_conference_config,
     build_dialplan,
     build_directory_user,
-    build_gateway_config,
     build_not_found,
 )
 from new_phone.models.audio_prompt import AudioPrompt
@@ -400,34 +399,10 @@ async def xml_curl_configuration(
         xml = build_conference_config()
         return Response(content=xml, media_type=XML_CONTENT_TYPE)
 
-    # Only handle sofia.conf gateway requests
-    if key_value != "sofia.conf":
-        return Response(content=build_not_found(), media_type=XML_CONTENT_TYPE)
-
-    async with AdminSessionLocal() as session:
-        # Load all active trunks
-        trunks = list(
-            (await session.execute(select(SIPTrunk).where(SIPTrunk.is_active.is_(True))))
-            .scalars()
-            .all()
-        )
-
-        # Load all tenants for these trunks
-        tenant_ids = {t.tenant_id for t in trunks}
-        tenants_result = await session.execute(select(Tenant).where(Tenant.id.in_(tenant_ids)))
-        tenants = {str(t.id): t for t in tenants_result.scalars().all()}
-
-        # Decrypt trunk passwords
-        passwords = {}
-        for trunk in trunks:
-            if trunk.encrypted_password:
-                try:
-                    passwords[str(trunk.id)] = decrypt_value(trunk.encrypted_password)
-                except ValueError:
-                    logger.error("xml_curl_config_decrypt_failed", trunk_id=str(trunk.id))
-
-        xml = build_gateway_config(trunks, tenants, passwords)
-        return Response(content=xml, media_type=XML_CONTENT_TYPE)
+    # sofia.conf: return not_found so FS uses its static config.
+    # Gateways are loaded from /gateways/*.xml files written by config_sync,
+    # included via X-PRE-PROCESS in the external profile.
+    return Response(content=build_not_found(), media_type=XML_CONTENT_TYPE)
 
 
 async def _handle_ivr_config() -> Response:

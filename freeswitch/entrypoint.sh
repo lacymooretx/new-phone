@@ -24,6 +24,18 @@ echo "Enabled TLS on internal profile"
 rm -f /etc/freeswitch/sip_profiles/tls.xml
 echo "Removed standalone TLS profile (internal handles WSS)"
 
+# Include gateway XML files from the shared /gateways/ volume in the external profile.
+# The API writes individual gateway files there; FS picks them up via reloadxml + rescan.
+if [ -f /etc/freeswitch/sip_profiles/external.xml ] && ! grep -q '/gateways/' /etc/freeswitch/sip_profiles/external.xml; then
+    sed -i 's|<gateways>|<gateways>\n      <X-PRE-PROCESS cmd="include" data="/gateways/*.xml"/>|' /etc/freeswitch/sip_profiles/external.xml
+    echo "Added /gateways/*.xml include to external profile"
+fi
+
+# Bind external profile to 0.0.0.0 for outbound calls through Docker bridge networks.
+sed -i 's|<param name="sip-ip" value="\$\${local_ip_v4}"/>|<param name="sip-ip" value="0.0.0.0"/>|' /etc/freeswitch/sip_profiles/external.xml
+sed -i 's|<param name="rtp-ip" value="\$\${local_ip_v4}"/>|<param name="rtp-ip" value="0.0.0.0"/>|' /etc/freeswitch/sip_profiles/external.xml
+echo "Bound external profile to 0.0.0.0"
+
 # Set RTP port range to match Docker exposed ports (16384-16884).
 # The vanilla config has these commented out, defaulting to 16384-32768.
 sed -i 's|<!-- <param name="rtp-start-port" value="16384"/> -->|<param name="rtp-start-port" value="16384"/>|' /etc/freeswitch/autoload_configs/switch.conf.xml

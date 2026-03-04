@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { Phone, Users, Activity, PhoneCall, Clock, Plus, ArrowRight, ListOrdered, Network, BarChart3 } from "lucide-react"
+import { Phone, Users, Activity, PhoneCall, Clock, Plus, ArrowRight, ListOrdered, Network, BarChart3, CheckCircle2, AlertTriangle, XCircle } from "lucide-react"
 import { useNavigate } from "react-router"
 import { useExtensions } from "@/api/extensions"
 import { useUsers } from "@/api/users"
@@ -56,12 +56,34 @@ export function DashboardPage() {
         ) : (
           <StatCard title={t('dashboard.users')} value={users?.length ?? 0} icon={Users} />
         )}
-        <StatCard
-          title={t('dashboard.systemHealth')}
-          value={health?.status === "healthy" ? t('dashboard.healthy') : health?.status ?? "..."}
-          icon={Activity}
-          description={health?.services ? `DB: ${health.services.postgres?.status ?? "unknown"} | Redis: ${health.services.redis?.status ?? "unknown"}` : undefined}
-        />
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('dashboard.systemHealth')}</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="space-y-1.5">
+            {health?.services ? (
+              <>
+                {Object.entries(health.services).map(([name, svc]) => {
+                  const isHealthy = svc.status === "healthy"
+                  const isDegraded = svc.status === "degraded"
+                  const Icon = isHealthy ? CheckCircle2 : isDegraded ? AlertTriangle : XCircle
+                  const color = isHealthy ? "text-green-500" : isDegraded ? "text-yellow-500" : "text-destructive"
+                  const label = name.replace(/_/g, " ")
+                  return (
+                    <div key={name} className="flex items-center gap-1.5">
+                      <Icon className={`size-3 shrink-0 ${color}`} />
+                      <span className="text-xs capitalize flex-1">{label}</span>
+                      <span className={`text-[10px] font-medium ${color}`}>{svc.status}</span>
+                    </div>
+                  )
+                })}
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">...</p>
+            )}
+          </CardContent>
+        </Card>
         {summaryLoading ? (
           <Skeleton className="h-32" />
         ) : (

@@ -3,10 +3,13 @@ from typing import Annotated
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select as sa_select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from new_phone.auth.rbac import Permission, is_msp_role
 from new_phone.deps.auth import get_admin_db, require_permission
+from new_phone.models.sip_trunk import SIPTrunk
+from new_phone.models.tenant import Tenant
 from new_phone.models.user import User
 from new_phone.schemas.providers import (
     KeycodeActivateRequest,
@@ -21,22 +24,101 @@ from new_phone.services.sip_trunk_service import SIPTrunkService
 logger = structlog.get_logger()
 
 
-async def _sync_gateway_create() -> None:
+async def _get_tenant(tenant_id: uuid.UUID) -> Tenant | None:
+    """Load tenant by ID (admin session, bypasses RLS)."""
+    from new_phone.db.engine import AdminSessionLocal
+
+    async with AdminSessionLocal() as s:
+        return (await s.execute(sa_select(Tenant).where(Tenant.id == tenant_id))).scalar_one_or_none()
+
+
+def _build_gw_xml(trunk: SIPTrunkResponse | SIPTrunk, tenant: Tenant) -> tuple[str, str]:
+    """Build gateway name and XML content for a trunk.
+
+    Returns (gw_name, xml_content). xml_content may be empty if trunk has no host.
+    """
+    from new_phone.auth.encryption import decrypt_value
+    from new_phone.freeswitch.xml_builder import build_gateway_file, gateway_fs_name
+
+    gw_name = gateway_fs_name(tenant.slug, trunk.name)
+    password = ""
+    enc_pwd = getattr(trunk, "encrypted_password", None)
+    if enc_pwd:
+        try:
+            password = decrypt_value(enc_pwd)
+        except ValueError:
+            pass
+    xml = build_gateway_file(trunk, tenant, password)
+    return gw_name, xml
+
+
+async def _sync_gateway_create(trunk: SIPTrunk | None = None, tenant: Tenant | None = None) -> None:
     try:
         from new_phone.main import config_sync
-        if config_sync:
+        if not config_sync:
+            return
+        if trunk and tenant:
+            gw_name, xml = _build_gw_xml(trunk, tenant)
+            await config_sync.notify_gateway_create(gw_name, xml)
+        else:
             await config_sync.notify_gateway_create()
     except Exception as e:
         logger.warning("config_sync_failed", error=str(e))
 
 
-async def _sync_gateway_change(gateway_name: str | None = None) -> None:
+async def _sync_gateway_change(
+    old_gw_name: str | None = None,
+    trunk: SIPTrunk | None = None,
+    tenant: Tenant | None = None,
+) -> None:
+    try:
+        from new_phone.main import config_sync
+        if not config_sync:
+            return
+        new_gw_name = None
+        xml = None
+        if trunk and tenant:
+            new_gw_name, xml = _build_gw_xml(trunk, tenant)
+        await config_sync.notify_gateway_change(old_gw_name, new_gw_name, xml)
+    except Exception as e:
+        logger.warning("config_sync_failed", error=str(e))
+
+
+async def _sync_gateway_delete(gw_name: str) -> None:
     try:
         from new_phone.main import config_sync
         if config_sync:
-            await config_sync.notify_gateway_change(gateway_name)
+            await config_sync.notify_gateway_delete(gw_name)
     except Exception as e:
         logger.warning("config_sync_failed", error=str(e))
+
+
+async def _startup_gateway_sync() -> None:
+    """Full gateway sync — loads all trunks from DB and writes gateway files."""
+    from new_phone.auth.encryption import decrypt_value
+    from new_phone.db.engine import AdminSessionLocal
+    from new_phone.main import config_sync
+
+    if not config_sync:
+        return
+
+    async with AdminSessionLocal() as session:
+        trunks = list(
+            (await session.execute(sa_select(SIPTrunk).where(SIPTrunk.is_active.is_(True))))
+            .scalars()
+            .all()
+        )
+        tenant_ids = {t.tenant_id for t in trunks}
+        tenants_result = await session.execute(sa_select(Tenant).where(Tenant.id.in_(tenant_ids)))
+        tenants = {str(t.id): t for t in tenants_result.scalars().all()}
+        passwords = {}
+        for trunk in trunks:
+            if trunk.encrypted_password:
+                try:
+                    passwords[str(trunk.id)] = decrypt_value(trunk.encrypted_password)
+                except ValueError:
+                    pass
+        await config_sync.sync_all_gateways(trunks, tenants, passwords)
 
 router = APIRouter(prefix="/tenants/{tenant_id}/trunks", tags=["sip-trunks"])
 
@@ -67,7 +149,14 @@ async def create_trunk(
     _check_tenant_access(user, tenant_id)
     service = SIPTrunkService(db)
     trunk = await service.create_trunk(tenant_id, body)
-    await _sync_gateway_create()
+    tenant = await _get_tenant(tenant_id)
+    # Reload the raw model for encrypted_password access
+    from new_phone.db.engine import AdminSessionLocal
+
+    async with AdminSessionLocal() as s:
+        raw_trunk = (await s.execute(sa_select(SIPTrunk).where(SIPTrunk.id == trunk.id))).scalar_one_or_none()
+        if raw_trunk and tenant:
+            await _sync_gateway_create(raw_trunk, tenant)
     return trunk
 
 
@@ -97,19 +186,18 @@ async def update_trunk(
     _check_tenant_access(user, tenant_id)
     service = SIPTrunkService(db)
     try:
+        from new_phone.db.engine import AdminSessionLocal
+        from new_phone.freeswitch.xml_builder import gateway_fs_name
+
         # Get old trunk name to kill the gateway
         old_trunk = await service.get_trunk(tenant_id, trunk_id)
         trunk = await service.update_trunk(tenant_id, trunk_id, body)
-        # Build gateway name for killgw
-        from sqlalchemy import select as sa_select
-
-        from new_phone.db.engine import AdminSessionLocal
-        from new_phone.models.tenant import Tenant
-        async with AdminSessionLocal() as s:
-            t = (await s.execute(sa_select(Tenant).where(Tenant.id == tenant_id))).scalar_one_or_none()
-            if t and old_trunk:
-                gw_name = f"{t.slug}-{old_trunk.name.lower().replace(' ', '-')}"
-                await _sync_gateway_change(gw_name)
+        tenant = await _get_tenant(tenant_id)
+        if tenant and old_trunk:
+            old_gw_name = gateway_fs_name(tenant.slug, old_trunk.name)
+            async with AdminSessionLocal() as s:
+                raw_trunk = (await s.execute(sa_select(SIPTrunk).where(SIPTrunk.id == trunk.id))).scalar_one_or_none()
+                await _sync_gateway_change(old_gw_name, raw_trunk, tenant)
         return trunk
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from None
@@ -125,19 +213,16 @@ async def deactivate_trunk(
     _check_tenant_access(user, tenant_id)
     service = SIPTrunkService(db)
     try:
+        from new_phone.freeswitch.xml_builder import gateway_fs_name
+
         # Get trunk name for gateway kill
         trunk = await service.get_trunk(tenant_id, trunk_id)
         result = await service.deactivate_trunk(tenant_id, trunk_id)
         if trunk:
-            from sqlalchemy import select as sa_select
-
-            from new_phone.db.engine import AdminSessionLocal
-            from new_phone.models.tenant import Tenant
-            async with AdminSessionLocal() as s:
-                t = (await s.execute(sa_select(Tenant).where(Tenant.id == tenant_id))).scalar_one_or_none()
-                if t:
-                    gw_name = f"{t.slug}-{trunk.name.lower().replace(' ', '-')}"
-                    await _sync_gateway_change(gw_name)
+            tenant = await _get_tenant(tenant_id)
+            if tenant:
+                gw_name = gateway_fs_name(tenant.slug, trunk.name)
+                await _sync_gateway_delete(gw_name)
         return result
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from None
@@ -177,7 +262,13 @@ async def provision_trunk(
             channels=body.channels,
             config=body.config,
         )
-        await _sync_gateway_create()
+        tenant = await _get_tenant(tenant_id)
+        from new_phone.db.engine import AdminSessionLocal
+
+        async with AdminSessionLocal() as s:
+            raw_trunk = (await s.execute(sa_select(SIPTrunk).where(SIPTrunk.id == trunk.id))).scalar_one_or_none()
+            if raw_trunk and tenant:
+                await _sync_gateway_create(raw_trunk, tenant)
         return trunk
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from None
@@ -204,6 +295,8 @@ async def deprovision_trunk(
     _check_tenant_access(user, tenant_id)
     service = SIPTrunkService(db)
     try:
+        from new_phone.freeswitch.xml_builder import gateway_fs_name
+
         # For ClearlyIP trunks, just deactivate locally (no provider API)
         existing = await service.get_trunk(tenant_id, trunk_id)
         if existing and existing.provider_type == "clearlyip":
@@ -211,15 +304,10 @@ async def deprovision_trunk(
         else:
             trunk = await service.deprovision(tenant_id, trunk_id)
         if trunk:
-            from sqlalchemy import select as sa_select
-
-            from new_phone.db.engine import AdminSessionLocal
-            from new_phone.models.tenant import Tenant
-            async with AdminSessionLocal() as s:
-                t = (await s.execute(sa_select(Tenant).where(Tenant.id == tenant_id))).scalar_one_or_none()
-                if t:
-                    gw_name = f"{t.slug}-{trunk.name.lower().replace(' ', '-')}"
-                    await _sync_gateway_change(gw_name)
+            tenant = await _get_tenant(tenant_id)
+            if tenant:
+                gw_name = gateway_fs_name(tenant.slug, trunk.name)
+                await _sync_gateway_delete(gw_name)
         return trunk
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from None
@@ -242,7 +330,13 @@ async def activate_keycode(
             name_prefix=body.name_prefix,
             import_dids=body.import_dids,
         )
-        await _sync_gateway_create()
+        # Sync all gateways (keycode may create multiple trunks)
+        try:
+            from new_phone.main import config_sync
+            if config_sync:
+                await _startup_gateway_sync()
+        except Exception as e:
+            logger.warning("config_sync_failed", error=str(e))
         return KeycodeActivateResult(**result)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from None

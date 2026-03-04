@@ -93,6 +93,14 @@ async def lifespan(app: FastAPI):
     # Config sync (wraps FS service for cache/profile management)
     config_sync = ConfigSync(freeswitch_service)
 
+    # Sync gateway XML files from DB to shared volume on startup
+    try:
+        from new_phone.routers.sip_trunks import _startup_gateway_sync
+        await _startup_gateway_sync()
+        logger.info("gateway_sync_startup_complete")
+    except Exception as e:
+        logger.warning("gateway_sync_startup_failed", error=str(e))
+
     # MinIO storage
     storage_service = StorageService()
     try:

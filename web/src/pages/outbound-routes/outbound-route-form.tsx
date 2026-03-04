@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useSipTrunks } from "@/api/sip-trunks"
 import type { OutboundRoute, OutboundRouteCreate } from "@/api/outbound-routes"
 
 const outboundRouteSchema = z.object({
@@ -30,6 +32,11 @@ interface OutboundRouteFormProps {
 
 export function OutboundRouteForm({ outboundRoute, onSubmit, isLoading }: OutboundRouteFormProps) {
   const { t } = useTranslation()
+  const { data: trunks } = useSipTrunks()
+  const [selectedTrunkIds, setSelectedTrunkIds] = useState<string[]>(
+    outboundRoute?.trunk_ids ?? []
+  )
+
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(outboundRouteSchema) as any,
@@ -47,11 +54,30 @@ export function OutboundRouteForm({ outboundRoute, onSubmit, isLoading }: Outbou
 
   const cidMode = watch("cid_mode")
 
+  const addTrunk = (trunkId: string) => {
+    if (!selectedTrunkIds.includes(trunkId)) {
+      setSelectedTrunkIds([...selectedTrunkIds, trunkId])
+    }
+  }
+
+  const removeTrunk = (trunkId: string) => {
+    setSelectedTrunkIds(selectedTrunkIds.filter((id) => id !== trunkId))
+  }
+
+  const moveTrunk = (index: number, direction: "up" | "down") => {
+    const newIds = [...selectedTrunkIds]
+    const swapIndex = direction === "up" ? index - 1 : index + 1
+    if (swapIndex < 0 || swapIndex >= newIds.length) return
+    ;[newIds[index], newIds[swapIndex]] = [newIds[swapIndex], newIds[index]]
+    setSelectedTrunkIds(newIds)
+  }
+
   const submitHandler = (values: FormValues) => {
     const data: OutboundRouteCreate = {
       ...values,
       prepend_digits: values.prepend_digits || undefined,
       custom_cid: values.custom_cid || undefined,
+      trunk_ids: selectedTrunkIds,
     }
     onSubmit(data)
   }
@@ -101,6 +127,73 @@ export function OutboundRouteForm({ outboundRoute, onSubmit, isLoading }: Outbou
             <Label htmlFor="custom_cid">{t('outboundRoutes.form.customCid', { defaultValue: 'Custom CID' })}</Label>
             <Input id="custom_cid" placeholder="+15551234567" type="tel" {...register("custom_cid")} />
           </div>
+        )}
+      </div>
+
+      {/* SIP Trunk Selection */}
+      <div className="space-y-2">
+        <Label>{t('outboundRoutes.form.trunks', { defaultValue: 'SIP Trunks' })} *</Label>
+        <p className="text-xs text-muted-foreground">
+          {t('outboundRoutes.form.trunksHelp', { defaultValue: 'Select trunks for this route. Order determines failover priority.' })}
+        </p>
+
+        {trunks && trunks.length > 0 ? (
+          <div className="space-y-1 rounded-md border p-2">
+            {trunks.map((trunk) => {
+              const isSelected = selectedTrunkIds.includes(trunk.id)
+              const position = selectedTrunkIds.indexOf(trunk.id)
+              return (
+                <div
+                  key={trunk.id}
+                  role="button"
+                  tabIndex={0}
+                  className={`flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer transition-colors ${isSelected ? "bg-primary/10 border border-primary/30" : "hover:bg-muted/50"}`}
+                  onClick={() => isSelected ? removeTrunk(trunk.id) : addTrunk(trunk.id)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); isSelected ? removeTrunk(trunk.id) : addTrunk(trunk.id) }}}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    readOnly
+                    className="size-4 rounded accent-primary pointer-events-none"
+                  />
+                  {isSelected && (
+                    <span className="text-xs font-medium text-primary w-4">{position + 1}.</span>
+                  )}
+                  <span className="flex-1 truncate">{trunk.name}</span>
+                  <span className="text-xs text-muted-foreground">{trunk.host}</span>
+                  {isSelected && selectedTrunkIds.length > 1 && (
+                    <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        type="button" variant="ghost" size="sm"
+                        className="h-6 w-6 p-0" disabled={position === 0}
+                        onClick={() => moveTrunk(position, "up")}
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        type="button" variant="ghost" size="sm"
+                        className="h-6 w-6 p-0" disabled={position === selectedTrunkIds.length - 1}
+                        onClick={() => moveTrunk(position, "down")}
+                      >
+                        ↓
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        ) : trunks?.length === 0 ? (
+          <p className="text-xs text-destructive">
+            {t('outboundRoutes.form.noTrunks', { defaultValue: 'No SIP trunks configured. Create a trunk first.' })}
+          </p>
+        ) : null}
+
+        {selectedTrunkIds.length === 0 && trunks && trunks.length > 0 && (
+          <p className="text-xs text-destructive">
+            {t('outboundRoutes.form.trunkRequired', { defaultValue: 'At least one trunk is required for outbound calls.' })}
+          </p>
         )}
       </div>
 

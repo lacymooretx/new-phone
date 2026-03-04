@@ -484,10 +484,51 @@ def build_dialplan(
     return _xml_to_string(doc)
 
 
+def gateway_fs_name(tenant_slug: str, trunk_name: str) -> str:
+    """Generate a sanitized FreeSWITCH gateway name.
+
+    Used consistently for gateway XML files, bridge strings, and killgw commands.
+    """
+    raw = f"{tenant_slug}-{trunk_name.lower().replace(' ', '-')}"
+    # Remove chars invalid in FS gateway names (keep alphanumeric, dash, underscore, dot)
+    return re.sub(r"[^a-z0-9._-]", "", raw)
+
+
+def build_gateway_file(trunk: SIPTrunk, tenant: Tenant, password: str) -> str:
+    """Generate a single gateway XML fragment for inclusion by FS external profile.
+
+    Returns XML like: <gateway name="..."><param .../></gateway>
+    Written to /gateways/{gw_name}.xml and included via X-PRE-PROCESS.
+    """
+    if not trunk.host:
+        return ""
+    gw_name = gateway_fs_name(tenant.slug, trunk.name)
+    include = Element("include")
+    gw = SubElement(include, "gateway", name=gw_name)
+    _param(gw, "realm", trunk.host)
+    _param(gw, "proxy", f"{trunk.host}:{trunk.port}")
+    _param(gw, "register", "true" if trunk.auth_type == "registration" else "false")
+
+    if trunk.username:
+        _param(gw, "username", trunk.username)
+    if password:
+        _param(gw, "password", password)
+
+    _param(gw, "caller-id-in-from", "true")
+    _param(gw, "register-transport", trunk.transport)
+
+    raw = tostring(include, encoding="unicode", xml_declaration=False)
+    return f'<?xml version="1.0" encoding="UTF-8"?>\n{raw}'
+
+
 def build_gateway_config(
     trunks: list[SIPTrunk], tenants: dict[str, Tenant], passwords: dict[str, str]
 ) -> str:
     """Generate sofia gateway XML for all active SIP trunks.
+
+    NOTE: This is only used for the xml_curl configuration response
+    which replaces the entire sofia.conf. Prefer build_gateway_file()
+    for individual gateway files included by the external profile.
 
     Args:
         trunks: Active SIP trunks.
@@ -498,7 +539,7 @@ def build_gateway_config(
     section = SubElement(doc, "section", name="configuration")
     config = SubElement(section, "configuration", name="sofia.conf", description="sofia config")
     profiles = SubElement(config, "profiles")
-    profile = SubElement(profiles, "profile", name="tls")
+    profile = SubElement(profiles, "profile", name="external")
     gateways = SubElement(profile, "gateways")
 
     for trunk in trunks:
@@ -508,7 +549,7 @@ def build_gateway_config(
         if not tenant:
             continue
 
-        gw_name = f"{tenant.slug}-{trunk.name.lower().replace(' ', '-')}"
+        gw_name = gateway_fs_name(tenant.slug, trunk.name)
         gw = SubElement(gateways, "gateway", name=gw_name)
         _param(gw, "realm", trunk.host)
         _param(gw, "proxy", f"{trunk.host}:{trunk.port}")
@@ -1117,7 +1158,7 @@ def _outbound_trunk_bridge(
         trunk = trunk_map.get(str(assignment.trunk_id))
         if not trunk or not trunk.is_active:
             continue
-        gw_name = f"{tenant.slug}-{trunk.name.lower().replace(' ', '-')}"
+        gw_name = gateway_fs_name(tenant.slug, trunk.name)
         parts.append(f"sofia/gateway/{gw_name}/${{dialed_number}}")
 
     # Pipe-separated for failover
