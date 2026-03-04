@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
@@ -11,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { useUsers } from "@/api/users"
 import { useVoicemailBoxes } from "@/api/voicemail"
+import { useDids } from "@/api/dids"
 import type { Extension, ExtensionCreate } from "@/api/extensions"
 import { useCreateVoicemailBox } from "@/api/voicemail"
 import { SiteSelector } from "@/components/shared/site-selector"
@@ -58,7 +60,11 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
   const { t } = useTranslation()
   const { data: users } = useUsers()
   const { data: voicemailBoxes } = useVoicemailBoxes()
+  const { data: dids } = useDids()
   const createVoicemailBox = useCreateVoicemailBox()
+
+  const isCreating = !extension
+  const defaultDid = dids?.find((d) => d.is_active && d.status === "active")
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,6 +99,25 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
       site_id: extension?.site_id ?? "",
     },
   })
+
+  // When creating a new extension, auto-default CID fields
+  const extensionNumber = watch("extension_number")
+  const internalCidNumber = watch("internal_cid_number")
+  const externalCidNumber = watch("external_cid_number")
+
+  // Auto-fill internal CID number to match extension number when creating
+  useEffect(() => {
+    if (isCreating && extensionNumber && !internalCidNumber) {
+      setValue("internal_cid_number", extensionNumber)
+    }
+  }, [isCreating, extensionNumber, internalCidNumber, setValue])
+
+  // Auto-fill external CID to default DID when creating and DID data loads
+  useEffect(() => {
+    if (isCreating && defaultDid && !externalCidNumber) {
+      setValue("external_cid_number", defaultDid.number)
+    }
+  }, [isCreating, defaultDid, externalCidNumber, setValue])
 
   const submitHandler = (values: FormValues) => {
     const data: ExtensionCreate = {
@@ -222,7 +247,23 @@ export function ExtensionForm({ extension, onSubmit, isLoading }: ExtensionFormP
         </div>
         <div className="space-y-2">
           <Label htmlFor="external_cid_number">{t('extensions.form.externalCid')}</Label>
-          <Input id="external_cid_number" placeholder={t('extensions.form.externalCidPlaceholder')} type="tel" {...register("external_cid_number")} />
+          <Select
+            value={watch("external_cid_number") || "_none_"}
+            onValueChange={(v) => setValue("external_cid_number", v === "_none_" ? "" : v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t('extensions.form.externalCidPlaceholder')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_none_">{t('common.none')}</SelectItem>
+              {dids?.filter((d) => d.is_active).map((d) => (
+                <SelectItem key={d.id} value={d.number}>
+                  {d.number}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">Outbound caller ID shown to called party</p>
         </div>
       </div>
 
