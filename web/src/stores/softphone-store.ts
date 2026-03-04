@@ -23,6 +23,7 @@ interface SoftphoneState {
   consultRemoteIdentity: string
   consultCallState: ConsultCallState
   // UI
+  isAnswering: boolean
   lastDialedNumber: string
   panelOpen: boolean
   panelMinimized: boolean
@@ -37,7 +38,7 @@ interface SoftphoneState {
   toggleMute: () => void
   toggleHold: () => Promise<void>
   sendDTMF: (tone: string) => void
-  setMicDevice: (deviceId: string) => void
+  setMicDevice: (deviceId: string) => Promise<void>
   setSpeakerDevice: (deviceId: string) => void
   togglePanel: () => void
   minimizePanel: () => void
@@ -64,6 +65,7 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
   transferMode: "idle",
   consultRemoteIdentity: "",
   consultCallState: "idle",
+  isAnswering: false,
   lastDialedNumber: "",
   panelOpen: false,
   panelMinimized: false,
@@ -101,6 +103,7 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
               callStartTime: Date.now(),
               isMuted: false,
               isOnHold: false,
+              isAnswering: false,
             })
             break
           case SessionState.Terminated:
@@ -111,6 +114,7 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
               callStartTime: null,
               isMuted: false,
               isOnHold: false,
+              isAnswering: false,
               transferMode: "idle",
               consultRemoteIdentity: "",
               consultCallState: "idle",
@@ -178,8 +182,13 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
   },
 
   answerCall: async () => {
-    if (!sipClient) return
-    await sipClient.answerCall()
+    if (!sipClient || get().isAnswering) return
+    set({ isAnswering: true })
+    try {
+      await sipClient.answerCall()
+    } catch {
+      set({ isAnswering: false })
+    }
   },
 
   declineCall: async () => {
@@ -228,8 +237,8 @@ export const useSoftphoneStore = create<SoftphoneState>((set, get) => ({
     sipClient.sendDTMF(tone)
   },
 
-  setMicDevice: (deviceId: string) => {
-    if (sipClient) sipClient.setMicDevice(deviceId)
+  setMicDevice: async (deviceId: string) => {
+    if (sipClient) await sipClient.setMicDevice(deviceId)
   },
 
   setSpeakerDevice: (deviceId: string) => {

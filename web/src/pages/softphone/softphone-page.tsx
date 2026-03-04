@@ -22,6 +22,7 @@ import {
   X,
   Check,
   Building2,
+  Loader2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -323,6 +324,7 @@ function ActiveCallDisplay() {
     startConsultTransfer,
     completeAttendedTransfer,
     cancelConsult,
+    isAnswering,
   } = useSoftphoneStore()
   const elapsed = useCallTimer(callStartTime)
   const [showDtmf, setShowDtmf] = useState(false)
@@ -389,8 +391,13 @@ function ActiveCallDisplay() {
                 size="icon"
                 className="size-14 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white"
                 onClick={answerCall}
+                disabled={isAnswering}
               >
-                <Phone className="size-6" />
+                {isAnswering ? (
+                  <Loader2 className="size-6 animate-spin" />
+                ) : (
+                  <Phone className="size-6" />
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>{t("softphone.accept")}</TooltipContent>

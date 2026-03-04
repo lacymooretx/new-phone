@@ -21,25 +21,48 @@ async function enumerateAudioDevices(): Promise<AudioDevice[]> {
   }
 }
 
+const LS_MIC_KEY = "np_audio_mic"
+const LS_SPEAKER_KEY = "np_audio_speaker"
+
 export function useAudioDevices() {
   const [devices, setDevices] = useState<AudioDevice[]>([])
-  const [selectedMic, setSelectedMic] = useState<string>("")
-  const [selectedSpeaker, setSelectedSpeaker] = useState<string>("")
+  const [selectedMic, setSelectedMic] = useState<string>(
+    () => localStorage.getItem(LS_MIC_KEY) ?? ""
+  )
+  const [selectedSpeaker, setSelectedSpeaker] = useState<string>(
+    () => localStorage.getItem(LS_SPEAKER_KEY) ?? ""
+  )
+
+  const persistMic = useCallback((deviceId: string) => {
+    setSelectedMic(deviceId)
+    localStorage.setItem(LS_MIC_KEY, deviceId)
+  }, [])
+
+  const persistSpeaker = useCallback((deviceId: string) => {
+    setSelectedSpeaker(deviceId)
+    localStorage.setItem(LS_SPEAKER_KEY, deviceId)
+  }, [])
 
   const handleDeviceChange = useCallback(async () => {
     const audioDevices = await enumerateAudioDevices()
     setDevices(audioDevices)
 
-    // Set defaults if not already selected (use functional update to read current value)
+    const mics = audioDevices.filter((d) => d.kind === "audioinput")
+    const spkrs = audioDevices.filter((d) => d.kind === "audiooutput")
+
+    // Validate stored mic still exists; fall back to first available
     setSelectedMic((prev) => {
-      if (prev) return prev
-      const defaultMic = audioDevices.find((d) => d.kind === "audioinput")
-      return defaultMic?.deviceId ?? ""
+      if (prev && mics.some((d) => d.deviceId === prev)) return prev
+      const fallback = mics[0]?.deviceId ?? ""
+      if (fallback) localStorage.setItem(LS_MIC_KEY, fallback)
+      return fallback
     })
+    // Validate stored speaker still exists; fall back to first available
     setSelectedSpeaker((prev) => {
-      if (prev) return prev
-      const defaultSpeaker = audioDevices.find((d) => d.kind === "audiooutput")
-      return defaultSpeaker?.deviceId ?? ""
+      if (prev && spkrs.some((d) => d.deviceId === prev)) return prev
+      const fallback = spkrs[0]?.deviceId ?? ""
+      if (fallback) localStorage.setItem(LS_SPEAKER_KEY, fallback)
+      return fallback
     })
   }, [])
 
@@ -59,7 +82,7 @@ export function useAudioDevices() {
     speakers,
     selectedMic,
     selectedSpeaker,
-    setSelectedMic,
-    setSelectedSpeaker,
+    setSelectedMic: persistMic,
+    setSelectedSpeaker: persistSpeaker,
   }
 }

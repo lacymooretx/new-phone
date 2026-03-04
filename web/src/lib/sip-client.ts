@@ -53,8 +53,29 @@ export class SipClient {
     this.remoteAudio = el
   }
 
-  setMicDevice(deviceId: string): void {
+  async setMicDevice(deviceId: string): Promise<void> {
     this.selectedMicId = deviceId
+
+    // If a call is active, hot-swap the mic track without re-INVITE
+    if (!this.session || this.session.state !== SessionState.Established) return
+
+    const sdh = this.session.sessionDescriptionHandler as SessionDescriptionHandler | undefined
+    if (!sdh?.peerConnection) return
+
+    const sender = sdh.peerConnection.getSenders().find((s) => s.track?.kind === "audio")
+    if (!sender) return
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: { exact: deviceId } },
+      })
+      const newTrack = stream.getAudioTracks()[0]
+      // Stop the old track to release the old mic
+      sender.track?.stop()
+      await sender.replaceTrack(newTrack)
+    } catch (err) {
+      console.error("[SipClient] Failed to switch mic mid-call:", err)
+    }
   }
 
   setSpeakerDevice(deviceId: string): void {
