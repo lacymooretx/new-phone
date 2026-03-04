@@ -15,9 +15,10 @@ import { toast } from "sonner"
 import { EmptyState } from "@/components/shared/empty-state"
 import { exportToCsv } from "@/lib/export-csv"
 
-function getProvisioningUrl(mac: string): string {
+function getProvisioningUrl(device: Device): string {
   const baseUrl = window.location.origin
-  return `${baseUrl}/provisioning/${mac}.cfg`
+  const ext = device.phone_model_manufacturer?.toLowerCase() === "sangoma" ? "xml" : "cfg"
+  return `${baseUrl}/provisioning/${device.mac_address}.${ext}`
 }
 
 export function DevicesPage() {
@@ -74,7 +75,7 @@ export function DevicesPage() {
   }
 
   const handleCopyProvUrl = (device: Device) => {
-    const url = getProvisioningUrl(device.mac_address)
+    const url = getProvisioningUrl(device)
     navigator.clipboard.writeText(url)
     toast.success("Provisioning URL copied to clipboard")
   }

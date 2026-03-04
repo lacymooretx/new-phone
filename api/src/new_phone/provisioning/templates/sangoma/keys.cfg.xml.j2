@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sangoma P-Series Line Key Configuration -->
+<KeyConfig>
+  <LineKeys>
+{% for key in line_keys %}
+    <Key>
+      <Index>{{ key.key_index }}</Index>
+      <Type>{{ key_type_map.get(key.key_type, 'none') }}</Type>
+{% if key.label %}
+      <Label>{{ key.label }}</Label>
+{% endif %}
+{% if key.value %}
+      <Value>{{ key.value }}</Value>
+{% endif %}
+      <Line>{{ key.line }}</Line>
+{% if key.key_type == 'blf' and extension %}
+      <Extension>{{ key.value }}</Extension>
+      <PickupValue>*8{{ key.value }}</PickupValue>
+{% endif %}
+    </Key>
+{% endfor %}
+  </LineKeys>
+
+  <ExpansionKeys>
+{% for key in expansion_keys %}
+{% set module_num = key.key_section.replace('expansion_', '') %}
+    <Key>
+      <Module>{{ module_num }}</Module>
+      <Index>{{ key.key_index }}</Index>
+      <Type>{{ key_type_map.get(key.key_type, 'none') }}</Type>
+{% if key.label %}
+      <Label>{{ key.label }}</Label>
+{% endif %}
+{% if key.value %}
+      <Value>{{ key.value }}</Value>
+{% endif %}
+      <Line>{{ key.line }}</Line>
+    </Key>
+{% endfor %}
+  </ExpansionKeys>
+</KeyConfig>

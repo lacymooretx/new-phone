@@ -28,7 +28,7 @@ def _get_env() -> Environment:
     return _env
 
 
-# Yealink key type codes
+# Yealink key type codes (numeric DSS key types)
 YEALINK_KEY_TYPE_MAP = {
     "line": 15,
     "blf": 16,
@@ -38,6 +38,44 @@ YEALINK_KEY_TYPE_MAP = {
     "intercom": 30,
     "none": 0,
 }
+
+# Sangoma key type names (XML string values)
+SANGOMA_KEY_TYPE_MAP = {
+    "line": "line",
+    "blf": "blf",
+    "speed_dial": "speed_dial",
+    "dtmf": "dtmf",
+    "park": "park",
+    "intercom": "intercom",
+    "none": "none",
+}
+
+# Map manufacturer to template prefix and key type map
+MANUFACTURER_CONFIG = {
+    "yealink": {
+        "template_prefix": "yealink",
+        "base_template": "base.cfg.j2",
+        "keys_template": "keys.cfg.j2",
+        "key_type_map": YEALINK_KEY_TYPE_MAP,
+        "content_type": "text/plain",
+    },
+    "sangoma": {
+        "template_prefix": "sangoma",
+        "base_template": "base.cfg.xml.j2",
+        "keys_template": "keys.cfg.xml.j2",
+        "key_type_map": SANGOMA_KEY_TYPE_MAP,
+        "content_type": "application/xml",
+    },
+}
+
+
+def _get_manufacturer_config(phone_model: PhoneModel) -> dict:
+    """Get the template config for a phone model's manufacturer."""
+    manufacturer_key = phone_model.manufacturer.lower()
+    if manufacturer_key in MANUFACTURER_CONFIG:
+        return MANUFACTURER_CONFIG[manufacturer_key]
+    # Default to Yealink-style config for unknown manufacturers
+    return MANUFACTURER_CONFIG["yealink"]
 
 
 def build_config(
@@ -56,12 +94,11 @@ def build_config(
     Returns (config_text, sha256_hash).
     """
     env = _get_env()
+    mfg_config = _get_manufacturer_config(phone_model)
 
-    # Determine template path based on model family (only yealink for now)
-    template_prefix = "yealink"
-
-    base_template = env.get_template(f"{template_prefix}/base.cfg.j2")
-    keys_template = env.get_template(f"{template_prefix}/keys.cfg.j2")
+    template_prefix = mfg_config["template_prefix"]
+    base_template = env.get_template(f"{template_prefix}/{mfg_config['base_template']}")
+    keys_template = env.get_template(f"{template_prefix}/{mfg_config['keys_template']}")
 
     # Separate line keys from expansion keys
     line_keys = sorted(
@@ -87,7 +124,7 @@ def build_config(
         "timezone": timezone,
         "line_keys": line_keys,
         "expansion_keys": expansion_keys,
-        "key_type_map": YEALINK_KEY_TYPE_MAP,
+        "key_type_map": mfg_config["key_type_map"],
     }
 
     base_cfg = base_template.render(**context)
@@ -97,3 +134,9 @@ def build_config(
     config_hash = hashlib.sha256(full_config.encode()).hexdigest()
 
     return full_config, config_hash
+
+
+def get_content_type(phone_model: PhoneModel) -> str:
+    """Return the appropriate HTTP content type for a phone model's config format."""
+    mfg_config = _get_manufacturer_config(phone_model)
+    return mfg_config["content_type"]

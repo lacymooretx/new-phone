@@ -1,8 +1,9 @@
 """HTTP provisioning endpoint — unauthenticated, called by phones.
 
 Yealink phones request: GET /provisioning/{mac}.cfg
+Sangoma phones request: GET /provisioning/{mac}.xml
 The MAC is extracted from the filename, the device is looked up, and
-a Jinja2-rendered config is returned as text/plain.
+a rendered config is returned.
 """
 
 from __future__ import annotations
@@ -20,22 +21,22 @@ from new_phone.models.device import DeviceKey
 from new_phone.models.extension import Extension
 from new_phone.models.phone_model import PhoneModel
 from new_phone.models.tenant import Tenant
-from new_phone.provisioning.config_builder import build_config
+from new_phone.provisioning.config_builder import build_config, get_content_type
 from new_phone.services.device_service import DeviceService
 
 logger = structlog.get_logger()
 
 router = APIRouter(tags=["provisioning"])
 
-# Match MAC from filename: aabbccddeeff.cfg or {mac}.cfg
-MAC_PATTERN = re.compile(r"^([0-9a-fA-F]{12})\.cfg$")
+# Match MAC from filename: aabbccddeeff.cfg or aabbccddeeff.xml
+MAC_PATTERN = re.compile(r"^([0-9a-fA-F]{12})\.(cfg|xml)$")
 
 
 @router.get("/provisioning/{filename}")
 async def provisioning_endpoint(filename: str) -> Response:
     """Serve phone configuration by MAC address.
 
-    Yealink phones request their MAC-based config file on boot.
+    Yealink phones request {mac}.cfg, Sangoma phones request {mac}.xml.
     This endpoint is unauthenticated — phones can't send JWTs.
     """
     match = MAC_PATTERN.match(filename)
@@ -137,15 +138,18 @@ async def provisioning_endpoint(filename: str) -> Response:
         # Stamp provisioned
         await service.stamp_provisioned(device, config_hash)
 
+        content_type = get_content_type(phone_model)
+
         logger.info(
             "provisioning_served",
             mac=mac,
             device_id=str(device.id),
+            manufacturer=phone_model.manufacturer,
             extension=extension.extension_number if extension else None,
             config_hash=config_hash[:16],
         )
 
         return Response(
             content=config_text,
-            media_type="text/plain; charset=utf-8",
+            media_type=f"{content_type}; charset=utf-8",
         )

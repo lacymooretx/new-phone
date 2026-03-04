@@ -78,11 +78,24 @@ export function DeviceForm({ device, onSubmit, isLoading }: DeviceFormProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="_none_">{t('devices.form.selectModel')}...</SelectItem>
-              {phoneModels?.map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.manufacturer} {m.model_name}
-                </SelectItem>
-              ))}
+              {(() => {
+                const grouped = (phoneModels ?? []).reduce<Record<string, typeof phoneModels>>((acc, m) => {
+                  const key = m.manufacturer
+                  if (!acc[key]) acc[key] = []
+                  acc[key]!.push(m)
+                  return acc
+                }, {})
+                return Object.entries(grouped).map(([manufacturer, models]) => (
+                  <div key={manufacturer}>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{manufacturer}</div>
+                    {models!.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.model_name}
+                      </SelectItem>
+                    ))}
+                  </div>
+                ))
+              })()}
             </SelectContent>
           </Select>
           {errors.phone_model_id && <p className="text-xs text-destructive">{errors.phone_model_id.message}</p>}
