@@ -93,10 +93,22 @@ def build_directory_user(
         "effective_caller_id_number",
         extension.internal_cid_number or extension.extension_number,
     )
-    if extension.external_cid_name:
-        _var(variables, "outbound_caller_id_name", extension.external_cid_name)
-    if extension.external_cid_number:
-        _var(variables, "outbound_caller_id_number", extension.external_cid_number)
+    # Always set outbound CID variables — fall back to internal CID if external not configured.
+    # Without these, FreeSWITCH sends no caller ID on outbound calls through gateways.
+    _var(
+        variables,
+        "outbound_caller_id_name",
+        extension.external_cid_name
+        or extension.internal_cid_name
+        or extension.extension_number,
+    )
+    _var(
+        variables,
+        "outbound_caller_id_number",
+        extension.external_cid_number
+        or extension.internal_cid_number
+        or extension.extension_number,
+    )
     _var(variables, "call_timeout", str(extension.call_forward_ring_time))
     if extension.dnd_enabled:
         _var(variables, "do_not_disturb", "true")
@@ -466,6 +478,25 @@ def build_dialplan(
         cond = dp_ext.find("condition")
 
         _action(cond, "set", "hangup_after_bridge=true")
+
+        # Set outbound caller ID based on route's cid_mode
+        if route.cid_mode == "custom" and route.custom_cid:
+            _action(cond, "set", f"effective_caller_id_number={route.custom_cid}")
+            _action(cond, "set", f"effective_caller_id_name={route.custom_cid}")
+        elif route.cid_mode == "trunk":
+            # Use the first trunk's main number as CID — look up from trunk assignments
+            trunk_cid = _get_trunk_cid(route, trunk_map)
+            if trunk_cid:
+                _action(cond, "set", f"effective_caller_id_number={trunk_cid}")
+                _action(cond, "set", f"effective_caller_id_name={trunk_cid}")
+            else:
+                # Fallback to extension's outbound CID
+                _action(cond, "set", "effective_caller_id_name=${outbound_caller_id_name}")
+                _action(cond, "set", "effective_caller_id_number=${outbound_caller_id_number}")
+        else:
+            # "extension" mode (default) — use the extension's outbound CID variables
+            _action(cond, "set", "effective_caller_id_name=${outbound_caller_id_name}")
+            _action(cond, "set", "effective_caller_id_number=${outbound_caller_id_number}")
 
         # Strip/prepend logic
         if route.strip_digits > 0:
@@ -1164,6 +1195,21 @@ def _dial_pattern_to_regex(pattern: str) -> str:
         i += 1
     regex += "$"
     return regex
+
+
+def _get_trunk_cid(
+    route: OutboundRoute, trunk_map: dict[str, SIPTrunk]
+) -> str | None:
+    """Get the CID number from the first trunk assigned to an outbound route.
+
+    For trunk CID mode, uses the trunk's username (typically the account
+    number or main DID with the provider).
+    """
+    for assignment in sorted(route.trunk_assignments, key=lambda a: a.position):
+        trunk = trunk_map.get(str(assignment.trunk_id))
+        if trunk and trunk.is_active and trunk.username:
+            return trunk.username
+    return None
 
 
 def _outbound_trunk_bridge(

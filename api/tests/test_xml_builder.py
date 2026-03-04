@@ -222,7 +222,7 @@ def test_directory_user_basic():
 
     user = root.find(".//user")
     assert user is not None
-    assert user.attrib["id"] == "100"
+    assert user.attrib["id"] == "b0000000-100"
 
     # Password param
     params = {p.attrib["name"]: p.attrib["value"] for p in user.findall(".//param")}
@@ -234,6 +234,9 @@ def test_directory_user_basic():
     assert variables["user_context"] == "acme"
     assert variables["toll_allow"] == "domestic,local,emergency"
     assert variables["effective_caller_id_name"] == "Test User"
+    # Outbound CID falls back to internal CID when external CID is not set
+    assert variables["outbound_caller_id_name"] == "Test User"
+    assert variables["outbound_caller_id_number"] == "100"
     assert variables["accountcode"] == "acme"
 
 
