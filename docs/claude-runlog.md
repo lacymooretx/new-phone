@@ -1,5 +1,31 @@
 # Claude Runlog — New Phone Platform
 
+## 2026-03-04 — Enable Yealink RPS Provisioning
+
+### Goal
+Add nginx proxy for `/provisioning/` endpoint, seed Yealink phone models, and fix SIP server address in provisioning configs so Yealink RPS can auto-provision phones.
+
+### Steps
+1. **Added nginx `/provisioning/` proxy block** — `web/nginx.conf`: new `location /provisioning/` block proxying to `http://api:8000/provisioning/`, same pattern as `/api/`.
+2. **Created Alembic migration 0064** — `api/alembic/versions/0064_seed_yealink_phone_models.py`: seeds 8 Yealink T-series models (T58W, T54W, T53W, T46U, T43U, T33G, T31G, T31P) into `phone_models` table. Follows exact pattern from migration 0063 (Sangoma models).
+3. **Fixed provisioning SIP server logic** — `api/src/new_phone/provisioning/router.py`: changed to always use `provisioning_sip_server` setting instead of `freeswitch_host` with localhost fallback. The old logic would give phones `freeswitch` (Docker internal hostname) in production.
+4. **Added `NP_PROVISIONING_SIP_SERVER` to prod compose** — `docker-compose.prod.yml`: defaults to `ucc.aspendora.com`.
+
+### Files Changed
+- `web/nginx.conf` — added `/provisioning/` proxy block
+- `api/alembic/versions/0064_seed_yealink_phone_models.py` — new migration
+- `api/src/new_phone/provisioning/router.py` — fixed SIP server address logic
+- `docker-compose.prod.yml` — added `NP_PROVISIONING_SIP_SERVER` env var
+
+### Next Steps (deploy)
+- Rebuild web container (`docker compose -f docker-compose.yml -f docker-compose.prod.yml build web`)
+- Run migration on API (`docker compose exec api alembic upgrade head`)
+- Set `NP_PROVISIONING_SIP_SERVER` in production `.env` if different from `ucc.aspendora.com`
+- Configure Yealink RPS to point to `https://ucc.aspendora.com/provisioning`
+- Verify with `curl https://ucc.aspendora.com/provisioning/test.cfg` (should return 404, not 502)
+
+---
+
 ## 2026-03-04 — Full-Featured Softphone Page
 
 ### Goal

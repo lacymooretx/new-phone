@@ -117,10 +117,9 @@ async def provisioning_endpoint(filename: str) -> Response:
         )
         keys = list(result.scalars().all())
 
-        # Determine SIP server address
-        sip_server = settings.freeswitch_host
-        if sip_server in ("localhost", "0.0.0.0", "127.0.0.1"):
-            sip_server = settings.provisioning_sip_server
+        # Use the provisioning SIP server (public-facing address for phones).
+        # freeswitch_host is the Docker-internal hostname, not reachable by phones.
+        sip_server = settings.provisioning_sip_server
 
         # Build config
         config_text, config_hash = build_config(
