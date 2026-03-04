@@ -61,8 +61,13 @@ echo "Bound internal profile to 0.0.0.0"
 # Filter ICE candidates to only include public IPs (wan_v4.auto denies
 # RFC1918 ranges). With rtp-ip=0.0.0.0, candidates for all interfaces
 # are generated; this ACL ensures only the public IP is advertised.
-sed -i '/<param name="ext-rtp-ip"/a\    <param name="apply-candidate-acl" value="wan_v4.auto"/>' /etc/freeswitch/sip_profiles/internal.xml
-echo "Added apply-candidate-acl for WebRTC ICE candidates"
+# Only add if not already present (idempotent).
+if ! grep -q 'apply-candidate-acl' /etc/freeswitch/sip_profiles/internal.xml; then
+    sed -i '/<param name="ext-rtp-ip"/a\    <param name="apply-candidate-acl" value="wan_v4.auto"/>' /etc/freeswitch/sip_profiles/internal.xml
+    echo "Added apply-candidate-acl for WebRTC ICE candidates"
+else
+    echo "apply-candidate-acl already present, skipping"
+fi
 
 # Install TLS certs (mounted at /custom-tls)
 if [ -d /custom-tls ] && [ -f /custom-tls/agent.pem ]; then
