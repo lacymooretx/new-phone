@@ -517,8 +517,8 @@ def build_gateway_file(trunk: SIPTrunk, tenant: Tenant, password: str) -> str:
     _param(gw, "caller-id-in-from", "true")
     _param(gw, "register-transport", trunk.transport)
 
-    raw = tostring(include, encoding="unicode", xml_declaration=False)
-    return f'<?xml version="1.0" encoding="UTF-8"?>\n{raw}'
+    # No XML declaration — FS X-PRE-PROCESS include inserts file content inline
+    return tostring(include, encoding="unicode", xml_declaration=False)
 
 
 def build_gateway_config(
