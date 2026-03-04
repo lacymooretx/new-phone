@@ -101,8 +101,12 @@ class TeamsService:
     async def create_presence_mapping(
         self, tenant_id: uuid.UUID, data: TeamsPresenceMappingCreate
     ) -> TeamsPresenceMapping:
+        config = await self.get_config(tenant_id)
+        if not config:
+            raise ValueError("Teams integration not configured for this tenant")
         mapping = TeamsPresenceMapping(
             tenant_id=tenant_id,
+            config_id=config.id,
             extension_id=data.extension_id,
             teams_user_id=data.teams_user_id,
         )

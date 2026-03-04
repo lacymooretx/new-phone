@@ -57,6 +57,12 @@ class TeamsPresenceMapping(Base, TimestampMixin):
         nullable=False,
         index=True,
     )
+    config_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("teams_configs.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     extension_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("extensions.id", ondelete="CASCADE"),
