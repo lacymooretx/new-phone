@@ -491,7 +491,9 @@ def gateway_fs_name(tenant_slug: str, trunk_name: str) -> str:
     """
     raw = f"{tenant_slug}-{trunk_name.lower().replace(' ', '-')}"
     # Remove chars invalid in FS gateway names (keep alphanumeric, dash, underscore, dot)
-    return re.sub(r"[^a-z0-9._-]", "", raw)
+    sanitized = re.sub(r"[^a-z0-9._-]", "", raw)
+    # Collapse consecutive dashes (e.g. "clearlyip---ucc" → "clearlyip-ucc")
+    return re.sub(r"-{2,}", "-", sanitized)
 
 
 def build_gateway_file(trunk: SIPTrunk, tenant: Tenant, password: str) -> str:
