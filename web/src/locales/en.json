@@ -51,7 +51,20 @@
     "portRequests": "Port Requests",
     "wfmTimeOff": "Time Off",
     "wfmAnalytics": "Forecasting",
-    "telephonyProviders": "Telephony Providers"
+    "telephonyProviders": "Telephony Providers",
+    "developer": "Developer Portal",
+    "callbacks": "Callbacks",
+    "surveys": "Surveys",
+    "billing": "Billing & Usage",
+    "stirShaken": "STIR/SHAKEN",
+    "migration": "Migration Tools",
+    "receptionist": "Receptionist Console",
+    "hospitality": "Hospitality",
+    "marketplace": "Marketplace",
+    "advancedCallCenter": "Call Center",
+    "securityCompliance": "Security",
+    "billingBusiness": "Billing",
+    "advancedFeatures": "Advanced"
   },
   "common": {
     "save": "Save",

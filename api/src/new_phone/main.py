@@ -215,15 +215,19 @@ def create_app() -> FastAPI:
         admin,
         ai_agents,
         analytics,
+        api_keys,
         audio_prompts,
         audit_logs,
         auth,
+        billing,
         boss_admin,
         building_webhooks,
+        callbacks,
         caller_id_rules,
         calls,
         camp_on,
         cdrs,
+        channels,
         compliance,
         compliance_monitoring,
         conference_bridges,
@@ -237,16 +241,18 @@ def create_app() -> FastAPI:
         follow_me,
         health,
         holiday_calendars,
+        hospitality,
         inbound_routes,
         ivr_menus,
+        migration,
         onboarding,
         outbound_routes,
-        platform_telephony_providers,
         page_groups,
         paging_zones,
         panic_alerts,
         parking,
         phone_models,
+        platform_telephony_providers,
         port_requests,
         queues,
         recording_tier,
@@ -259,6 +265,8 @@ def create_app() -> FastAPI:
         sms_conversations,
         sms_provider_configs,
         sso_config,
+        stir_shaken,
+        surveys,
         ten_dlc,
         tenant_telephony_providers,
         tenants,
@@ -266,6 +274,7 @@ def create_app() -> FastAPI:
         users,
         voicemail_boxes,
         voicemail_messages,
+        webhooks,
         webrtc,
         workforce_management,
     )
@@ -326,6 +335,36 @@ def create_app() -> FastAPI:
     app.include_router(platform_telephony_providers.router, prefix="/api/v1")
     app.include_router(tenant_telephony_providers.router, prefix="/api/v1")
     app.include_router(onboarding.router, prefix="/api/v1")
+    app.include_router(webhooks.router, prefix="/api/v1")
+    app.include_router(api_keys.router, prefix="/api/v1")
+    app.include_router(callbacks.router, prefix="/api/v1")
+    app.include_router(surveys.router, prefix="/api/v1")
+    app.include_router(billing.router, prefix="/api/v1")
+    app.include_router(stir_shaken.router, prefix="/api/v1")
+    app.include_router(channels.router, prefix="/api/v1")
+    app.include_router(migration.router, prefix="/api/v1")
+    app.include_router(hospitality.router, prefix="/api/v1")
+
+    # Inter-tenant routing (MSP-only, no tenant prefix)
+    from new_phone.routers.inter_tenant import router as inter_tenant_router
+
+    app.include_router(inter_tenant_router, prefix="/api/v1")
+
+    # Plugin marketplace
+    from new_phone.plugins.router import catalog_router as plugins_catalog_router
+    from new_phone.plugins.router import tenant_router as plugins_tenant_router
+
+    app.include_router(plugins_catalog_router, prefix="/api/v1")
+    app.include_router(plugins_tenant_router, prefix="/api/v1")
+
+    # Integration routers (subpackage imports)
+    from new_phone.integrations.slack.router import router as slack_router
+    from new_phone.integrations.teams.router import router as teams_router
+    from new_phone.integrations.zendesk.router import router as zendesk_router
+
+    app.include_router(teams_router, prefix="/api/v1")
+    app.include_router(zendesk_router, prefix="/api/v1")
+    app.include_router(slack_router, prefix="/api/v1")
     app.include_router(analytics.msp_router, prefix="/api/v1")
 
     # AI engine internal endpoints (no /api/v1 prefix — Docker network only)

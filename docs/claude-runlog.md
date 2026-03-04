@@ -1,5 +1,79 @@
 # Claude Runlog — New Phone Platform
 
+## 2026-03-04 — Phases 29–39: All Remaining "Coming Soon" Features
+
+### Goal
+Implement all ~14 remaining features from the Coming Soon page across 11 phases (29–39).
+
+### What was done
+1. **Phase 29** (Webhooks & Developer Platform): WebhookSubscription/DeliveryLog models, ApiKey model, HMAC signing, EventPublisher webhook fan-out, Developer Portal page
+2. **Phase 30** (Callbacks & Surveys): ScheduledCallback model, SurveyTemplate/Response models, analytics endpoint, frontend pages
+3. **Phase 31** (Billing): UsageRecord, RateDeck, BillingConfig models, rate lookup, frontend billing page
+4. **Phase 32** (STIR/SHAKEN): StirShakenConfig, SpamFilter, block/allow lists, number check, frontend page
+5. **Phase 33** (Teams): TeamsConfig, presence mapping, integration package
+6. **Phase 34** (Zendesk/Slack): ZendeskConfig, SlackConfig, httpx clients, integration packages
+7. **Phase 35** (WhatsApp/Messenger/Email): Channel providers, ChannelConfig model, channels router
+8. **Phase 36** (Migration): FreePBX/3CX/CSV parsers, MigrationJob model, InterTenantRoute model, frontend migration page
+9. **Phase 37** (Receptionist/Hospitality): Room/WakeUpCall models, check-in/out, receptionist console, hospitality page
+10. **Phase 38** (HA/DR): docker-compose.ha.yml, ha-setup.md, dr-runbook.md, multi-region.md, backup script
+11. **Phase 39** (Plugins): Plugin/TenantPlugin/EventLog models, lifecycle + hook dispatch, marketplace page
+
+### Integration work
+- All routers registered in main.py (including inter_tenant, plugins catalog/tenant)
+- All frontend pages routed in router/index.tsx (8 new routes)
+- Query keys added for billing, stirShaken, migration, hospitality, plugins
+- Frontend API hooks created for billing, stir-shaken, migration, hospitality, plugins
+
+### Verification
+- `ruff check --fix` — all Python files pass
+- `npx tsc --noEmit` — zero TypeScript errors
+- coming-soon.html updated — all features removed, replaced with "Roadmap" page
+- app-build-progress.md updated with full phase summary
+
+### Files created (approx. 75+ new files across all phases)
+Key new directories: `plugins/`, `migration/`, `integrations/teams/`, `integrations/zendesk/`, `integrations/slack/`, `sms/whatsapp.py`, `sms/facebook_messenger.py`, `sms/email_queue.py`
+Key new pages: billing, stir-shaken, migration, receptionist, hospitality, marketplace, callbacks, surveys, developer
+
+---
+
+## 2026-03-04 — Phase 38: HA, DR & Multi-Region (revision 2)
+
+### Goal
+Update existing Phase 38 files to match refined requirements: postgres:16-alpine, network name `new_phone_ha`, Patroni section, RTO 4hr / RPO 1hr, active-passive vs active-active section, SIP trunk regional configuration.
+
+### What was done
+1. Updated `docker-compose.ha.yml` — changed PG images from `postgres:17-bookworm` to `postgres:16-alpine`, renamed network from `new_phone_ha_internal` to `new_phone_ha`.
+2. Updated `docs/ha-setup.md` — added Patroni section with auto-failover via etcd, configuration example, health check endpoints, and migration guide from manual HA.
+3. Updated `docs/dr-runbook.md` — changed RTO from 1hr to 4hr, RPO from 15min to 1hr, adjusted Redis RDB snapshot interval to 30min, updated DR test report targets, updated communication templates.
+4. Updated `docs/multi-region.md` — added active-passive vs active-active section with trade-off analysis, added SIP trunk regional configuration section (ClearlyIP failover destinations, Twilio Elastic SIP Trunking priority URIs, outbound call considerations), added media server regional deployment notes, updated RTO reference.
+
+### Files changed
+- `docker-compose.ha.yml` (updated)
+- `docs/ha-setup.md` (updated)
+- `docs/dr-runbook.md` (updated)
+- `docs/multi-region.md` (updated)
+
+## 2026-03-04 — Phase 38: HA, DR & Multi-Region (initial)
+
+### Goal
+Create infrastructure documentation and configuration files for high availability, disaster recovery, and multi-region deployment.
+
+### What was done
+1. Created `docker-compose.ha.yml` — HA overlay with PG primary/standby, Redis sentinel (3 sentinels + 2 Redis), dual API behind nginx LB, FreeSWITCH active/standby pair. Uses `profiles: ["disabled"]` to replace base services.
+2. Created `docs/ha-setup.md` — full HA setup guide with prerequisites, per-component config, failover procedures, health check table, monitoring recommendations.
+3. Created `docs/dr-runbook.md` — DR runbook with RTO/RPO targets, backup schedules (PG WAL + daily full, Redis RDB, MinIO hourly incremental), 5-phase failover checklist, per-component recovery procedures, quarterly DR test plan, communication templates.
+4. Created `docs/multi-region.md` — primary/secondary region architecture with DNS-based failover, cross-region PG logical replication, MinIO bucket replication, session/state management, data residency considerations, network requirements, deployment procedure.
+5. Replaced `scripts/backup-db.sh` with enhanced version — supports both local pg_dump and Docker-based backup, MinIO upload with tiered retention (7 daily / 4 weekly / 12 monthly), backup verification via temp DB restore, webhook error notifications.
+
+### Files changed
+- `docker-compose.ha.yml` (new)
+- `docs/ha-setup.md` (new)
+- `docs/dr-runbook.md` (new)
+- `docs/multi-region.md` (new)
+- `scripts/backup-db.sh` (replaced)
+
+---
+
 ## 2026-03-03 — Fix WebRTC Registration Persistence (TLS Profile Conflict)
 
 ### Goal

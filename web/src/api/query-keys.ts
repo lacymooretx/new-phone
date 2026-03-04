@@ -225,6 +225,34 @@ export const queryKeys = {
     tenant: (tenantId: string) => ["telephonyProviders", "tenant", tenantId] as const,
     effective: (tenantId: string) => ["telephonyProviders", "effective", tenantId] as const,
   },
+  callbacks: {
+    all: (tenantId: string) => ["callbacks", tenantId] as const,
+    list: (tenantId: string, queueId?: string, status?: string) => [...queryKeys.callbacks.all(tenantId), "list", queueId, status] as const,
+  },
+  surveys: {
+    all: (tenantId: string) => ["surveys", tenantId] as const,
+    templates: (tenantId: string) => [...queryKeys.surveys.all(tenantId), "templates"] as const,
+    templateDetail: (tenantId: string, id: string) => [...queryKeys.surveys.all(tenantId), "template", id] as const,
+    responses: (tenantId: string, templateId?: string) => [...queryKeys.surveys.all(tenantId), "responses", templateId] as const,
+    analytics: (tenantId: string, templateId: string) => [...queryKeys.surveys.all(tenantId), "analytics", templateId] as const,
+  },
+  webhooks: {
+    all: (tenantId: string) => ["webhooks", tenantId] as const,
+    list: (tenantId: string) => [...queryKeys.webhooks.all(tenantId), "list"] as const,
+    detail: (tenantId: string, id: string) => [...queryKeys.webhooks.all(tenantId), "detail", id] as const,
+    deliveries: (tenantId: string, webhookId: string, page?: number) => [...queryKeys.webhooks.all(tenantId), "deliveries", webhookId, page] as const,
+  },
+  plugins: {
+    all: ["plugins"] as const,
+    catalog: () => [...queryKeys.plugins.all, "catalog"] as const,
+    installed: (tenantId: string) => [...queryKeys.plugins.all, "installed", tenantId] as const,
+    logs: (tenantId: string, pluginId: string, page?: number) => [...queryKeys.plugins.all, "logs", tenantId, pluginId, page] as const,
+  },
+  apiKeys: {
+    all: (tenantId: string) => ["apiKeys", tenantId] as const,
+    list: (tenantId: string) => [...queryKeys.apiKeys.all(tenantId), "list"] as const,
+    detail: (tenantId: string, id: string) => [...queryKeys.apiKeys.all(tenantId), "detail", id] as const,
+  },
   wfm: {
     all: (tenantId: string) => ["wfm", tenantId] as const,
     shifts: (tenantId: string) => [...queryKeys.wfm.all(tenantId), "shifts"] as const,
@@ -244,5 +272,32 @@ export const queryKeys = {
       [...queryKeys.wfm.all(tenantId), "forecast", queueId] as const,
     staffingSummary: (tenantId: string) =>
       [...queryKeys.wfm.all(tenantId), "staffingSummary"] as const,
+  },
+  billing: {
+    all: (tenantId: string) => ["billing", tenantId] as const,
+    usage: (tenantId: string, periodStart?: string, periodEnd?: string) =>
+      [...queryKeys.billing.all(tenantId), "usage", periodStart, periodEnd] as const,
+    rateDecks: (tenantId: string) => [...queryKeys.billing.all(tenantId), "rateDecks"] as const,
+    config: (tenantId: string) => [...queryKeys.billing.all(tenantId), "config"] as const,
+  },
+  stirShaken: {
+    all: (tenantId: string) => ["stirShaken", tenantId] as const,
+    config: (tenantId: string) => [...queryKeys.stirShaken.all(tenantId), "config"] as const,
+    spamFilter: (tenantId: string) => [...queryKeys.stirShaken.all(tenantId), "spamFilter"] as const,
+    blockList: (tenantId: string) => [...queryKeys.stirShaken.all(tenantId), "blockList"] as const,
+    allowList: (tenantId: string) => [...queryKeys.stirShaken.all(tenantId), "allowList"] as const,
+  },
+  migration: {
+    all: (tenantId: string) => ["migration", tenantId] as const,
+    jobs: (tenantId: string) => [...queryKeys.migration.all(tenantId), "jobs"] as const,
+  },
+  hospitality: {
+    all: (tenantId: string) => ["hospitality", tenantId] as const,
+    rooms: (tenantId: string, status?: string, floor?: string) =>
+      [...queryKeys.hospitality.all(tenantId), "rooms", status, floor] as const,
+    roomDetail: (tenantId: string, id: string) =>
+      [...queryKeys.hospitality.all(tenantId), "room", id] as const,
+    wakeUpCalls: (tenantId: string, roomId: string) =>
+      [...queryKeys.hospitality.all(tenantId), "wakeUpCalls", roomId] as const,
   },
 }

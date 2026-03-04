@@ -38,6 +38,15 @@ import {
   TrendingUp,
   CalendarOff,
   Server,
+  PhoneCallback,
+  Star,
+  DollarSign,
+  Shield,
+  FolderInput,
+  MonitorDot,
+  BedDouble,
+  Puzzle,
+  Code2,
 } from "lucide-react"
 import { ROUTES, PERMISSIONS, type Permission } from "./constants"
 import type { LucideIcon } from "lucide-react"
@@ -72,6 +81,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { labelKey: "nav.queues", path: ROUTES.QUEUES, icon: Headset, permission: PERMISSIONS.VIEW_QUEUES },
       { labelKey: "nav.dispositionCodes", path: ROUTES.DISPOSITION_CODES, icon: Tag, permission: PERMISSIONS.VIEW_QUEUES },
       { labelKey: "nav.parking", path: ROUTES.PARKING, icon: ParkingSquare, permission: PERMISSIONS.VIEW_QUEUES },
+      { labelKey: "nav.callbacks", path: ROUTES.CALLBACKS, icon: PhoneCallback, permission: PERMISSIONS.VIEW_QUEUES },
+      { labelKey: "nav.surveys", path: ROUTES.SURVEYS, icon: Star, permission: PERMISSIONS.VIEW_QUEUES },
       { labelKey: "nav.ivrMenus", path: ROUTES.IVR_MENUS, icon: ListTree, permission: PERMISSIONS.VIEW_IVR },
       { labelKey: "nav.conferences", path: ROUTES.CONFERENCES, icon: Radio, permission: PERMISSIONS.VIEW_CONFERENCES },
       { labelKey: "nav.paging", path: ROUTES.PAGING, icon: Megaphone, permission: PERMISSIONS.VIEW_PAGING },
@@ -123,6 +134,28 @@ export const NAV_GROUPS: NavGroup[] = [
       { labelKey: "nav.wfmSchedule", path: ROUTES.WFM_SCHEDULE, icon: CalendarDays, permission: PERMISSIONS.VIEW_WFM },
       { labelKey: "nav.wfmTimeOff", path: ROUTES.WFM_TIME_OFF, icon: CalendarOff, permission: PERMISSIONS.VIEW_WFM },
       { labelKey: "nav.wfmAnalytics", path: ROUTES.WFM_ANALYTICS, icon: TrendingUp, permission: PERMISSIONS.VIEW_WFM },
+    ],
+  },
+  {
+    labelKey: "nav.securityCompliance",
+    items: [
+      { labelKey: "nav.stirShaken", path: ROUTES.STIR_SHAKEN, icon: Shield, permission: PERMISSIONS.MANAGE_TENANT },
+    ],
+  },
+  {
+    labelKey: "nav.billingBusiness",
+    items: [
+      { labelKey: "nav.billing", path: ROUTES.BILLING, icon: DollarSign, permission: PERMISSIONS.MANAGE_TENANT },
+    ],
+  },
+  {
+    labelKey: "nav.advancedFeatures",
+    items: [
+      { labelKey: "nav.receptionist", path: ROUTES.RECEPTIONIST, icon: MonitorDot, permission: PERMISSIONS.VIEW_EXTENSIONS },
+      { labelKey: "nav.hospitality", path: ROUTES.HOSPITALITY, icon: BedDouble, permission: PERMISSIONS.MANAGE_EXTENSIONS },
+      { labelKey: "nav.migration", path: ROUTES.MIGRATION, icon: FolderInput, permission: PERMISSIONS.MANAGE_TENANT },
+      { labelKey: "nav.developer", path: ROUTES.DEVELOPER, icon: Code2, permission: PERMISSIONS.MANAGE_TENANT },
+      { labelKey: "nav.marketplace", path: ROUTES.MARKETPLACE, icon: Puzzle, permission: PERMISSIONS.MANAGE_TENANT },
     ],
   },
   {

@@ -1,0 +1,471 @@
+# docker-compose.ha.yml — HA overlay for New Phone platform
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.ha.yml up -d
+#
+# This overlay replaces the single-instance postgres, redis, freeswitch, and api
+# services with HA variants and adds an nginx load balancer.
+#
+# Prerequisites:
+#   - Base docker-compose.yml must be present
+#   - ./ha/postgres/  — primary and standby config directories
+#   - ./ha/redis/     — sentinel config
+#   - ./ha/nginx/     — nginx.conf with upstream definitions
+#   - ./ha/freeswitch/ — standby FreeSWITCH config overrides
+
+name: new-phone-ha
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — primary + streaming replication standby
+  # ---------------------------------------------------------------------------
+  postgres:
+    # Disable the base postgres service (replaced by pg-primary)
+    profiles: ["disabled"]
+
+  pg-primary:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: new_phone
+      POSTGRES_USER: new_phone_admin
+      POSTGRES_PASSWORD: ${NP_DB_ADMIN_PASSWORD:-change_me_admin}
+      # Replication user for standby
+      POSTGRES_REPLICATION_USER: ${NP_DB_REPL_USER:-replicator}
+      POSTGRES_REPLICATION_PASSWORD: ${NP_DB_REPL_PASSWORD:-change_me_repl}
+    ports:
+      - "${NP_DB_HOST_PORT:-5434}:5432"
+    volumes:
+      - pg_primary_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+      - ./ha/postgres/primary/initdb-replication.sh:/docker-entrypoint-initdb.d/99-replication.sh:ro
+      - ./ha/postgres/primary/pg_hba_replication.conf:/docker-entrypoint-initdb.d/pg_hba_replication.conf:ro
+    command: >
+      postgres
+        -c wal_level=replica
+        -c max_wal_senders=5
+        -c wal_keep_size=256MB
+        -c hot_standby=on
+        -c archive_mode=on
+        -c archive_command='test ! -f /var/lib/postgresql/wal_archive/%f && cp %p /var/lib/postgresql/wal_archive/%f'
+        -c synchronous_standby_names='standby1'
+        -c max_connections=200
+        -c shared_buffers=256MB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U new_phone_admin -d new_phone"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - default
+      - ha-internal
+
+  pg-standby:
+    image: postgres:16-alpine
+    environment:
+      PGDATA: /var/lib/postgresql/data
+      POSTGRES_PASSWORD: ${NP_DB_ADMIN_PASSWORD:-change_me_admin}
+    volumes:
+      - pg_standby_data:/var/lib/postgresql/data
+      - ./ha/postgres/standby/setup-standby.sh:/docker-entrypoint-initdb.d/00-standby.sh:ro
+    command: >
+      bash -c "
+        if [ ! -f /var/lib/postgresql/data/PG_VERSION ]; then
+          echo 'Bootstrapping standby from primary via pg_basebackup...'
+          until pg_isready -h pg-primary -U ${NP_DB_REPL_USER:-replicator}; do sleep 2; done
+          PGPASSWORD=${NP_DB_REPL_PASSWORD:-change_me_repl} pg_basebackup \
+            -h pg-primary -U ${NP_DB_REPL_USER:-replicator} \
+            -D /var/lib/postgresql/data -Fp -Xs -R -P
+          echo \"standby_mode = 'on'\" >> /var/lib/postgresql/data/postgresql.auto.conf
+          echo \"primary_conninfo = 'host=pg-primary port=5432 user=${NP_DB_REPL_USER:-replicator} password=${NP_DB_REPL_PASSWORD:-change_me_repl} application_name=standby1'\" >> /var/lib/postgresql/data/postgresql.auto.conf
+          touch /var/lib/postgresql/data/standby.signal
+        fi
+        exec postgres -c hot_standby=on -c max_connections=200 -c shared_buffers=256MB
+      "
+    ports:
+      - "${NP_DB_STANDBY_HOST_PORT:-5435}:5432"
+    depends_on:
+      pg-primary:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U new_phone_admin"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    networks:
+      - default
+      - ha-internal
+
+  # ---------------------------------------------------------------------------
+  # Redis Sentinel — 2 Redis instances + 3 sentinels
+  # ---------------------------------------------------------------------------
+  redis:
+    # Disable the base redis service (replaced by redis-master)
+    profiles: ["disabled"]
+
+  redis-master:
+    image: redis:7-bookworm
+    command: >
+      redis-server
+        --maxmemory 256mb
+        --maxmemory-policy allkeys-lru
+        --appendonly yes
+        --save 900 1
+        --save 300 10
+        --save 60 10000
+        --requirepass ${NP_REDIS_PASSWORD:-}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_master_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - default
+      - ha-internal
+
+  redis-slave:
+    image: redis:7-bookworm
+    command: >
+      redis-server
+        --maxmemory 256mb
+        --maxmemory-policy allkeys-lru
+        --appendonly yes
+        --replicaof redis-master 6379
+        --requirepass ${NP_REDIS_PASSWORD:-}
+        --masterauth ${NP_REDIS_PASSWORD:-}
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_slave_data:/data
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - default
+      - ha-internal
+
+  redis-sentinel-1:
+    image: redis:7-bookworm
+    command: >
+      bash -c "
+        cat > /tmp/sentinel.conf <<SENTINEL_EOF
+        port 26379
+        sentinel monitor np-master redis-master 6379 2
+        sentinel down-after-milliseconds np-master 5000
+        sentinel failover-timeout np-master 10000
+        sentinel parallel-syncs np-master 1
+        SENTINEL_EOF
+        redis-sentinel /tmp/sentinel.conf
+      "
+    ports:
+      - "26379:26379"
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - ha-internal
+
+  redis-sentinel-2:
+    image: redis:7-bookworm
+    command: >
+      bash -c "
+        cat > /tmp/sentinel.conf <<SENTINEL_EOF
+        port 26379
+        sentinel monitor np-master redis-master 6379 2
+        sentinel down-after-milliseconds np-master 5000
+        sentinel failover-timeout np-master 10000
+        sentinel parallel-syncs np-master 1
+        SENTINEL_EOF
+        redis-sentinel /tmp/sentinel.conf
+      "
+    ports:
+      - "26380:26379"
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - ha-internal
+
+  redis-sentinel-3:
+    image: redis:7-bookworm
+    command: >
+      bash -c "
+        cat > /tmp/sentinel.conf <<SENTINEL_EOF
+        port 26379
+        sentinel monitor np-master redis-master 6379 2
+        sentinel down-after-milliseconds np-master 5000
+        sentinel failover-timeout np-master 10000
+        sentinel parallel-syncs np-master 1
+        SENTINEL_EOF
+        redis-sentinel /tmp/sentinel.conf
+      "
+    ports:
+      - "26381:26379"
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - ha-internal
+
+  # ---------------------------------------------------------------------------
+  # API — 2 replicas behind nginx
+  # ---------------------------------------------------------------------------
+  api:
+    # Disable the base api service (replaced by api-1, api-2)
+    profiles: ["disabled"]
+
+  api-1:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "freeswitch:${NP_EXTERNAL_IP:-host-gateway}"
+    # No direct host port — nginx-lb fronts this
+    expose:
+      - "8000"
+    environment:
+      NP_DB_HOST: pg-primary
+      NP_DB_PORT: 5432
+      NP_DB_NAME: new_phone
+      NP_DB_ADMIN_USER: new_phone_admin
+      NP_DB_ADMIN_PASSWORD: ${NP_DB_ADMIN_PASSWORD:-change_me_admin}
+      NP_DB_APP_USER: new_phone_app
+      NP_DB_APP_PASSWORD: ${NP_DB_APP_PASSWORD:-change_me_app}
+      NP_REDIS_URL: redis://redis-master:6379/0
+      NP_FREESWITCH_HOST: freeswitch-primary
+      NP_FREESWITCH_ESL_PORT: 8021
+      NP_FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      NP_JWT_SECRET_KEY: ${NP_JWT_SECRET_KEY:-dev-secret-change-in-production}
+      NP_TRUNK_ENCRYPTION_KEY: ${NP_TRUNK_ENCRYPTION_KEY:-eL7ZsVVoigMgzhT5RAhg7Z1kpGxgbuXkL0s1pKck0oA=}
+      NP_MINIO_ENDPOINT: minio:9000
+      NP_MINIO_ACCESS_KEY: ${NP_MINIO_ACCESS_KEY:-minioadmin}
+      NP_MINIO_SECRET_KEY: ${NP_MINIO_SECRET_KEY:-minioadmin}
+      NP_MINIO_BUCKET: recordings
+      NP_MINIO_SECURE: "false"
+      NP_SMTP_HOST: mailhog
+      NP_SMTP_PORT: 1025
+      NP_SMTP_USER: ""
+      NP_SMTP_PASSWORD: ""
+      NP_SMTP_FROM_ADDRESS: voicemail@newphone.local
+      NP_SMTP_ATTACH_AUDIO: "true"
+      NP_CLEARLYIP_API_URL: ${NP_CLEARLYIP_API_URL:-}
+      NP_CLEARLYIP_API_KEY: ${NP_CLEARLYIP_API_KEY:-}
+      NP_TWILIO_ACCOUNT_SID: ${NP_TWILIO_ACCOUNT_SID:-}
+      NP_TWILIO_AUTH_TOKEN: ${NP_TWILIO_AUTH_TOKEN:-}
+      NP_DEBUG: ${NP_DEBUG:-true}
+      NP_LOG_LEVEL: ${NP_LOG_LEVEL:-DEBUG}
+      NP_INSTANCE_ID: api-1
+    volumes:
+      - fs_gateways:/gateways
+      - recordings:/recordings
+    depends_on:
+      pg-primary:
+        condition: service_healthy
+      redis-master:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; r=httpx.get('http://localhost:8000/api/v1/health'); r.raise_for_status()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - default
+      - ha-internal
+
+  api-2:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "freeswitch:${NP_EXTERNAL_IP:-host-gateway}"
+    expose:
+      - "8000"
+    environment:
+      NP_DB_HOST: pg-primary
+      NP_DB_PORT: 5432
+      NP_DB_NAME: new_phone
+      NP_DB_ADMIN_USER: new_phone_admin
+      NP_DB_ADMIN_PASSWORD: ${NP_DB_ADMIN_PASSWORD:-change_me_admin}
+      NP_DB_APP_USER: new_phone_app
+      NP_DB_APP_PASSWORD: ${NP_DB_APP_PASSWORD:-change_me_app}
+      NP_REDIS_URL: redis://redis-master:6379/0
+      NP_FREESWITCH_HOST: freeswitch-primary
+      NP_FREESWITCH_ESL_PORT: 8021
+      NP_FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      NP_JWT_SECRET_KEY: ${NP_JWT_SECRET_KEY:-dev-secret-change-in-production}
+      NP_TRUNK_ENCRYPTION_KEY: ${NP_TRUNK_ENCRYPTION_KEY:-eL7ZsVVoigMgzhT5RAhg7Z1kpGxgbuXkL0s1pKck0oA=}
+      NP_MINIO_ENDPOINT: minio:9000
+      NP_MINIO_ACCESS_KEY: ${NP_MINIO_ACCESS_KEY:-minioadmin}
+      NP_MINIO_SECRET_KEY: ${NP_MINIO_SECRET_KEY:-minioadmin}
+      NP_MINIO_BUCKET: recordings
+      NP_MINIO_SECURE: "false"
+      NP_SMTP_HOST: mailhog
+      NP_SMTP_PORT: 1025
+      NP_SMTP_USER: ""
+      NP_SMTP_PASSWORD: ""
+      NP_SMTP_FROM_ADDRESS: voicemail@newphone.local
+      NP_SMTP_ATTACH_AUDIO: "true"
+      NP_CLEARLYIP_API_URL: ${NP_CLEARLYIP_API_URL:-}
+      NP_CLEARLYIP_API_KEY: ${NP_CLEARLYIP_API_KEY:-}
+      NP_TWILIO_ACCOUNT_SID: ${NP_TWILIO_ACCOUNT_SID:-}
+      NP_TWILIO_AUTH_TOKEN: ${NP_TWILIO_AUTH_TOKEN:-}
+      NP_DEBUG: ${NP_DEBUG:-true}
+      NP_LOG_LEVEL: ${NP_LOG_LEVEL:-DEBUG}
+      NP_INSTANCE_ID: api-2
+    volumes:
+      - fs_gateways:/gateways
+      - recordings:/recordings
+    depends_on:
+      pg-primary:
+        condition: service_healthy
+      redis-master:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; r=httpx.get('http://localhost:8000/api/v1/health'); r.raise_for_status()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - default
+      - ha-internal
+
+  # ---------------------------------------------------------------------------
+  # nginx — load balancer for API + web
+  # ---------------------------------------------------------------------------
+  nginx-lb:
+    image: nginx:1.27-bookworm
+    ports:
+      - "8000:8000"    # API load balanced
+      - "3000:3000"    # Web pass-through
+      - "8443:8443"    # API TLS (optional)
+    volumes:
+      - ./ha/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ha/nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      api-1:
+        condition: service_healthy
+      api-2:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - default
+      - ha-internal
+
+  # ---------------------------------------------------------------------------
+  # FreeSWITCH — active/standby pair
+  # ---------------------------------------------------------------------------
+  freeswitch:
+    # Disable the base freeswitch service
+    profiles: ["disabled"]
+
+  freeswitch-primary:
+    build:
+      context: ./freeswitch
+      dockerfile: Dockerfile
+    network_mode: host
+    extra_hosts:
+      - "api:127.0.0.1"
+    environment:
+      NP_FS_ROLE: primary
+      NP_FS_PEER_HOST: ${NP_FS_STANDBY_IP:-127.0.0.2}
+    volumes:
+      - fs_data:/var/lib/freeswitch
+      - fs_gateways:/etc/freeswitch/sip_profiles/external
+      - recordings:/recordings
+      - ./freeswitch/conf/autoload_configs/event_socket.conf.xml:/custom-conf/autoload_configs/event_socket.conf.xml:ro
+      - ./freeswitch/conf/autoload_configs/xml_curl.conf.xml:/custom-conf/autoload_configs/xml_curl.conf.xml:ro
+      - ./freeswitch/conf/autoload_configs/modules.conf.xml:/custom-conf/autoload_configs/modules.conf.xml:ro
+      - ./freeswitch/tls:/custom-tls:ro
+    healthcheck:
+      test: ["CMD", "fs_cli", "-x", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      pg-primary:
+        condition: service_healthy
+
+  freeswitch-standby:
+    build:
+      context: ./freeswitch
+      dockerfile: Dockerfile
+    network_mode: host
+    extra_hosts:
+      - "api:127.0.0.1"
+    environment:
+      NP_FS_ROLE: standby
+      NP_FS_PEER_HOST: ${NP_FS_PRIMARY_IP:-127.0.0.1}
+      # Standby listens on alternate ports to avoid conflicts on same host
+      NP_FS_SIP_PORT: ${NP_FS_STANDBY_SIP_PORT:-5090}
+      NP_FS_EVENT_SOCKET_PORT: ${NP_FS_STANDBY_ESL_PORT:-8022}
+    volumes:
+      - fs_standby_data:/var/lib/freeswitch
+      - fs_gateways:/etc/freeswitch/sip_profiles/external:ro
+      - recordings_standby:/recordings
+      - ./freeswitch/conf/autoload_configs/event_socket.conf.xml:/custom-conf/autoload_configs/event_socket.conf.xml:ro
+      - ./freeswitch/conf/autoload_configs/xml_curl.conf.xml:/custom-conf/autoload_configs/xml_curl.conf.xml:ro
+      - ./freeswitch/conf/autoload_configs/modules.conf.xml:/custom-conf/autoload_configs/modules.conf.xml:ro
+      - ./freeswitch/tls:/custom-tls:ro
+    healthcheck:
+      test: ["CMD", "fs_cli", "-x", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      pg-primary:
+        condition: service_healthy
+
+networks:
+  ha-internal:
+    name: new_phone_ha
+    driver: bridge
+
+volumes:
+  pg_primary_data:
+    name: new_phone_pg_primary_data
+  pg_standby_data:
+    name: new_phone_pg_standby_data
+  redis_master_data:
+    name: new_phone_redis_master_data
+  redis_slave_data:
+    name: new_phone_redis_slave_data
+  fs_standby_data:
+    name: new_phone_fs_standby_data
+  recordings_standby:
+    name: new_phone_recordings_standby

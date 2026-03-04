@@ -53,6 +53,15 @@ const WfmTimeOffPage = lazy(() => import("@/pages/workforce-management/wfm-time-
 const WfmAnalyticsPage = lazy(() => import("@/pages/workforce-management/wfm-analytics-page").then((m) => ({ default: m.WfmAnalyticsPage })))
 const PortRequestsPage = lazy(() => import("@/pages/port-requests/port-requests-page").then((m) => ({ default: m.PortRequestsPage })))
 const TelephonyProvidersPage = lazy(() => import("@/pages/msp/telephony-providers-page").then((m) => ({ default: m.TelephonyProvidersPage })))
+const DeveloperPortalPage = lazy(() => import("@/pages/developer/developer-portal-page").then((m) => ({ default: m.DeveloperPortalPage })))
+const CallbacksPage = lazy(() => import("@/pages/callbacks/callbacks-page").then((m) => ({ default: m.CallbacksPage })))
+const SurveysPage = lazy(() => import("@/pages/surveys/surveys-page").then((m) => ({ default: m.SurveysPage })))
+const BillingPage = lazy(() => import("@/pages/billing/billing-page").then((m) => ({ default: m.BillingPage })))
+const StirShakenPage = lazy(() => import("@/pages/stir-shaken/stir-shaken-page").then((m) => ({ default: m.StirShakenPage })))
+const MigrationPage = lazy(() => import("@/pages/migration/migration-page").then((m) => ({ default: m.MigrationPage })))
+const ReceptionistPage = lazy(() => import("@/pages/receptionist/receptionist-page").then((m) => ({ default: m.ReceptionistPage })))
+const HospitalityPage = lazy(() => import("@/pages/hospitality/hospitality-page").then((m) => ({ default: m.HospitalityPage })))
+const MarketplacePage = lazy(() => import("@/pages/marketplace/marketplace-page").then((m) => ({ default: m.MarketplacePage })))
 const NotFoundPage = lazy(() => import("@/pages/not-found/not-found-page").then((m) => ({ default: m.NotFoundPage })))
 
 function LazyPage({ children }: { children: React.ReactNode }) {
@@ -127,6 +136,15 @@ export const router = createBrowserRouter([
           { path: "wfm/analytics", element: <LazyPage><WfmAnalyticsPage /></LazyPage> },
           { path: "port-requests", element: <LazyPage><PortRequestsPage /></LazyPage> },
           { path: "msp/telephony-providers", element: <LazyPage><TelephonyProvidersPage /></LazyPage> },
+          { path: "developer", element: <LazyPage><DeveloperPortalPage /></LazyPage> },
+          { path: "callbacks", element: <LazyPage><CallbacksPage /></LazyPage> },
+          { path: "surveys", element: <LazyPage><SurveysPage /></LazyPage> },
+          { path: "billing", element: <LazyPage><BillingPage /></LazyPage> },
+          { path: "stir-shaken", element: <LazyPage><StirShakenPage /></LazyPage> },
+          { path: "migration", element: <LazyPage><MigrationPage /></LazyPage> },
+          { path: "receptionist", element: <LazyPage><ReceptionistPage /></LazyPage> },
+          { path: "hospitality", element: <LazyPage><HospitalityPage /></LazyPage> },
+          { path: "marketplace", element: <LazyPage><MarketplacePage /></LazyPage> },
           { path: "profile", element: <LazyPage><ProfilePage /></LazyPage> },
           { path: "*", element: <LazyPage><NotFoundPage /></LazyPage> },
         ],

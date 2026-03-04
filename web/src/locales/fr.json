@@ -51,7 +51,20 @@
     "portRequests": "Demandes de Portage",
     "wfmTimeOff": "Cong\u00e9s",
     "wfmAnalytics": "Pr\u00e9visions",
-    "telephonyProviders": "Fournisseurs T\u00e9l\u00e9phoniques"
+    "telephonyProviders": "Fournisseurs T\u00e9l\u00e9phoniques",
+    "developer": "Portail D\u00e9veloppeur",
+    "callbacks": "Rappels",
+    "surveys": "Enqu\u00eates",
+    "billing": "Facturation et Utilisation",
+    "stirShaken": "STIR/SHAKEN",
+    "migration": "Outils de Migration",
+    "receptionist": "Console R\u00e9ception",
+    "hospitality": "H\u00f4tellerie",
+    "marketplace": "Marketplace",
+    "advancedCallCenter": "Centre d'Appels",
+    "securityCompliance": "S\u00e9curit\u00e9",
+    "billingBusiness": "Facturation",
+    "advancedFeatures": "Avanc\u00e9"
   },
   "common": {
     "save": "Enregistrer",
