@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { api } from "./client"
+import { apiClient } from "@/lib/api-client"
 import { useAuthStore } from "@/stores/auth-store"
 import { queryKeys } from "./query-keys"
 
@@ -67,49 +67,51 @@ export interface RateDeckEntryCreate {
 }
 
 export function useUsageRecords(periodStart?: string, periodEnd?: string) {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
-  const params = new URLSearchParams()
-  if (periodStart) params.set("period_start", periodStart)
-  if (periodEnd) params.set("period_end", periodEnd)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   return useQuery({
-    queryKey: queryKeys.billing.usage(tenantId!, periodStart, periodEnd),
-    queryFn: () => api.get(`/tenants/${tenantId}/billing/usage?${params}`).then((r) => r.data as { items: UsageRecord[]; total: number }),
+    queryKey: queryKeys.billing.usage(tenantId, periodStart, periodEnd),
+    queryFn: () => {
+      const params: Record<string, string> = {}
+      if (periodStart) params.period_start = periodStart
+      if (periodEnd) params.period_end = periodEnd
+      return apiClient.get<{ items: UsageRecord[]; total: number }>(`tenants/${tenantId}/billing/usage`, params)
+    },
     enabled: !!tenantId,
   })
 }
 
 export function useRateDecks() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   return useQuery({
-    queryKey: queryKeys.billing.rateDecks(tenantId!),
-    queryFn: () => api.get(`/tenants/${tenantId}/billing/rate-decks`).then((r) => r.data as RateDeck[]),
+    queryKey: queryKeys.billing.rateDecks(tenantId),
+    queryFn: () => apiClient.get<RateDeck[]>(`tenants/${tenantId}/billing/rate-decks`),
     enabled: !!tenantId,
   })
 }
 
 export function useCreateRateDeck() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: RateDeckCreate) => api.post(`/tenants/${tenantId}/billing/rate-decks`, data).then((r) => r.data as RateDeck),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.billing.rateDecks(tenantId!) }),
+    mutationFn: (data: RateDeckCreate) => apiClient.post<RateDeck>(`tenants/${tenantId}/billing/rate-decks`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.billing.rateDecks(tenantId) }),
   })
 }
 
 export function useBillingConfig() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   return useQuery({
-    queryKey: queryKeys.billing.config(tenantId!),
-    queryFn: () => api.get(`/tenants/${tenantId}/billing/config`).then((r) => r.data as BillingConfig),
+    queryKey: queryKeys.billing.config(tenantId),
+    queryFn: () => apiClient.get<BillingConfig>(`tenants/${tenantId}/billing/config`),
     enabled: !!tenantId,
   })
 }
 
 export function useUpdateBillingConfig() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Partial<BillingConfig>) => api.put(`/tenants/${tenantId}/billing/config`, data).then((r) => r.data as BillingConfig),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.billing.config(tenantId!) }),
+    mutationFn: (data: Partial<BillingConfig>) => apiClient.put<BillingConfig>(`tenants/${tenantId}/billing/config`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.billing.config(tenantId) }),
   })
 }

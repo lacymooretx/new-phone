@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
 import { PageHeader } from "@/components/shared/page-header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,14 +7,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
+
 import { Badge } from "@/components/ui/badge"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { EmptyState } from "@/components/shared/empty-state"
 import {
   useWebhooks,
   useCreateWebhook,
-  useUpdateWebhook,
+
   useDeleteWebhook,
   useTestWebhook,
   useWebhookDeliveries,
@@ -37,7 +36,7 @@ import {
   Key,
   Send,
   Trash2,
-  Pencil,
+
   Copy,
   CheckCircle2,
   XCircle,
@@ -424,8 +423,6 @@ const client = new Client({ apiKey: 'np_...', baseUrl: 'https://your-instance.co
 
 // ── Main Page ────────────────────────────────────────────────────────
 export function DeveloperPortalPage() {
-  const { t } = useTranslation()
-
   return (
     <div className="space-y-6">
       <PageHeader

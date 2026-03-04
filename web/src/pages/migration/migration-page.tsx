@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useMigrationJobs, useUploadMigration, useValidateMigration, useExecuteMigration } from "@/api/migration"
 import { toast } from "sonner"
-import { Upload, FileUp, CheckCircle2, AlertCircle, Loader2, Play, Search } from "lucide-react"
+import { Upload, FileUp, AlertCircle, Loader2, Play, Search } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const statusConfig: Record<string, { color: string; label: string }> = {

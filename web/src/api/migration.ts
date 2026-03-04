@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { api } from "./client"
+import { apiClient } from "@/lib/api-client"
 import { useAuthStore } from "@/stores/auth-store"
 import { queryKeys } from "./query-keys"
 
@@ -26,37 +26,37 @@ export interface MigrationUpload {
 }
 
 export function useMigrationJobs() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   return useQuery({
-    queryKey: queryKeys.migration.jobs(tenantId!),
-    queryFn: () => api.get(`/tenants/${tenantId}/migration/jobs`).then((r) => r.data as MigrationJob[]),
+    queryKey: queryKeys.migration.jobs(tenantId),
+    queryFn: () => apiClient.get<MigrationJob[]>(`tenants/${tenantId}/migration/jobs`),
     enabled: !!tenantId,
   })
 }
 
 export function useUploadMigration() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: MigrationUpload) => api.post(`/tenants/${tenantId}/migration/upload`, data).then((r) => r.data as MigrationJob),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.migration.jobs(tenantId!) }),
+    mutationFn: (data: MigrationUpload) => apiClient.post<MigrationJob>(`tenants/${tenantId}/migration/upload`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.migration.jobs(tenantId) }),
   })
 }
 
 export function useValidateMigration() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (jobId: string) => api.post(`/tenants/${tenantId}/migration/jobs/${jobId}/validate`).then((r) => r.data as MigrationJob),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.migration.jobs(tenantId!) }),
+    mutationFn: (jobId: string) => apiClient.post<MigrationJob>(`tenants/${tenantId}/migration/jobs/${jobId}/validate`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.migration.jobs(tenantId) }),
   })
 }
 
 export function useExecuteMigration() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (jobId: string) => api.post(`/tenants/${tenantId}/migration/jobs/${jobId}/import`).then((r) => r.data as MigrationJob),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.migration.jobs(tenantId!) }),
+    mutationFn: (jobId: string) => apiClient.post<MigrationJob>(`tenants/${tenantId}/migration/jobs/${jobId}/import`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.migration.jobs(tenantId) }),
   })
 }

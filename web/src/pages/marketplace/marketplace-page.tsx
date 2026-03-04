@@ -18,7 +18,7 @@ import {
   useDeactivatePlugin,
   useUpdatePluginConfig,
   usePluginEventLogs,
-  type Plugin,
+
   type TenantPlugin,
 } from "@/api/plugins"
 import { toast } from "sonner"

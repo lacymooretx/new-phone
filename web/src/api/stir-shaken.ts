@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { api } from "./client"
+import { apiClient } from "@/lib/api-client"
 import { useAuthStore } from "@/stores/auth-store"
 import { queryKeys } from "./query-keys"
 
@@ -41,64 +41,64 @@ export interface SpamAllowListEntry {
 }
 
 export function useStirShakenConfig() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   return useQuery({
-    queryKey: queryKeys.stirShaken.config(tenantId!),
-    queryFn: () => api.get(`/tenants/${tenantId}/stir-shaken/config`).then((r) => r.data as StirShakenConfig),
+    queryKey: queryKeys.stirShaken.config(tenantId),
+    queryFn: () => apiClient.get<StirShakenConfig>(`tenants/${tenantId}/stir-shaken/config`),
     enabled: !!tenantId,
   })
 }
 
 export function useUpdateStirShakenConfig() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Partial<StirShakenConfig>) => api.put(`/tenants/${tenantId}/stir-shaken/config`, data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.stirShaken.config(tenantId!) }),
+    mutationFn: (data: Partial<StirShakenConfig>) => apiClient.put<StirShakenConfig>(`tenants/${tenantId}/stir-shaken/config`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.stirShaken.config(tenantId) }),
   })
 }
 
 export function useSpamFilter() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   return useQuery({
-    queryKey: queryKeys.stirShaken.spamFilter(tenantId!),
-    queryFn: () => api.get(`/tenants/${tenantId}/stir-shaken/spam-filter`).then((r) => r.data as SpamFilter),
+    queryKey: queryKeys.stirShaken.spamFilter(tenantId),
+    queryFn: () => apiClient.get<SpamFilter>(`tenants/${tenantId}/stir-shaken/spam-filter`),
     enabled: !!tenantId,
   })
 }
 
 export function useSpamBlockList() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   return useQuery({
-    queryKey: queryKeys.stirShaken.blockList(tenantId!),
-    queryFn: () => api.get(`/tenants/${tenantId}/stir-shaken/block-list`).then((r) => r.data as SpamBlockListEntry[]),
+    queryKey: queryKeys.stirShaken.blockList(tenantId),
+    queryFn: () => apiClient.get<SpamBlockListEntry[]>(`tenants/${tenantId}/stir-shaken/block-list`),
     enabled: !!tenantId,
   })
 }
 
 export function useAddBlockListEntry() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: { pattern: string; reason?: string }) => api.post(`/tenants/${tenantId}/stir-shaken/block-list`, data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.stirShaken.blockList(tenantId!) }),
+    mutationFn: (data: { pattern: string; reason?: string }) => apiClient.post<SpamBlockListEntry>(`tenants/${tenantId}/stir-shaken/block-list`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.stirShaken.blockList(tenantId) }),
   })
 }
 
 export function useSpamAllowList() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   return useQuery({
-    queryKey: queryKeys.stirShaken.allowList(tenantId!),
-    queryFn: () => api.get(`/tenants/${tenantId}/stir-shaken/allow-list`).then((r) => r.data as SpamAllowListEntry[]),
+    queryKey: queryKeys.stirShaken.allowList(tenantId),
+    queryFn: () => apiClient.get<SpamAllowListEntry[]>(`tenants/${tenantId}/stir-shaken/allow-list`),
     enabled: !!tenantId,
   })
 }
 
 export function useAddAllowListEntry() {
-  const tenantId = useAuthStore((s) => s.activeTenantId)
+  const tenantId = useAuthStore((s) => s.activeTenantId)!
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: { pattern: string; reason?: string }) => api.post(`/tenants/${tenantId}/stir-shaken/allow-list`, data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.stirShaken.allowList(tenantId!) }),
+    mutationFn: (data: { pattern: string; reason?: string }) => apiClient.post<SpamAllowListEntry>(`tenants/${tenantId}/stir-shaken/allow-list`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.stirShaken.allowList(tenantId) }),
   })
 }
