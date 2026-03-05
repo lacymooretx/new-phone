@@ -70,20 +70,15 @@ export type PhoneAppConfigUpdate = Partial<
 export function usePhoneAppConfig(tenantId: string) {
   return useQuery({
     queryKey: queryKeys.phoneAppConfig.detail(tenantId),
-    queryFn: async () => {
-      const res = await apiClient.get(`/tenants/${tenantId}/devices/phone-app-config`)
-      return res.data as PhoneAppConfig
-    },
+    queryFn: () => apiClient.get<PhoneAppConfig>(`/tenants/${tenantId}/devices/phone-app-config`),
   })
 }
 
 export function useUpdatePhoneAppConfig() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ tenantId, data }: { tenantId: string; data: PhoneAppConfigUpdate }) => {
-      const res = await apiClient.patch(`/tenants/${tenantId}/devices/phone-app-config`, data)
-      return res.data as PhoneAppConfig
-    },
+    mutationFn: ({ tenantId, data }: { tenantId: string; data: PhoneAppConfigUpdate }) =>
+      apiClient.patch<PhoneAppConfig>(`/tenants/${tenantId}/devices/phone-app-config`, data),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: queryKeys.phoneAppConfig.detail(vars.tenantId) })
     },
