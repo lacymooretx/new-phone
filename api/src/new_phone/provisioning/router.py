@@ -118,11 +118,15 @@ async def provisioning_endpoint(filename: str) -> Response:
         )
         keys = list(result.scalars().all())
 
-        # Load phone app config for this tenant
+        # Load or create phone app config for this tenant (ensures defaults exist)
         pac_result = await session.execute(
             select(PhoneAppConfig).where(PhoneAppConfig.tenant_id == device.tenant_id)
         )
         phone_app_config = pac_result.scalar_one_or_none()
+        if not phone_app_config:
+            phone_app_config = PhoneAppConfig(tenant_id=device.tenant_id)
+            session.add(phone_app_config)
+            await session.flush()
 
         # Use the provisioning SIP server (public-facing address for phones).
         # freeswitch_host is the Docker-internal hostname, not reachable by phones.
