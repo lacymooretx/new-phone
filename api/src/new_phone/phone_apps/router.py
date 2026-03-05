@@ -33,11 +33,17 @@ from new_phone.phone_apps.renderers import (
     render_status_list,
     render_text_screen,
 )
+from new_phone.config import settings
 from new_phone.phone_apps.service import PhoneAppConfigService
 
 logger = structlog.get_logger()
 
 router = APIRouter(tags=["phone-apps"])
+
+
+def _base_url(mac: str) -> str:
+    """Return the full external base URL for phone app endpoints."""
+    return f"{settings.provisioning_base_url.rstrip('/')}/phone-apps/{mac}"
 
 XML = "text/xml; charset=utf-8"
 
@@ -72,7 +78,7 @@ async def phone_menu(mac: str) -> Response:
         config = await svc.get_or_create(ctx.tenant.id)
         await session.commit()
 
-    base = f"/phone-apps/{ctx.mac}"
+    base = _base_url(ctx.mac)
     company = config.company_name or ctx.tenant.name or "Phone Apps"
 
     items: list[MenuItem] = []
@@ -142,7 +148,7 @@ async def phone_directory(
         for ext in extensions
     ]
 
-    base_url = f"/phone-apps/{ctx.mac}/directory"
+    base_url = f"{_base_url(ctx.mac)}/directory"
     if q:
         base_url = f"{base_url}?q={q}"
 
@@ -165,7 +171,7 @@ async def phone_directory_search(mac: str) -> Response:
             ctx.manufacturer,
             "Search Directory",
             "Enter name or number",
-            f"/phone-apps/{ctx.mac}/directory",
+            f"{_base_url(ctx.mac)}/directory",
             "q",
         )
     )
@@ -217,7 +223,7 @@ async def phone_voicemail(mac: str, page: int = Query(1, ge=1)) -> Response:
         result = await session.execute(stmt)
         messages = list(result.scalars().all())
 
-    base = f"/phone-apps/{ctx.mac}"
+    base = _base_url(ctx.mac)
     items: list[MenuItem] = []
     for msg in messages:
         caller = msg.caller_name or msg.caller_number or "Unknown"
@@ -350,7 +356,7 @@ async def phone_call_history(mac: str, page: int = Query(1, ge=1)) -> Response:
         entries.append(DirEntry(name=label, number=dial_number or ""))
 
     page_info = PageInfo(page=page, page_size=page_size, total=total)
-    base = f"/phone-apps/{ctx.mac}/history"
+    base = f"{_base_url(ctx.mac)}/history"
 
     return _xml(render_directory(ctx.manufacturer, "Call History", entries, page_info, base))
 
@@ -418,7 +424,7 @@ async def phone_queues(mac: str) -> Response:
     if not my_queues:
         return _xml(render_text_screen(ctx.manufacturer, "Queues", "Not a member of any queue"))
 
-    base = f"/phone-apps/{ctx.mac}"
+    base = _base_url(ctx.mac)
     rows: list[StatusRow] = []
     for q in my_queues:
         member_count = len(q.members)
@@ -486,7 +492,7 @@ async def phone_settings(mac: str) -> Response:
         return _not_found()
 
     ext = ctx.extension
-    base = f"/phone-apps/{ctx.mac}/settings"
+    base = f"{_base_url(ctx.mac)}/settings"
 
     items: list[MenuItem] = []
 
@@ -561,7 +567,7 @@ async def phone_forward_form(mac: str) -> Response:
     if not ctx:
         return _not_found()
 
-    base = f"/phone-apps/{ctx.mac}/settings"
+    base = f"{_base_url(ctx.mac)}/settings"
     items = [
         MenuItem("Forward All Calls", f"{base}/forward/set/unconditional"),
         MenuItem("Forward on Busy", f"{base}/forward/set/busy"),
@@ -592,7 +598,7 @@ async def phone_forward_input(mac: str, fwd_type: str) -> Response:
             ctx.manufacturer,
             labels[fwd_type],
             "Enter destination number",
-            f"/phone-apps/{ctx.mac}/settings/forward?type={fwd_type}",
+            f"{_base_url(ctx.mac)}/settings/forward?type={fwd_type}",
             "destination",
         )
     )
