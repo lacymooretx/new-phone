@@ -154,6 +154,11 @@ features.intercom.barge = 1
 {% if phone_app_config.directory_enabled or phone_app_config.voicemail_enabled or phone_app_config.parking_enabled or phone_app_config.queue_dashboard_enabled %}
 features.xml_browser.enable = 1
 features.xml_browser.url = {{ provisioning_base_url }}/phone-apps/{{ mac }}/menu
+{% set apps_key_index = (line_keys | map(attribute='key_index') | list | max | default(1)) + 1 %}
+linekey.{{ apps_key_index }}.type = 27
+linekey.{{ apps_key_index }}.label = Apps
+linekey.{{ apps_key_index }}.value = {{ provisioning_base_url }}/phone-apps/{{ mac }}/menu
+linekey.{{ apps_key_index }}.line = 1
 {% endif %}
 
 ###
