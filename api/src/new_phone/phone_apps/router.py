@@ -23,14 +23,10 @@ from new_phone.models.queue import Queue, QueueMember
 from new_phone.models.voicemail_message import VoicemailMessage
 from new_phone.phone_apps.auth import resolve_phone_context
 from new_phone.phone_apps.renderers import (
-    DirEntry,
     MenuItem,
     PageInfo,
-    StatusRow,
-    render_directory,
     render_input_screen,
     render_menu,
-    render_status_list,
     render_text_screen,
 )
 from new_phone.config import settings
@@ -140,21 +136,32 @@ async def phone_directory(
         result = await session.execute(stmt)
         extensions = list(result.scalars().all())
 
-    entries = [
-        DirEntry(
-            name=ext.internal_cid_name or f"Ext {ext.extension_number}",
-            number=ext.extension_number,
-        )
-        for ext in extensions
-    ]
-
-    base_url = f"{_base_url(ctx.mac)}/directory"
-    if q:
-        base_url = f"{base_url}?q={q}"
+    # Render as TextMenu (XML Browser doesn't support YealinkIPPhoneDirectory)
+    items: list[MenuItem] = []
+    for ext in extensions:
+        name = ext.internal_cid_name or f"Ext {ext.extension_number}"
+        items.append(MenuItem(f"{name} ({ext.extension_number})", ext.extension_number))
 
     page_info = PageInfo(page=page, page_size=page_size, total=total)
+    title = "Directory"
+    if page_info.total_pages > 1:
+        title = f"Directory ({page}/{page_info.total_pages})"
 
-    return _xml(render_directory(ctx.manufacturer, "Directory", entries, page_info, base_url))
+    # Add pagination items
+    base_url = f"{_base_url(ctx.mac)}/directory"
+    if q:
+        base_url = f"{base_url}?q={q}&page="
+    else:
+        base_url = f"{base_url}?page="
+    if page_info.has_prev:
+        items.insert(0, MenuItem(f"<< Previous Page", f"{base_url}{page - 1}"))
+    if page_info.has_next:
+        items.append(MenuItem(f"Next Page >>", f"{base_url}{page + 1}"))
+
+    # Add search option at the top
+    items.insert(0, MenuItem("Search...", f"{_base_url(ctx.mac)}/directory/search"))
+
+    return _xml(render_menu(ctx.manufacturer, title, items))
 
 
 # ── 3. Directory Search ────────────────────────────────────────────
@@ -233,24 +240,18 @@ async def phone_voicemail(mac: str, page: int = Query(1, ge=1)) -> Response:
         items.append(MenuItem(label, f"{base}/voicemail/{msg.id}"))
 
     page_info = PageInfo(page=page, page_size=page_size, total=total)
-
-    # Render as menu with pagination
-    xml = render_menu(ctx.manufacturer, "Voicemail", items)
-    # For voicemail we add pagination via status list since render_menu doesn't paginate
-    # Instead, let's use directory format which supports pagination
+    title = "Voicemail"
     if page_info.total_pages > 1:
-        entries = [DirEntry(name=item.prompt, number="") for item in items]
-        return _xml(
-            render_directory(
-                ctx.manufacturer,
-                f"Voicemail (Page {page}/{page_info.total_pages})",
-                entries,
-                page_info,
-                f"{base}/voicemail",
-            )
-        )
+        title = f"Voicemail ({page}/{page_info.total_pages})"
 
-    return _xml(xml)
+    # Add pagination items
+    vm_base = f"{base}/voicemail?page="
+    if page_info.has_prev:
+        items.insert(0, MenuItem("<< Previous Page", f"{vm_base}{page - 1}"))
+    if page_info.has_next:
+        items.append(MenuItem("Next Page >>", f"{vm_base}{page + 1}"))
+
+    return _xml(render_menu(ctx.manufacturer, title, items))
 
 
 # ── 5. Voicemail Detail ────────────────────────────────────────────
@@ -341,7 +342,8 @@ async def phone_call_history(mac: str, page: int = Query(1, ge=1)) -> Response:
 
     direction_arrows = {"inbound": "<-", "outbound": "->", "internal": "<>"}
 
-    entries: list[DirEntry] = []
+    # Render as TextMenu (XML Browser doesn't support YealinkIPPhoneDirectory)
+    items: list[MenuItem] = []
     for cdr in cdrs:
         arrow = direction_arrows.get(cdr.direction, "--")
         name = cdr.caller_name or cdr.caller_number or "Unknown"
@@ -353,12 +355,21 @@ async def phone_call_history(mac: str, page: int = Query(1, ge=1)) -> Response:
 
         # Number to dial back
         dial_number = cdr.caller_number if cdr.direction == "inbound" else cdr.called_number
-        entries.append(DirEntry(name=label, number=dial_number or ""))
+        items.append(MenuItem(label, dial_number or ""))
 
     page_info = PageInfo(page=page, page_size=page_size, total=total)
-    base = f"{_base_url(ctx.mac)}/history"
+    title = "Call History"
+    if page_info.total_pages > 1:
+        title = f"Call History ({page}/{page_info.total_pages})"
 
-    return _xml(render_directory(ctx.manufacturer, "Call History", entries, page_info, base))
+    # Add pagination
+    base = f"{_base_url(ctx.mac)}/history?page="
+    if page_info.has_prev:
+        items.insert(0, MenuItem("<< Previous Page", f"{base}{page - 1}"))
+    if page_info.has_next:
+        items.append(MenuItem("Next Page >>", f"{base}{page + 1}"))
+
+    return _xml(render_menu(ctx.manufacturer, title, items))
 
 
 # ── 7. Parking Panel ───────────────────────────────────────────────
@@ -383,19 +394,17 @@ async def phone_parking(mac: str) -> Response:
     if not lots:
         return _xml(render_text_screen(ctx.manufacturer, "Parking", "No parking lots configured"))
 
-    rows: list[StatusRow] = []
+    # Render as TextMenu for XML Browser compatibility
+    items: list[MenuItem] = []
     for lot in lots:
         lot_label = lot.name or f"Lot {lot.lot_number}"
         slots = lot.slot_end - lot.slot_start + 1
-        rows.append(
-            StatusRow(
-                label=lot_label,
-                value=f"Slots {lot.slot_start}-{lot.slot_end} ({slots} slots)",
-                dial_uri=f"tel:*{lot.slot_start}",
-            )
-        )
+        items.append(MenuItem(
+            f"{lot_label}: Slots {lot.slot_start}-{lot.slot_end} ({slots})",
+            f"*{lot.slot_start}",
+        ))
 
-    return _xml(render_status_list(ctx.manufacturer, "Parking", rows))
+    return _xml(render_menu(ctx.manufacturer, "Parking", items))
 
 
 # ── 8. Queue Dashboard ─────────────────────────────────────────────
@@ -425,19 +434,13 @@ async def phone_queues(mac: str) -> Response:
         return _xml(render_text_screen(ctx.manufacturer, "Queues", "Not a member of any queue"))
 
     base = _base_url(ctx.mac)
-    rows: list[StatusRow] = []
+    items: list[MenuItem] = []
     for q in my_queues:
         member_count = len(q.members)
         label = q.name or f"Queue {q.queue_number}"
-        rows.append(
-            StatusRow(
-                label=label,
-                value=f"{member_count} agents",
-                dial_uri=f"{base}/queues/{q.id}",
-            )
-        )
+        items.append(MenuItem(f"{label} ({member_count} agents)", f"{base}/queues/{q.id}"))
 
-    return _xml(render_status_list(ctx.manufacturer, "Queues", rows))
+    return _xml(render_menu(ctx.manufacturer, "Queues", items))
 
 
 # ── 9. Queue Detail ────────────────────────────────────────────────
