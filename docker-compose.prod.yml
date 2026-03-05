@@ -25,6 +25,7 @@ services:
       NP_SSO_FRONTEND_URL: ${NP_SSO_FRONTEND_URL:-https://ucc.aspendora.com}
       NP_FREESWITCH_HOST: freeswitch
       NP_PROVISIONING_SIP_SERVER: ${NP_PROVISIONING_SIP_SERVER:-ucc.aspendora.com}
+      NP_PROVISIONING_BASE_URL: ${NP_PROVISIONING_BASE_URL:-https://ucc.aspendora.com}
       NP_SMTP_HOST: ""
       NP_SMTP_PORT: "587"
     healthcheck:
