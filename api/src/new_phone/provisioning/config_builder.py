@@ -7,8 +7,10 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from new_phone.auth.encryption import decrypt_value
 from new_phone.models.device import Device, DeviceKey
 from new_phone.models.extension import Extension
+from new_phone.models.phone_app_config import PhoneAppConfig
 from new_phone.models.phone_model import PhoneModel
 from new_phone.models.tenant import Tenant
 
@@ -88,6 +90,8 @@ def build_config(
     sip_server: str,
     ntp_server: str = "pool.ntp.org",
     timezone: str = "America/New_York",
+    phone_app_config: PhoneAppConfig | None = None,
+    provisioning_base_url: str = "",
 ) -> tuple[str, str]:
     """Render a phone configuration for the given device.
 
@@ -112,6 +116,20 @@ def build_config(
 
     sip_domain = tenant.sip_domain or f"{tenant.slug}.sip.local"
 
+    # Override timezone from phone_app_config if present
+    if phone_app_config and phone_app_config.timezone:
+        timezone = phone_app_config.timezone
+
+    # Decrypt admin password if set
+    phone_admin_password = None
+    if phone_app_config and phone_app_config.encrypted_phone_admin_password:
+        try:
+            phone_admin_password = decrypt_value(
+                phone_app_config.encrypted_phone_admin_password
+            )
+        except ValueError:
+            pass  # Fall back to no custom admin password
+
     context = {
         "device": device,
         "extension": extension,
@@ -125,6 +143,9 @@ def build_config(
         "line_keys": line_keys,
         "expansion_keys": expansion_keys,
         "key_type_map": mfg_config["key_type_map"],
+        "phone_app_config": phone_app_config,
+        "provisioning_base_url": provisioning_base_url.rstrip("/"),
+        "phone_admin_password": phone_admin_password,
     }
 
     base_cfg = base_template.render(**context)

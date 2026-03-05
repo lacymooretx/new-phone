@@ -13,7 +13,7 @@ linekey.{{ key.key_index }}.label = {{ key.label }}
 linekey.{{ key.key_index }}.line = {{ key.line }}
 {% if key.key_type == 'blf' and extension %}
 linekey.{{ key.key_index }}.extension = {{ key.value }}
-linekey.{{ key.key_index }}.pickup_value = *8{{ key.value }}
+linekey.{{ key.key_index }}.pickup_value = {{ phone_app_config.pickup_code if phone_app_config else '*8' }}{{ key.value }}
 {% endif %}
 {% endfor %}
 

@@ -291,6 +291,10 @@ export const queryKeys = {
     all: (tenantId: string) => ["migration", tenantId] as const,
     jobs: (tenantId: string) => [...queryKeys.migration.all(tenantId), "jobs"] as const,
   },
+  phoneAppConfig: {
+    all: (tenantId: string) => ["phoneAppConfig", tenantId] as const,
+    detail: (tenantId: string) => [...queryKeys.phoneAppConfig.all(tenantId), "detail"] as const,
+  },
   hospitality: {
     all: (tenantId: string) => ["hospitality", tenantId] as const,
     rooms: (tenantId: string, status?: string, floor?: string) =>

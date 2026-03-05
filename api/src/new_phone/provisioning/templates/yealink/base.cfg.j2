@@ -34,6 +34,25 @@ account.1.enable = 0
 ###
 network.dhcp_enable = 1
 network.lldp.enable = 1
+{% if phone_app_config and phone_app_config.vlan_enabled %}
+
+###
+### VLAN
+###
+network.vlan.internet_port_enable = 1
+{% if phone_app_config.vlan_id %}
+network.vlan.internet_port_vid = {{ phone_app_config.vlan_id }}
+{% endif %}
+network.vlan.internet_port_priority = {{ phone_app_config.vlan_priority }}
+{% endif %}
+{% if phone_app_config %}
+
+###
+### QoS / DSCP
+###
+network.qos.dscp.signal = {{ phone_app_config.dscp_sip }}
+network.qos.dscp.audio = {{ phone_app_config.dscp_rtp }}
+{% endif %}
 
 ###
 ### NTP / Time
@@ -41,18 +60,139 @@ network.lldp.enable = 1
 local_time.ntp_server1 = {{ ntp_server }}
 local_time.time_zone_name = {{ timezone }}
 local_time.dhcp_time = 0
+{% if phone_app_config %}
+local_time.date_format = {{ phone_app_config.date_format }}
+local_time.time_format = {{ phone_app_config.time_format }}
+{% endif %}
 
 ###
 ### Phone Settings
 ###
+{% if phone_app_config %}
+phone_setting.ring_type = {{ phone_app_config.ringtone }}
+phone_setting.backlight_time = {{ phone_app_config.backlight_time }}
+{% else %}
 phone_setting.ring_type = Ring1.wav
 phone_setting.backlight_time = 60
+{% endif %}
 features.direct_ip_call_enable = 0
 features.power_saving.enable = 0
+{% if phone_app_config %}
+screensaver.type = {{ phone_app_config.screensaver_type }}
+{% endif %}
+{% if phone_app_config and phone_app_config.language %}
+
+###
+### Language
+###
+lang.gui = {{ phone_app_config.language }}
+{% endif %}
 
 ###
 ### Security
 ###
 security.trust_certificates = 1
 account.1.srtp_encryption = 2
+{% if phone_admin_password %}
+static.security.user_password.admin = {{ phone_admin_password }}
+{% else %}
 static.security.user_password.server = admin
+{% endif %}
+{% if phone_app_config %}
+
+###
+### Codec Priority
+###
+{% set codecs = phone_app_config.codec_priority.split(',') %}
+{% set codec_map = {'PCMU': 0, 'PCMA': 8, 'G722': 9, 'G729': 18, 'opus': 124, 'G726-32': 2, 'iLBC': 97} %}
+{% for codec_name in codecs %}
+{% set cn = codec_name.strip() %}
+{% if cn in codec_map %}
+account.1.codec.{{ loop.index }}.enable = 1
+account.1.codec.{{ loop.index }}.payload_type = {{ codec_map[cn] }}
+account.1.codec.{{ loop.index }}.priority = {{ loop.index }}
+{% endif %}
+{% endfor %}
+
+###
+### Feature Codes
+###
+features.pickup.direct_pickup_enable = 1
+features.pickup.direct_pickup_code = {{ phone_app_config.pickup_code }}
+{% if phone_app_config.dnd_on_code %}
+features.dnd.on_code = {{ phone_app_config.dnd_on_code }}
+{% endif %}
+{% if phone_app_config.dnd_off_code %}
+features.dnd.off_code = {{ phone_app_config.dnd_off_code }}
+{% endif %}
+{% if phone_app_config.fwd_unconditional_code %}
+features.fwd.always.on_code = {{ phone_app_config.fwd_unconditional_code }}
+{% endif %}
+{% if phone_app_config.fwd_busy_code %}
+features.fwd.busy.on_code = {{ phone_app_config.fwd_busy_code }}
+{% endif %}
+{% if phone_app_config.fwd_noanswer_code %}
+features.fwd.no_answer.on_code = {{ phone_app_config.fwd_noanswer_code }}
+{% endif %}
+
+###
+### Intercom
+###
+features.intercom.allow = 1
+features.intercom.mute = 0
+features.intercom.tone = 1
+features.intercom.barge = 1
+{% endif %}
+{% if phone_app_config and provisioning_base_url %}
+{% set mac = device.mac_address %}
+
+###
+### XML Browser / Phone Apps
+###
+{% if phone_app_config.directory_enabled or phone_app_config.voicemail_enabled or phone_app_config.parking_enabled or phone_app_config.queue_dashboard_enabled %}
+features.xml_browser.enable = 1
+features.xml_browser.url = {{ provisioning_base_url }}/phone-apps/{{ mac }}/menu
+{% endif %}
+
+###
+### Remote Phonebook (Directory)
+###
+{% if phone_app_config.directory_enabled %}
+remote_phonebook.data.1.url = {{ provisioning_base_url }}/phone-apps/{{ mac }}/directory
+remote_phonebook.data.1.name = {{ phone_app_config.company_name or tenant.name }} Directory
+{% endif %}
+
+###
+### Action URLs
+###
+{% if phone_app_config.action_urls_enabled %}
+action_url.setup_completed = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=setup_completed
+action_url.registered = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=registered
+action_url.unregistered = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=unregistered
+action_url.off_hook = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=off_hook
+action_url.on_hook = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=on_hook
+action_url.incoming_call = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=incoming_call
+action_url.outgoing_call = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=outgoing_call
+action_url.call_established = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=call_established
+action_url.call_terminated = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=call_terminated
+action_url.dnd_on = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=dnd_on
+action_url.dnd_off = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=dnd_off
+action_url.forward = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=forward
+action_url.transfer_call = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=transfer
+action_url.busy_to_idle = {{ provisioning_base_url }}/phone-apps/{{ mac }}/action-url?event=busy_to_idle
+{% endif %}
+{% endif %}
+{% if phone_app_config and phone_app_config.logo_url %}
+
+###
+### Wallpaper / Logo
+###
+wallpaper_upload.url = {{ phone_app_config.logo_url }}
+{% endif %}
+{% if phone_app_config and phone_app_config.firmware_url %}
+
+###
+### Firmware
+###
+static.firmware.url = {{ phone_app_config.firmware_url }}
+{% endif %}

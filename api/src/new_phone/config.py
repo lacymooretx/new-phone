@@ -60,6 +60,7 @@ class Settings(BaseSettings):
     provisioning_sip_server: str = "pbx.example.com"
     provisioning_ntp_server: str = "pool.ntp.org"
     provisioning_timezone: str = "America/New_York"
+    provisioning_base_url: str = "https://pbx.example.com"
 
     # MinIO (object storage for recordings, voicemail, fax)
     minio_endpoint: str = "localhost:9000"

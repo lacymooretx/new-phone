@@ -1,5 +1,49 @@
 # Claude Runlog — New Phone Platform
 
+## 2026-03-05 — Full Yealink Phone Customization
+
+### Goal
+Expand Yealink provisioning from bare SIP-only config to full DPMA-level control: timezone, language, codecs, feature codes, VLAN/QoS, admin password, firmware URL, XML phone apps, action URLs, wallpaper/logo, and frontend settings card.
+
+### Steps Completed
+1. **Phase 1 — DB Model**: Added 25 columns to `PhoneAppConfig` (timezone, language, date/time format, encrypted admin pw, logo, ringtone, backlight, screensaver, firmware URL, codec priority, pickup/intercom/parking/DND/fwd codes, DSCP, VLAN, action URLs)
+2. **Phase 1 — Migration**: Created `0066_expand_phone_app_config.py` with `add_column` + `server_default` for each
+3. **Phase 2 — Schemas**: Expanded `PhoneAppConfigResponse` with all fields + computed `has_phone_admin_password`, expanded `PhoneAppConfigUpdate` with validators (DSCP 0-63, VLAN 1-4094, etc.)
+4. **Phase 3 — Service**: `PhoneAppConfigService.update()` intercepts `phone_admin_password` → `encrypt_value()` → stores as `encrypted_phone_admin_password`
+5. **Phase 4 — Config**: Added `NP_PROVISIONING_BASE_URL` setting
+6. **Phase 5 — Pipeline**: `build_config()` accepts `phone_app_config` + `provisioning_base_url`, decrypts admin pw, overrides timezone. Router loads PhoneAppConfig and passes through.
+7. **Phase 6 — Template**: Expanded `base.cfg.j2` with all sections (VLAN, QoS, codecs, feature codes, intercom, XML browser, remote phonebook, action URLs, wallpaper, firmware, language, date/time). `keys.cfg.j2` uses dynamic pickup code.
+8. **Phase 7 — Frontend**: Created `phone-app-config.ts` (API hooks), `phone-provisioning-card.tsx` (settings card with 8 sections), added to tenant settings page.
+
+### Files Changed
+- `api/src/new_phone/models/phone_app_config.py`
+- `api/alembic/versions/0066_expand_phone_app_config.py` (new)
+- `api/src/new_phone/schemas/phone_app_config.py`
+- `api/src/new_phone/phone_apps/service.py`
+- `api/src/new_phone/config.py`
+- `api/src/new_phone/provisioning/config_builder.py`
+- `api/src/new_phone/provisioning/router.py`
+- `api/src/new_phone/provisioning/templates/yealink/base.cfg.j2`
+- `api/src/new_phone/provisioning/templates/yealink/keys.cfg.j2`
+- `web/src/api/phone-app-config.ts` (new)
+- `web/src/api/query-keys.ts`
+- `web/src/pages/tenant-settings/phone-provisioning-card.tsx` (new)
+- `web/src/pages/tenant-settings/tenant-settings-page.tsx`
+
+### Verification
+- Python: all 7 files parse OK
+- TypeScript: `tsc --noEmit` clean
+- Jinja2: both templates parse OK
+
+### Deployment Steps (Phase 8)
+1. `docker compose exec api alembic upgrade head`
+2. Set `NP_PROVISIONING_BASE_URL=https://ucc.aspendora.com` in prod `.env`
+3. Rebuild + redeploy API and web containers
+4. Configure phone settings via Settings > Phone Provisioning
+5. Reboot a Yealink to verify full config, XML browser, directory
+
+---
+
 ## 2026-03-04 — Fix Softphone Mic, Redial, Inter-Extension Calling
 
 ### Goal

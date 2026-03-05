@@ -19,6 +19,7 @@ from new_phone.config import settings
 from new_phone.db.engine import AdminSessionLocal
 from new_phone.models.device import DeviceKey
 from new_phone.models.extension import Extension
+from new_phone.models.phone_app_config import PhoneAppConfig
 from new_phone.models.phone_model import PhoneModel
 from new_phone.models.tenant import Tenant
 from new_phone.provisioning.config_builder import build_config, get_content_type
@@ -117,6 +118,12 @@ async def provisioning_endpoint(filename: str) -> Response:
         )
         keys = list(result.scalars().all())
 
+        # Load phone app config for this tenant
+        pac_result = await session.execute(
+            select(PhoneAppConfig).where(PhoneAppConfig.tenant_id == device.tenant_id)
+        )
+        phone_app_config = pac_result.scalar_one_or_none()
+
         # Use the provisioning SIP server (public-facing address for phones).
         # freeswitch_host is the Docker-internal hostname, not reachable by phones.
         sip_server = settings.provisioning_sip_server
@@ -132,6 +139,8 @@ async def provisioning_endpoint(filename: str) -> Response:
             sip_server=sip_server,
             ntp_server=settings.provisioning_ntp_server,
             timezone=settings.provisioning_timezone,
+            phone_app_config=phone_app_config,
+            provisioning_base_url=settings.provisioning_base_url,
         )
 
         # Stamp provisioned
