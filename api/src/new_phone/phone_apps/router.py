@@ -10,7 +10,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import structlog
-from fastapi import APIRouter, Form, Query, Response, status
+from fastapi import APIRouter, Query, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
@@ -710,16 +710,18 @@ async def phone_clear_forward(mac: str, type: str = Query("all")) -> Response:
 # ── 14. Action URL ──────────────────────────────────────────────────
 
 
+@router.get("/phone-apps/{mac}/action-url")
 @router.post("/phone-apps/{mac}/action-url")
 async def phone_action_url(
     mac: str,
-    event: str = Form(""),
-    call_id: str = Form(""),
-    local: str = Form(""),
-    remote: str = Form(""),
+    event: str = Query(""),
+    call_id: str = Query(""),
+    local: str = Query(""),
+    remote: str = Query(""),
 ) -> Response:
     """Receive Yealink phone events (action URL callbacks).
 
+    Yealink sends these as GET with query params.
     Logs the event for future extensibility (CRM lookups, push notifications, etc.)
     """
     ctx = await resolve_phone_context(mac)
