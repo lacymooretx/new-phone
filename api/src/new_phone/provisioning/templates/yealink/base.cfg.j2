@@ -58,7 +58,9 @@ network.qos.dscp.audio = {{ phone_app_config.dscp_rtp }}
 ### NTP / Time
 ###
 local_time.ntp_server1 = {{ ntp_server }}
-local_time.time_zone_name = {{ timezone }}
+local_time.time_zone = {{ tz_offset }}
+local_time.time_zone_name = {{ tz_name }}
+local_time.summer_time = {{ tz_dst }}
 local_time.dhcp_time = 0
 {% if phone_app_config %}
 local_time.date_format = {{ phone_app_config.date_format }}

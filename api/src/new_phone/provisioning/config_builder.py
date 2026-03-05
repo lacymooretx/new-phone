@@ -52,6 +52,28 @@ SANGOMA_KEY_TYPE_MAP = {
     "none": "none",
 }
 
+# IANA timezone → Yealink (offset, name, summer_time)
+# summer_time: 0=off, 1=30min, 2=1hour
+YEALINK_TIMEZONE_MAP: dict[str, tuple[int, str, int]] = {
+    "America/New_York": (-5, "United States-Eastern Time", 2),
+    "America/Chicago": (-6, "United States-Central Time", 2),
+    "America/Denver": (-7, "United States-Mountain Time", 2),
+    "America/Los_Angeles": (-8, "United States-Pacific Time", 2),
+    "America/Anchorage": (-9, "United States-Alaska Time", 2),
+    "Pacific/Honolulu": (-10, "United States-Hawaii Time", 0),
+    "America/Phoenix": (-7, "United States-Arizona Time", 0),
+    "America/Indiana/Indianapolis": (-5, "United States-Eastern Time", 2),
+    "America/Toronto": (-5, "Canada-Eastern Time", 2),
+    "America/Vancouver": (-8, "Canada-Pacific Time", 2),
+    "Europe/London": (0, "United Kingdom(London)", 2),
+    "Europe/Berlin": (1, "Germany(Berlin)", 2),
+    "Europe/Paris": (1, "France(Paris)", 2),
+    "Asia/Tokyo": (9, "Japan(Tokyo)", 0),
+    "Australia/Sydney": (10, "Australia(Sydney)", 2),
+    "UTC": (0, "UTC", 0),
+}
+
+
 # Map manufacturer to template prefix and key type map
 MANUFACTURER_CONFIG = {
     "yealink": {
@@ -120,6 +142,11 @@ def build_config(
     if phone_app_config and phone_app_config.timezone:
         timezone = phone_app_config.timezone
 
+    # Resolve Yealink timezone from IANA name
+    tz_offset, tz_name, tz_dst = YEALINK_TIMEZONE_MAP.get(
+        timezone, (-6, "United States-Central Time", 2)
+    )
+
     # Decrypt admin password if set
     phone_admin_password = None
     if phone_app_config and phone_app_config.encrypted_phone_admin_password:
@@ -140,6 +167,9 @@ def build_config(
         "sip_server": sip_server,
         "ntp_server": ntp_server,
         "timezone": timezone,
+        "tz_offset": tz_offset,
+        "tz_name": tz_name,
+        "tz_dst": tz_dst,
         "line_keys": line_keys,
         "expansion_keys": expansion_keys,
         "key_type_map": mfg_config["key_type_map"],
