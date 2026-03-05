@@ -731,7 +731,7 @@ async def phone_action_url(
     logger.info(
         "phone_apps_action_url",
         mac=mac,
-        event=event,
+        phone_event=event,
         call_id=call_id,
         local=local,
         remote=remote,
