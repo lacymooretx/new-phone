@@ -45,7 +45,7 @@ def _base_url(mac: str) -> str:
     """Return the full external base URL for phone app endpoints."""
     return f"{settings.provisioning_base_url.rstrip('/')}/phone-apps/{mac}"
 
-XML = "text/xml; charset=utf-8"
+XML = "text/xml; charset=ISO-8859-1"
 
 
 def _xml(content: str) -> Response:

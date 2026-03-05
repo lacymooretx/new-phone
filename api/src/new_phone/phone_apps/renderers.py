@@ -63,7 +63,25 @@ def _xml_decl() -> str:
     return '<?xml version="1.0" encoding="ISO-8859-1"?>\n'
 
 
+def _indent(elem: Element, level: int = 0) -> None:
+    """Add whitespace indentation to an XML tree for pretty-printing."""
+    indent = "\n" + "  " * level
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = indent + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = indent
+        for child in elem:
+            _indent(child, level + 1)
+        if not child.tail or not child.tail.strip():  # type: ignore[possibly-undefined]
+            child.tail = indent  # type: ignore[possibly-undefined]
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = indent
+
+
 def _to_xml(root: Element) -> str:
+    _indent(root)
     return _xml_decl() + tostring(root, encoding="unicode")
 
 
