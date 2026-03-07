@@ -69,9 +69,9 @@ async fn main() -> Result<()> {
             .expect("health server error");
     });
 
-    // Start SIP proxy
+    // Start SIP proxy (reuse shutdown_rx so it stops on the same signal)
     let proxy = SipProxy::new(config, lb);
-    let (_, proxy_shutdown_rx) = tokio::sync::watch::channel(false);
+    let proxy_shutdown_rx = shutdown_tx.subscribe();
 
     let proxy_handle = tokio::spawn(async move {
         if let Err(e) = proxy.run(proxy_shutdown_rx).await {
