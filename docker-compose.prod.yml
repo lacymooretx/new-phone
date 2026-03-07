@@ -714,7 +714,6 @@ networks:
   backend:
     name: new_phone_backend
     driver: bridge
-    internal: true
   monitoring:
     name: new_phone_monitoring
     driver: bridge
