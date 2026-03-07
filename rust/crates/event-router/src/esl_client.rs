@@ -204,8 +204,6 @@ fn url_decode(input: &str) -> String {
                 result.push('%');
                 result.push_str(&hex);
             }
-        } else if c == '+' {
-            result.push(' ');
         } else {
             result.push(c);
         }
