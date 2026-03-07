@@ -229,7 +229,7 @@ services:
     volumes:
       - ${NP_TLS_DIR:-./tls}:/tls:ro
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -268,7 +268,7 @@ services:
       NP_RTP_EXTERNAL_IP: ${NP_EXTERNAL_IP:-0.0.0.0}
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8081/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8081/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -301,7 +301,7 @@ services:
       NP_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8082/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8082/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -340,7 +340,7 @@ services:
       NP_API_URL: http://api:8000
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8083/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8083/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -378,7 +378,7 @@ services:
       NP_PARKING_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8084/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8084/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -413,7 +413,7 @@ services:
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8085/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8085/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -450,7 +450,7 @@ services:
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8086/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8086/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -621,7 +621,7 @@ services:
           cpus: "0.25"
           memory: 256M
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3100/ready"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3100/ready"]
       interval: 30s
       timeout: 5s
       retries: 5

@@ -222,7 +222,7 @@ services:
     volumes:
       - ./tls:/tls:ro
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -245,7 +245,7 @@ services:
       NP_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8082/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8082/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -270,7 +270,7 @@ services:
       NP_API_URL: http://api:8000
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8083/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8083/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -294,7 +294,7 @@ services:
       NP_PARKING_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8084/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8084/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -315,7 +315,7 @@ services:
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8085/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8085/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -336,7 +336,7 @@ services:
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8086/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8086/health"]
       interval: 10s
       timeout: 5s
       retries: 5
