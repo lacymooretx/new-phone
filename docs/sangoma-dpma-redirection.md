@@ -13,19 +13,20 @@ How to point a Sangoma P-series phone at our platform using Sangoma's Zero Touch
 |-------|-------------|----------------|
 | **Enable Redirection** | Checkbox — must be checked | Checked |
 | **Redirection Type** | `IP/FQDN` or other options | `IP/FQDN` |
-| **Sangoma Configuration Server Address** | FQDN or IP of your server | `ucc.aspendora.com` |
+| **Sangoma Configuration Server Address** | FQDN or IP of your server | `sip.aspendora.com` |
 | **Server DPMA Port** | Port the phone connects to for SIP | `5061` |
 | **Server Transport** | `UDP`, `TCP`, or `TLS` | `TLS` |
-| **Full Address** | Auto-generated from above fields | `ucc.aspendora.com:5061;transport=tls` |
+| **Full Address** | Auto-generated from above fields | `sip.aspendora.com:5061;transport=tls` |
+
+**Important:** Use `sip.aspendora.com` (DNS-only, not Cloudflare-proxied) — NOT `ucc.aspendora.com` (Cloudflare-proxied). Cloudflare only proxies HTTP/HTTPS; SIP traffic on port 5061 will be silently dropped by Cloudflare.
 
 ## How It Works
 
 1. Phone boots and contacts Sangoma's cloud redirection service.
 2. Sangoma's service looks up the phone's MAC address.
 3. If redirection is enabled, it tells the phone to connect to the configured server address instead.
-4. Phone SIP-registers with our sip-proxy (port 5061, TLS).
-5. sip-proxy forwards registration to FreeSWITCH backend (port 5060, internal).
-6. Phone fetches provisioning config via HTTPS: `GET /provisioning/{mac}.xml`
+4. Phone SIP-registers with FreeSWITCH (port 5061, TLS) directly.
+5. Phone fetches provisioning config via HTTPS: `GET /provisioning/{mac}.xml`
    - nginx terminates TLS on port 443
    - Proxies to Python API (`api:8000/provisioning/`)
    - API looks up device by MAC, renders Sangoma XML config from Jinja2 templates
@@ -37,60 +38,62 @@ How to point a Sangoma P-series phone at our platform using Sangoma's Zero Touch
 | Model | Sangoma P325 |
 | MAC | 000FD3D202F7 |
 | Company | Aspendora Technologies, LLC |
-| Redirect Target | `ucc.aspendora.com:5061;transport=tls` |
-
-**Note:** Portal screenshot (2026-03-07) showed port 5060/UDP — needs to be updated to 5061/TLS.
+| Redirect Target | `sip.aspendora.com:5061;transport=tls` |
 
 ## Architecture
 
 ```
 Sangoma Cloud Redirect
         |
-        v (tells phone to connect to ucc.aspendora.com:5061;transport=tls)
+        v (tells phone to connect to sip.aspendora.com:5061;transport=tls)
    Sangoma P325
         |
-        |--- SIP TLS (5061) ---> sip-proxy (Rust) ---> FreeSWITCH (5060 internal)
+        |--- SIP TLS (5061) ---> FreeSWITCH (host network, Let's Encrypt cert)
         |
-        |--- HTTPS (443) -----> nginx ---> Python API (8000 internal)
-                                           GET /provisioning/{mac}.xml
-                                           (Jinja2 templates: sangoma/base.cfg.xml.j2)
+        |--- HTTPS (443) -----> Cloudflare ---> nginx ---> Python API (8000)
+                                                           GET /provisioning/{mac}.xml
+                                                           (Jinja2 templates: sangoma/base.cfg.xml.j2)
 ```
+
+### DNS Setup
+
+| Domain | Points To | Cloudflare Proxy | Purpose |
+|--------|-----------|-----------------|---------|
+| `ucc.aspendora.com` | Cloudflare IPs | Yes (proxied) | Web UI, API, provisioning HTTPS |
+| `sip.aspendora.com` | `149.28.251.164` | No (DNS-only) | SIP TLS (port 5061) |
 
 ### Service Roles
 
 | Service | Port | Protocol | Role |
 |---------|------|----------|------|
-| **sip-proxy** (Rust) | 5061/tcp | SIP over TLS | Phone registration + call signaling. TLS termination, load-balanced to FreeSWITCH. |
+| **FreeSWITCH** | 5061/tcp | SIP over TLS | Phone registration + call signaling. Host network, Let's Encrypt cert. |
 | **nginx** (web) | 443/tcp | HTTPS | Reverse proxy. Terminates TLS for provisioning, phone apps, web UI, API. |
 | **API** (Python) | 8000 (internal) | HTTP | Provisioning endpoint at `/provisioning/{mac}.xml`. DB-backed, Jinja2 templates, per-tenant config. |
 | **dpma-service** (Rust) | 8082 (internal) | HTTP | Future: real-time BLF push, presence updates, firmware management. Currently skeleton. |
-| **FreeSWITCH** | 5060 (internal) | SIP | Media engine. Receives forwarded registrations from sip-proxy. |
+| **sip-proxy** (Rust) | 5061 (internal) | SIP over TLS | Future: multi-backend load balancing. Currently not exposed externally. |
 
 ### What the Phone Gets
 
 The Sangoma XML config template (`api/src/new_phone/provisioning/templates/sangoma/base.cfg.xml.j2`) includes:
-- SIP account: server, port 5061, TLS transport, SRTP mode 2 (mandatory)
+- SIP account: server `sip.aspendora.com`, port 5061, TLS transport, SRTP mode 2 (mandatory)
 - Network: DHCP, LLDP
 - Time: NTP server, timezone
 - Line keys and BLF keys (from `keys.cfg.xml.j2`)
 
-## Sangoma Portal Update Required
+### TLS Certificate
 
-The portal currently shows:
-- Port: 5060, Transport: UDP
-
-Needs to be changed to:
-- Port: **5061**, Transport: **TLS**
+- Let's Encrypt cert: CN=ucc.aspendora.com, SANs: ucc.aspendora.com + sip.aspendora.com
+- Location on server: `/etc/letsencrypt/live/ucc.aspendora.com/`
+- FreeSWITCH cert dir: `/opt/new-phone/freeswitch/tls/` (agent.pem = cert+key combined)
+- Auto-renewal via certbot + Cloudflare DNS plugin
+- Deploy hook: `/etc/letsencrypt/renewal-hooks/deploy/newphone-freeswitch.sh`
 
 ## Setup Checklist
 
-1. [ ] Generate or install TLS certs for sip-proxy (`make tls-sip-proxy` for dev, Let's Encrypt for prod)
-2. [ ] Build sip-proxy Docker image (`make rust-docker-one SVC=sip-proxy`)
-3. [ ] Ensure port 5061/tcp is open in firewall
-4. [ ] Register the Sangoma phone in the platform (device + extension assignment)
-5. [ ] Update Sangoma portal: port 5061, transport TLS
-6. [ ] Reboot the phone — it should redirect, SIP-register, and fetch config
-
-## Source
-
-Screenshot from Sangoma portal, captured 2026-03-07.
+1. [x] Let's Encrypt cert with `sip.aspendora.com` SAN (obtained via DNS-Cloudflare challenge)
+2. [x] Cert deployed to FreeSWITCH (`agent.pem` + `cafile.pem`)
+3. [x] Port 5061/tcp open in firewall (UFW)
+4. [x] DNS: `sip.aspendora.com` → `149.28.251.164` (Cloudflare DNS-only)
+5. [ ] Register the Sangoma phone in the platform (device + extension assignment)
+6. [ ] Update Sangoma portal: server `sip.aspendora.com`, port `5061`, transport `TLS`
+7. [ ] Reboot the phone — it should redirect, SIP-register, and fetch config

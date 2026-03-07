@@ -52,7 +52,7 @@ web-lint:
 # Generate self-signed TLS cert for FreeSWITCH (dev only)
 tls-cert:
 	mkdir -p freeswitch/tls
-	openssl req -x509 -newkey rsa:2048 -keyout freeswitch/tls/key.pem -out freeswitch/tls/cert.pem -days 3650 -nodes -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,DNS:freeswitch,IP:127.0.0.1"
+	openssl req -x509 -newkey rsa:2048 -keyout freeswitch/tls/key.pem -out freeswitch/tls/cert.pem -days 3650 -nodes -subj "/CN=sip.aspendora.com" -addext "subjectAltName=DNS:sip.aspendora.com,DNS:localhost,DNS:freeswitch,IP:127.0.0.1"
 	cat freeswitch/tls/cert.pem freeswitch/tls/key.pem > freeswitch/tls/agent.pem
 	cp freeswitch/tls/cert.pem freeswitch/tls/cafile.pem
 	@echo "TLS certs generated in freeswitch/tls/"
@@ -60,7 +60,7 @@ tls-cert:
 # Generate self-signed TLS cert for SIP proxy (dev only)
 tls-sip-proxy:
 	mkdir -p tls
-	openssl req -x509 -newkey rsa:2048 -keyout tls/sip-proxy.key -out tls/sip-proxy.crt -days 3650 -nodes -subj "/CN=${NP_PROVISIONING_SIP_SERVER:-pbx.local}" -addext "subjectAltName=DNS:${NP_PROVISIONING_SIP_SERVER:-pbx.local},DNS:sip-proxy,DNS:localhost,IP:127.0.0.1"
+	openssl req -x509 -newkey rsa:2048 -keyout tls/sip-proxy.key -out tls/sip-proxy.crt -days 3650 -nodes -subj "/CN=sip.aspendora.com" -addext "subjectAltName=DNS:sip.aspendora.com,DNS:sip-proxy,DNS:localhost,IP:127.0.0.1"
 	@echo "SIP proxy TLS certs generated in tls/"
 
 # Generate all TLS certs (dev only)
