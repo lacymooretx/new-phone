@@ -225,12 +225,11 @@ services:
       NP_SIP_BACKENDS: freeswitch:5060
       NP_SIP_HEALTH_INTERVAL: "10"
       NP_SIP_LB_STRATEGY: round_robin
-      REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     volumes:
       - ${NP_TLS_DIR:-./tls}:/tls:ro
     healthcheck:
-      test: ["CMD", "/app/healthcheck"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -264,13 +263,12 @@ services:
     ports:
       - "17000-17500:17000-17500/udp"  # RTP port range (relay-managed)
     environment:
-      FREESWITCH_HOST: freeswitch
-      REDIS_URL: redis://redis:6379/0
-      RTP_PORT_MIN: 17000
-      RTP_PORT_MAX: 17500
+      NP_RTP_PORT_MIN: 17000
+      NP_RTP_PORT_MAX: 17500
+      NP_RTP_EXTERNAL_IP: ${NP_EXTERNAL_IP:-0.0.0.0}
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "/app/healthcheck"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8081/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -303,7 +301,7 @@ services:
       NP_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "/app/healthcheck"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8082/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -342,7 +340,7 @@ services:
       NP_API_URL: http://api:8000
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "/app/healthcheck"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8083/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -380,7 +378,7 @@ services:
       NP_PARKING_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "/app/healthcheck"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8084/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -415,7 +413,7 @@ services:
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "/app/healthcheck"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8085/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -452,7 +450,7 @@ services:
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD", "/app/healthcheck"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8086/health"]
       interval: 30s
       timeout: 5s
       retries: 3
