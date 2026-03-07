@@ -241,8 +241,8 @@ services:
       NP_DPMA_FIRMWARE_DIR: /app/firmware
       NP_DPMA_FS_ADDR: freeswitch
       NP_DPMA_SIP_DOMAIN: ${NP_PROVISIONING_SIP_SERVER:-pbx.local}
-      API_URL: http://api:8000
-      REDIS_URL: redis://redis:6379/0
+      NP_API_URL: http://api:8000
+      NP_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8082/health"]
@@ -263,11 +263,11 @@ services:
     extra_hosts:
       - "freeswitch:${NP_EXTERNAL_IP:-host-gateway}"
     environment:
-      FREESWITCH_ESL_HOST: freeswitch
-      FREESWITCH_ESL_PORT: 8021
-      FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
-      REDIS_URL: redis://redis:6379/0
-      API_URL: http://api:8000
+      NP_ESL_HOST: freeswitch
+      NP_ESL_PORT: 8021
+      NP_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      NP_REDIS_URL: redis://redis:6379/0
+      NP_API_URL: http://api:8000
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8083/health"]
@@ -288,11 +288,10 @@ services:
     extra_hosts:
       - "freeswitch:${NP_EXTERNAL_IP:-host-gateway}"
     environment:
-      FREESWITCH_ESL_HOST: freeswitch
-      FREESWITCH_ESL_PORT: 8021
-      FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
-      REDIS_URL: redis://redis:6379/0
-      API_URL: http://api:8000
+      NP_PARKING_ESL_HOST: freeswitch
+      NP_PARKING_ESL_PORT: 8021
+      NP_PARKING_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      NP_PARKING_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8084/health"]
@@ -311,8 +310,8 @@ services:
       context: ./rust
       dockerfile: crates/e911-handler/Dockerfile
     environment:
-      API_URL: http://api:8000
-      REDIS_URL: redis://redis:6379/0
+      NP_API_URL: http://api:8000
+      NP_REDIS_URL: redis://redis:6379/0
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:
@@ -333,7 +332,7 @@ services:
       dockerfile: crates/sms-gateway/Dockerfile
     environment:
       API_URL: http://api:8000
-      REDIS_URL: redis://redis:6379/0
+      NP_SMS_REDIS_URL: redis://redis:6379/0
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
     healthcheck:

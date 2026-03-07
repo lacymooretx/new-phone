@@ -299,8 +299,8 @@ services:
           memory: 64M
     ports: !reset []  # No external port — phones SIP-register via sip-proxy:5061, fetch config via HTTPS
     environment:
-      API_URL: http://api:8000
-      REDIS_URL: redis://redis:6379/0
+      NP_API_URL: http://api:8000
+      NP_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
       test: ["CMD", "/app/healthcheck"]
@@ -335,11 +335,11 @@ services:
           cpus: "0.25"
           memory: 64M
     environment:
-      FREESWITCH_ESL_HOST: freeswitch
-      FREESWITCH_ESL_PORT: 8021
-      FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
-      REDIS_URL: redis://redis:6379/0
-      API_URL: http://api:8000
+      NP_ESL_HOST: freeswitch
+      NP_ESL_PORT: 8021
+      NP_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      NP_REDIS_URL: redis://redis:6379/0
+      NP_API_URL: http://api:8000
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
       test: ["CMD", "/app/healthcheck"]
@@ -374,11 +374,10 @@ services:
           cpus: "0.1"
           memory: 64M
     environment:
-      FREESWITCH_ESL_HOST: freeswitch
-      FREESWITCH_ESL_PORT: 8021
-      FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
-      REDIS_URL: redis://redis:6379/0
-      API_URL: http://api:8000
+      NP_PARKING_ESL_HOST: freeswitch
+      NP_PARKING_ESL_PORT: 8021
+      NP_PARKING_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      NP_PARKING_REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
       test: ["CMD", "/app/healthcheck"]
@@ -411,8 +410,8 @@ services:
           cpus: "0.1"
           memory: 64M
     environment:
-      API_URL: http://api:8000
-      REDIS_URL: redis://redis:6379/0
+      NP_API_URL: http://api:8000
+      NP_REDIS_URL: redis://redis:6379/0
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
@@ -449,7 +448,7 @@ services:
       - "8085:8085"  # Webhook receiver for SMS provider callbacks
     environment:
       API_URL: http://api:8000
-      REDIS_URL: redis://redis:6379/0
+      NP_SMS_REDIS_URL: redis://redis:6379/0
       DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
     healthcheck:
