@@ -216,8 +216,7 @@ services:
         reservations:
           cpus: "0.25"
           memory: 64M
-    ports:
-      - "5061:5061/tcp"   # SIP TLS (proxy listens, forwards to FS)
+    ports: !reset []  # FreeSWITCH handles SIP TLS on :5061 directly; proxy available internally for future multi-backend
     environment:
       NP_SIP_LISTEN_ADDR: 0.0.0.0:5061
       NP_SIP_TLS_CERT: /tls/sip-proxy.crt
