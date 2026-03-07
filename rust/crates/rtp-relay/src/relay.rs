@@ -72,7 +72,7 @@ impl PortAllocator {
 
         // Find an even port that's available (RTP uses even, RTCP uses odd)
         let mut port = self.min_port;
-        if !port.is_multiple_of(2) {
+        if port % 2 != 0 {
             port += 1;
         }
 
@@ -590,7 +590,7 @@ async fn run_relay(
 
 fn hex_decode(hex: &str) -> Result<Vec<u8>> {
     let hex = hex.trim();
-    if !hex.len().is_multiple_of(2) {
+    if hex.len() % 2 != 0 {
         return Err(anyhow::anyhow!("odd length hex string"));
     }
     let mut bytes = Vec::with_capacity(hex.len() / 2);
