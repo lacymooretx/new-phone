@@ -131,6 +131,19 @@ impl RateLimiter {
         })
     }
 
+    /// Check if Redis is reachable (for health checks).
+    pub async fn redis_healthy(&self) -> bool {
+        match self.client.get_multiplexed_async_connection().await {
+            Ok(mut conn) => {
+                let result: Result<String, _> = redis::cmd("PING")
+                    .query_async(&mut conn)
+                    .await;
+                result.is_ok()
+            }
+            Err(_) => false,
+        }
+    }
+
     /// Clean up expired rate limit entries for a DID.
     pub async fn cleanup(&self, did: &str) -> Result<()> {
         let mut conn = self

@@ -7,7 +7,8 @@ edition = "2021"
 np-shared = { path = "../../shared" }
 tokio = { workspace = true }
 axum = { workspace = true }
-tera = "1"
+redis = { workspace = true }
+reqwest = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 serde = { workspace = true }

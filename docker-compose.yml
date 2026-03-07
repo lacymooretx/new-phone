@@ -201,6 +201,153 @@ services:
       retries: 5
       start_period: 10s
 
+  # --- Rust Services ---
+
+  sip-proxy:
+    build:
+      context: ./rust
+      dockerfile: crates/sip-proxy/Dockerfile
+    extra_hosts:
+      - "freeswitch:${NP_EXTERNAL_IP:-host-gateway}"
+    ports:
+      - "5061:5061/tcp"
+    environment:
+      NP_SIP_LISTEN_ADDR: 0.0.0.0:5061
+      NP_SIP_TLS_CERT: /tls/sip-proxy.crt
+      NP_SIP_TLS_KEY: /tls/sip-proxy.key
+      NP_SIP_BACKENDS: "freeswitch:5060"
+      NP_SIP_HEALTH_INTERVAL: "10"
+      NP_SIP_LB_STRATEGY: round_robin
+      LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
+    volumes:
+      - ./tls:/tls:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      freeswitch:
+        condition: service_healthy
+
+  dpma-service:
+    build:
+      context: ./rust
+      dockerfile: crates/dpma-service/Dockerfile
+    environment:
+      NP_DPMA_LISTEN_ADDR: 0.0.0.0:8082
+      NP_DPMA_TEMPLATE_DIR: /app/templates
+      NP_DPMA_FIRMWARE_DIR: /app/firmware
+      NP_DPMA_FS_ADDR: freeswitch
+      NP_DPMA_SIP_DOMAIN: ${NP_PROVISIONING_SIP_SERVER:-pbx.local}
+      API_URL: http://api:8000
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8082/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  event-router:
+    build:
+      context: ./rust
+      dockerfile: crates/event-router/Dockerfile
+    extra_hosts:
+      - "freeswitch:${NP_EXTERNAL_IP:-host-gateway}"
+    environment:
+      FREESWITCH_ESL_HOST: freeswitch
+      FREESWITCH_ESL_PORT: 8021
+      FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      REDIS_URL: redis://redis:6379/0
+      API_URL: http://api:8000
+      LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8083/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      freeswitch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  parking-manager:
+    build:
+      context: ./rust
+      dockerfile: crates/parking-manager/Dockerfile
+    extra_hosts:
+      - "freeswitch:${NP_EXTERNAL_IP:-host-gateway}"
+    environment:
+      FREESWITCH_ESL_HOST: freeswitch
+      FREESWITCH_ESL_PORT: 8021
+      FREESWITCH_ESL_PASSWORD: ${NP_FREESWITCH_ESL_PASSWORD:-ClueCon}
+      REDIS_URL: redis://redis:6379/0
+      API_URL: http://api:8000
+      LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8084/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      freeswitch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  e911-handler:
+    build:
+      context: ./rust
+      dockerfile: crates/e911-handler/Dockerfile
+    environment:
+      API_URL: http://api:8000
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
+      LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8085/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  sms-gateway:
+    build:
+      context: ./rust
+      dockerfile: crates/sms-gateway/Dockerfile
+    environment:
+      API_URL: http://api:8000
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: "postgresql://new_phone_app:${NP_DB_APP_PASSWORD:-change_me_app}@postgres:5432/new_phone"
+      LOG_LEVEL: ${NP_LOG_LEVEL:-debug}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8086/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   # --- Monitoring stack ---
 
   prometheus:

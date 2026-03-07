@@ -7,12 +7,12 @@ mod parking;
 
 use std::sync::Arc;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use axum::routing::{delete, get, post};
 use axum::Router;
 use clap::Parser;
 use tokio::signal;
-use tracing::info;
+use tracing::{info, warn};
 
 use crate::blf::BlfManager;
 use crate::config::Config;
@@ -28,9 +28,27 @@ async fn main() -> Result<()> {
         listen_addr = %config.listen_addr,
         timeout = config.default_timeout,
         slots = config.default_slots,
+        esl_host = %config.esl_host,
+        esl_port = config.esl_port,
+        esl_pool_size = config.esl_pool_size,
+        sip_domain = %config.sip_domain,
         "starting parking-manager"
     );
 
+    // Create Redis connection manager for BLF publishing
+    let redis_client = redis::Client::open(config.redis_url.as_str())
+        .context("failed to create Redis client")?;
+    let redis_conn = redis_client
+        .get_connection_manager()
+        .await
+        .context("failed to create Redis connection manager")?;
+
+    // Create BLF manager with Redis pub/sub capability
+    let blf = Arc::new(
+        BlfManager::new(redis_conn, config.sip_domain.clone()).await,
+    );
+
+    // Create parking manager
     let parking = ParkingManager::new(
         &config.redis_url,
         &config.esl_host,
@@ -38,11 +56,24 @@ async fn main() -> Result<()> {
         &config.esl_password,
         config.default_timeout,
         config.default_slots,
-    )?;
+        config.esl_pool_size,
+        blf.clone(),
+    )
+    .await?;
 
-    let blf = BlfManager::new();
+    // Recover parking state from Redis on startup
+    match parking.recover_from_redis().await {
+        Ok(()) => {
+            // Rebuild BLF state from recovered lots
+            parking.rebuild_blf_state().await;
+            info!("parking state and BLF state recovered from Redis");
+        }
+        Err(e) => {
+            warn!(error = %e, "failed to recover parking state from Redis — starting fresh");
+        }
+    }
 
-    let state = Arc::new(AppState { parking, blf });
+    let state = Arc::new(AppState { parking });
 
     // Spawn timeout checker background task
     let timeout_state = state.clone();

@@ -1,4 +1,4 @@
-.PHONY: up down restart logs migrate seed test lint fmt health web-dev web-build web-test web-lint tls-cert desktop-dev desktop-build desktop-package test-unit test-integration test-e2e test-all lint-all ci
+.PHONY: up down restart logs migrate seed test lint fmt health web-dev web-build web-test web-lint tls-cert tls-sip-proxy desktop-dev desktop-build desktop-package test-unit test-integration test-e2e test-all lint-all ci rust-check rust-build rust-docker rust-test
 
 # Start all services
 up:
@@ -57,6 +57,15 @@ tls-cert:
 	cp freeswitch/tls/cert.pem freeswitch/tls/cafile.pem
 	@echo "TLS certs generated in freeswitch/tls/"
 
+# Generate self-signed TLS cert for SIP proxy (dev only)
+tls-sip-proxy:
+	mkdir -p tls
+	openssl req -x509 -newkey rsa:2048 -keyout tls/sip-proxy.key -out tls/sip-proxy.crt -days 3650 -nodes -subj "/CN=${NP_PROVISIONING_SIP_SERVER:-pbx.local}" -addext "subjectAltName=DNS:${NP_PROVISIONING_SIP_SERVER:-pbx.local},DNS:sip-proxy,DNS:localhost,IP:127.0.0.1"
+	@echo "SIP proxy TLS certs generated in tls/"
+
+# Generate all TLS certs (dev only)
+tls-all: tls-cert tls-sip-proxy
+
 # Desktop (Electron)
 desktop-dev:
 	cd desktop && npm run dev
@@ -89,5 +98,32 @@ test-all: test-unit web-test
 # All linters (API + web)
 lint-all: lint web-lint
 
+# --- Rust Services ---
+
+# Check Rust workspace compiles
+rust-check:
+	cd rust && cargo check --workspace
+
+# Build Rust workspace (release)
+rust-build:
+	cd rust && cargo build --workspace --release
+
+# Run Rust tests
+rust-test:
+	cd rust && cargo test --workspace
+
+# Build all Rust service Docker images
+RUST_SERVICES := sip-proxy rtp-relay dpma-service event-router parking-manager e911-handler sms-gateway
+rust-docker:
+	@for svc in $(RUST_SERVICES); do \
+		echo "Building newphone/$$svc..."; \
+		docker build -f rust/crates/$$svc/Dockerfile -t newphone/$$svc rust/ || exit 1; \
+	done
+	@echo "All Rust service images built."
+
+# Build a single Rust service Docker image (usage: make rust-docker-one SVC=sip-proxy)
+rust-docker-one:
+	docker build -f rust/crates/$(SVC)/Dockerfile -t newphone/$(SVC) rust/
+
 # Full CI check (lint + test + build)
-ci: lint-all test-all web-build
+ci: lint-all test-all web-build rust-check

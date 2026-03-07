@@ -20,7 +20,7 @@ pub struct Config {
     #[arg(long, env = "NP_PARKING_ESL_PASSWORD", default_value = "ClueCon")]
     pub esl_password: String,
 
-    /// Redis URL for state storage
+    /// Redis URL for state storage and pub/sub
     #[arg(long, env = "NP_PARKING_REDIS_URL", default_value = "redis://127.0.0.1:6379")]
     pub redis_url: String,
 
@@ -31,4 +31,12 @@ pub struct Config {
     /// Default number of parking slots per lot
     #[arg(long, env = "NP_PARKING_SLOTS", default_value = "10")]
     pub default_slots: u32,
+
+    /// SIP domain used in BLF dialog-info XML entity URIs
+    #[arg(long, env = "NP_PARKING_SIP_DOMAIN", default_value = "pbx.local")]
+    pub sip_domain: String,
+
+    /// Maximum ESL connections to keep pooled
+    #[arg(long, env = "NP_PARKING_ESL_POOL_SIZE", default_value = "4")]
+    pub esl_pool_size: usize,
 }

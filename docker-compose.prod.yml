@@ -217,14 +217,18 @@ services:
           cpus: "0.25"
           memory: 64M
     ports:
-      - "5060:5060/tcp"   # SIP (proxy listens, forwards to FS)
-      - "5060:5060/udp"
+      - "5061:5061/tcp"   # SIP TLS (proxy listens, forwards to FS)
     environment:
-      FREESWITCH_PRIMARY: freeswitch:5061
-      FREESWITCH_STANDBY: ${NP_FS_STANDBY_HOST:-}
+      NP_SIP_LISTEN_ADDR: 0.0.0.0:5061
+      NP_SIP_TLS_CERT: /tls/sip-proxy.crt
+      NP_SIP_TLS_KEY: /tls/sip-proxy.key
+      NP_SIP_BACKENDS: freeswitch:5060
+      NP_SIP_HEALTH_INTERVAL: "10"
+      NP_SIP_LB_STRATEGY: round_robin
       REDIS_URL: redis://redis:6379/0
-      LISTEN_ADDR: 0.0.0.0:5060
       LOG_LEVEL: ${NP_LOG_LEVEL:-info}
+    volumes:
+      - ${NP_TLS_DIR:-./tls}:/tls:ro
     healthcheck:
       test: ["CMD", "/app/healthcheck"]
       interval: 30s
@@ -293,8 +297,7 @@ services:
         reservations:
           cpus: "0.25"
           memory: 64M
-    ports:
-      - "4569:4569/udp"  # DPMA protocol port
+    ports: !reset []  # No external port — phones SIP-register via sip-proxy:5061, fetch config via HTTPS
     environment:
       API_URL: http://api:8000
       REDIS_URL: redis://redis:6379/0

@@ -5,11 +5,11 @@ use std::sync::Arc;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::net::UdpSocket;
-use tokio::sync::{watch, RwLock};
+use tokio::sync::{watch, Mutex, RwLock};
 use tracing::{debug, error, info, warn};
 use uuid::Uuid;
 
-use crate::srtp::SrtpContext;
+use crate::srtp::{self, SrtpContext};
 use crate::stats::SessionStats;
 
 /// A relay session represents a bidirectional media path between two endpoints.
@@ -28,6 +28,17 @@ pub struct CreateSessionRequest {
     pub caller_addr: Option<String>,
     pub callee_addr: Option<String>,
     pub use_srtp: bool,
+    /// Hex-encoded 16-byte master key for the caller leg.
+    pub caller_master_key: Option<String>,
+    /// Hex-encoded 14-byte master salt for the caller leg.
+    pub caller_master_salt: Option<String>,
+    /// Hex-encoded 16-byte master key for the callee leg.
+    /// If absent, falls back to caller key (symmetric mode).
+    pub callee_master_key: Option<String>,
+    /// Hex-encoded 14-byte master salt for the callee leg.
+    /// If absent, falls back to caller salt (symmetric mode).
+    pub callee_master_salt: Option<String>,
+    // Legacy fields (still accepted for backward compatibility)
     pub master_key: Option<String>,
     pub master_salt: Option<String>,
 }
@@ -149,17 +160,67 @@ impl RelayManager {
 
         let stats = Arc::new(RwLock::new(SessionStats::new(&session_id)));
 
-        // Build optional SRTP contexts
-        let srtp_ctx = if request.use_srtp {
-            if let (Some(key_hex), Some(salt_hex)) = (&request.master_key, &request.master_salt) {
-                let key = hex_decode(key_hex).context("invalid master key hex")?;
-                let salt = hex_decode(salt_hex).context("invalid master salt hex")?;
-                Some((
-                    SrtpContext::new(&key, &salt).context("failed to create caller SRTP")?,
-                    SrtpContext::new(&key, &salt).context("failed to create callee SRTP")?,
-                ))
-            } else {
-                None
+        // Build optional SRTP contexts.
+        // The relay sits between two endpoints. Each endpoint has its own SRTP keys.
+        //   - caller_ctx: used to decrypt from caller / encrypt to caller
+        //   - callee_ctx: used to decrypt from callee / encrypt to callee
+        //
+        // For backward compatibility, if only master_key/master_salt are provided,
+        // both legs use the same keys (symmetric mode).
+        let srtp_contexts = if request.use_srtp {
+            // Resolve caller keys (prefer per-leg, fallback to legacy)
+            let caller_key_hex = request
+                .caller_master_key
+                .as_ref()
+                .or(request.master_key.as_ref());
+            let caller_salt_hex = request
+                .caller_master_salt
+                .as_ref()
+                .or(request.master_salt.as_ref());
+
+            // Resolve callee keys (prefer per-leg, fallback to caller keys)
+            let callee_key_hex = request
+                .callee_master_key
+                .as_ref()
+                .or(caller_key_hex);
+            let callee_salt_hex = request
+                .callee_master_salt
+                .as_ref()
+                .or(caller_salt_hex);
+
+            match (caller_key_hex, caller_salt_hex, callee_key_hex, callee_salt_hex) {
+                (Some(ck), Some(cs), Some(lk), Some(ls)) => {
+                    let caller_key = hex_decode(ck).context("invalid caller master key hex")?;
+                    let caller_salt = hex_decode(cs).context("invalid caller master salt hex")?;
+                    let callee_key = hex_decode(lk).context("invalid callee master key hex")?;
+                    let callee_salt = hex_decode(ls).context("invalid callee master salt hex")?;
+
+                    // Each leg needs two contexts: one for decrypt (incoming) and one for
+                    // encrypt (outgoing). Since SrtpContext is stateful (ROC tracking),
+                    // we need separate instances for each direction.
+                    let caller_inbound = SrtpContext::new(&caller_key, &caller_salt)
+                        .context("failed to create caller inbound SRTP")?;
+                    let caller_outbound = SrtpContext::new(&caller_key, &caller_salt)
+                        .context("failed to create caller outbound SRTP")?;
+                    let callee_inbound = SrtpContext::new(&callee_key, &callee_salt)
+                        .context("failed to create callee inbound SRTP")?;
+                    let callee_outbound = SrtpContext::new(&callee_key, &callee_salt)
+                        .context("failed to create callee outbound SRTP")?;
+
+                    Some(SrtpRelayCrypto {
+                        caller_inbound: Arc::new(Mutex::new(caller_inbound)),
+                        caller_outbound: Arc::new(Mutex::new(caller_outbound)),
+                        callee_inbound: Arc::new(Mutex::new(callee_inbound)),
+                        callee_outbound: Arc::new(Mutex::new(callee_outbound)),
+                    })
+                }
+                _ => {
+                    warn!(
+                        session_id = %session_id,
+                        "SRTP requested but keys not provided, falling back to plain RTP"
+                    );
+                    None
+                }
             }
         } else {
             None
@@ -172,17 +233,18 @@ impl RelayManager {
         // Spawn the relay task
         let bind_ip = self.external_ip.clone();
         let session_clone = session.clone();
+        let sid = session_id.clone();
         tokio::spawn(async move {
             if let Err(e) = run_relay(
                 session_clone,
                 &bind_ip,
-                srtp_ctx,
+                srtp_contexts,
                 relay_stats,
                 shutdown_rx,
             )
             .await
             {
-                warn!(error = %e, "relay task error");
+                warn!(session_id = %sid, error = %e, "relay task error");
             }
         });
 
@@ -201,6 +263,7 @@ impl RelayManager {
             session_id = %session_id,
             caller_port = caller_rtp,
             callee_port = callee_rtp,
+            use_srtp = request.use_srtp,
             "relay session created"
         );
 
@@ -246,11 +309,37 @@ impl RelayManager {
     }
 }
 
+/// Holds the four SRTP contexts needed for a bidirectional relay.
+///
+/// The relay sits between caller and callee. Each leg can have different SRTP keys
+/// (e.g., when the relay terminates SRTP from each endpoint independently).
+///
+/// Data flow:
+///   Caller --[SRTP with caller keys]--> Relay --[SRTP with callee keys]--> Callee
+///   Callee --[SRTP with callee keys]--> Relay --[SRTP with caller keys]--> Caller
+struct SrtpRelayCrypto {
+    /// Decrypt SRTP packets arriving from the caller.
+    caller_inbound: Arc<Mutex<SrtpContext>>,
+    /// Encrypt RTP packets being sent to the caller.
+    caller_outbound: Arc<Mutex<SrtpContext>>,
+    /// Decrypt SRTP packets arriving from the callee.
+    callee_inbound: Arc<Mutex<SrtpContext>>,
+    /// Encrypt RTP packets being sent to the callee.
+    callee_outbound: Arc<Mutex<SrtpContext>>,
+}
+
 /// The main relay loop: receives UDP packets on both legs and forwards them.
+///
+/// When SRTP is enabled, the relay:
+///   1. Decrypts incoming SRTP with the sender's inbound context
+///   2. Re-encrypts with the receiver's outbound context
+///
+/// This allows each leg to use different SRTP keys, which is the standard
+/// behavior for a media relay / SBC.
 async fn run_relay(
     session: RelaySession,
     bind_ip: &str,
-    srtp: Option<(SrtpContext, SrtpContext)>,
+    crypto: Option<SrtpRelayCrypto>,
     stats: Arc<RwLock<SessionStats>>,
     mut shutdown: watch::Receiver<bool>,
 ) -> Result<()> {
@@ -271,13 +360,25 @@ async fn run_relay(
     let callee_remote: Arc<RwLock<Option<SocketAddr>>> =
         Arc::new(RwLock::new(session.callee_addr));
 
-    // Caller -> Callee relay
+    // Extract crypto contexts for each direction
+    let (caller_in, callee_out, callee_in, caller_out) = match crypto {
+        Some(c) => (
+            Some(c.caller_inbound),
+            Some(c.callee_outbound),
+            Some(c.callee_inbound),
+            Some(c.caller_outbound),
+        ),
+        None => (None, None, None, None),
+    };
+
+    // ---- Caller -> Callee relay ----
     let cs_caller = caller_socket.clone();
     let cs_callee = callee_socket.clone();
     let cs_callee_remote = callee_remote.clone();
     let cs_caller_remote = caller_remote.clone();
     let stats_c2c = stats.clone();
     let mut shutdown_c2c = shutdown.clone();
+    let sid_c2c = session.session_id.clone();
 
     let c2c_handle = tokio::spawn(async move {
         let mut buf = [0u8; 2048];
@@ -290,12 +391,65 @@ async fn run_relay(
                             *cs_caller_remote.write().await = Some(from_addr);
 
                             let data = &buf[..n];
-                            let forwarded = if srtp.is_some() {
-                                // In a full implementation, decrypt from caller then
-                                // re-encrypt for callee. For now, pass through.
-                                data.to_vec()
-                            } else {
-                                data.to_vec()
+
+                            let forwarded = match (&caller_in, &callee_out) {
+                                (Some(decrypt_ctx), Some(encrypt_ctx)) => {
+                                    // Determine if this is RTP or RTCP
+                                    if srtp::is_rtp_packet(data) {
+                                        // Decrypt SRTP from caller
+                                        let rtp = match decrypt_ctx.lock().await.unprotect(data) {
+                                            Ok(rtp) => rtp,
+                                            Err(e) => {
+                                                debug!(
+                                                    session_id = %sid_c2c,
+                                                    error = %e,
+                                                    "failed to decrypt SRTP from caller"
+                                                );
+                                                continue;
+                                            }
+                                        };
+                                        // Re-encrypt for callee
+                                        match encrypt_ctx.lock().await.protect(&rtp) {
+                                            Ok(srtp) => srtp,
+                                            Err(e) => {
+                                                debug!(
+                                                    session_id = %sid_c2c,
+                                                    error = %e,
+                                                    "failed to encrypt SRTP for callee"
+                                                );
+                                                continue;
+                                            }
+                                        }
+                                    } else {
+                                        // SRTCP
+                                        let rtcp = match decrypt_ctx.lock().await.unprotect_rtcp(data) {
+                                            Ok(rtcp) => rtcp,
+                                            Err(e) => {
+                                                debug!(
+                                                    session_id = %sid_c2c,
+                                                    error = %e,
+                                                    "failed to decrypt SRTCP from caller"
+                                                );
+                                                continue;
+                                            }
+                                        };
+                                        match encrypt_ctx.lock().await.protect_rtcp(&rtcp) {
+                                            Ok(srtcp) => srtcp,
+                                            Err(e) => {
+                                                debug!(
+                                                    session_id = %sid_c2c,
+                                                    error = %e,
+                                                    "failed to encrypt SRTCP for callee"
+                                                );
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                }
+                                _ => {
+                                    // Plain RTP pass-through
+                                    data.to_vec()
+                                }
                             };
 
                             if let Some(dest) = *cs_callee_remote.read().await {
@@ -322,11 +476,12 @@ async fn run_relay(
         }
     });
 
-    // Callee -> Caller relay
+    // ---- Callee -> Caller relay ----
     let cs_caller2 = caller_socket;
     let cs_caller_remote2 = caller_remote.clone();
     let cs_callee_remote2 = callee_remote.clone();
     let stats_c2caller = stats.clone();
+    let sid_c2caller = session.session_id.clone();
 
     let c2caller_handle = tokio::spawn(async move {
         let mut buf = [0u8; 2048];
@@ -339,7 +494,65 @@ async fn run_relay(
                             *cs_callee_remote2.write().await = Some(from_addr);
 
                             let data = &buf[..n];
-                            let forwarded = data.to_vec();
+
+                            let forwarded = match (&callee_in, &caller_out) {
+                                (Some(decrypt_ctx), Some(encrypt_ctx)) => {
+                                    if srtp::is_rtp_packet(data) {
+                                        // Decrypt SRTP from callee
+                                        let rtp = match decrypt_ctx.lock().await.unprotect(data) {
+                                            Ok(rtp) => rtp,
+                                            Err(e) => {
+                                                debug!(
+                                                    session_id = %sid_c2caller,
+                                                    error = %e,
+                                                    "failed to decrypt SRTP from callee"
+                                                );
+                                                continue;
+                                            }
+                                        };
+                                        // Re-encrypt for caller
+                                        match encrypt_ctx.lock().await.protect(&rtp) {
+                                            Ok(srtp) => srtp,
+                                            Err(e) => {
+                                                debug!(
+                                                    session_id = %sid_c2caller,
+                                                    error = %e,
+                                                    "failed to encrypt SRTP for caller"
+                                                );
+                                                continue;
+                                            }
+                                        }
+                                    } else {
+                                        // SRTCP
+                                        let rtcp = match decrypt_ctx.lock().await.unprotect_rtcp(data) {
+                                            Ok(rtcp) => rtcp,
+                                            Err(e) => {
+                                                debug!(
+                                                    session_id = %sid_c2caller,
+                                                    error = %e,
+                                                    "failed to decrypt SRTCP from callee"
+                                                );
+                                                continue;
+                                            }
+                                        };
+                                        match encrypt_ctx.lock().await.protect_rtcp(&rtcp) {
+                                            Ok(srtcp) => srtcp,
+                                            Err(e) => {
+                                                debug!(
+                                                    session_id = %sid_c2caller,
+                                                    error = %e,
+                                                    "failed to encrypt SRTCP for caller"
+                                                );
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                }
+                                _ => {
+                                    // Plain RTP pass-through
+                                    data.to_vec()
+                                }
+                            };
 
                             if let Some(dest) = *cs_caller_remote2.read().await {
                                 if let Err(e) = cs_caller2.send_to(&forwarded, dest).await {

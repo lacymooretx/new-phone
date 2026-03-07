@@ -16,7 +16,7 @@ use tracing::info;
 
 use crate::config::Config;
 use crate::handlers::AppState;
-use crate::routing::{EmergencyRouter, LocationStore};
+use crate::routing::{CarrierApiClient, EmergencyRouter, LocationStore};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -26,21 +26,101 @@ async fn main() -> Result<()> {
     info!(
         listen_addr = %config.listen_addr,
         psap_table = %config.psap_table,
+        api_url = %config.api_url,
+        redis_url = %config.redis_url,
         "starting e911-handler"
     );
 
+    // HTTP client for API calls
+    let http_client = reqwest::Client::new();
+
+    // Emergency router — load PSAP routes from API first, file fallback
     let router = EmergencyRouter::new(config.default_psap_trunk.clone());
-    router.load_routes(&config.psap_table).await?;
+    router
+        .load_routes_from_api_or_file(
+            &http_client,
+            &config.api_url,
+            &config.internal_api_key,
+            &config.psap_table,
+        )
+        .await?;
 
-    let locations = LocationStore::new();
+    // Location store — API-backed with Redis cache
+    let locations = LocationStore::new(
+        config.api_url.clone(),
+        config.internal_api_key.clone(),
+        &config.redis_url,
+        config.cache_ttl_secs,
+    )?;
 
-    let state = Arc::new(AppState { router, locations });
+    // Carrier API client (optional — only if configured)
+    let carrier = match (&config.carrier_api_url, &config.carrier_api_key) {
+        (Some(url), Some(key)) if !url.is_empty() && !key.is_empty() => {
+            info!(carrier_url = %url, "carrier E911 API configured");
+            Some(CarrierApiClient::new(url.clone(), key.clone()))
+        }
+        _ => {
+            info!("no carrier E911 API configured, using local PSAP routing only");
+            None
+        }
+    };
+
+    let state = Arc::new(AppState {
+        router,
+        locations,
+        carrier,
+        http_client: http_client.clone(),
+        api_url: config.api_url.clone(),
+        internal_api_key: config.internal_api_key.clone(),
+        esl_host: config.esl_host.clone(),
+        esl_port: config.esl_port,
+        esl_password: config.esl_password.clone(),
+        sip_domain: config.sip_domain.clone(),
+        listen_addr: config.listen_addr.clone(),
+    });
+
+    // Spawn PSAP route reload background task
+    if config.route_reload_secs > 0 {
+        let reload_state = state.clone();
+        let reload_client = http_client.clone();
+        let reload_api_url = config.api_url.clone();
+        let reload_api_key = config.internal_api_key.clone();
+        let reload_file = config.psap_table.clone();
+        let reload_interval = config.route_reload_secs;
+
+        tokio::spawn(async move {
+            let mut interval =
+                tokio::time::interval(tokio::time::Duration::from_secs(reload_interval));
+            // Skip the first immediate tick (routes were just loaded)
+            interval.tick().await;
+
+            loop {
+                interval.tick().await;
+                info!("reloading PSAP routes");
+                if let Err(e) = reload_state
+                    .router
+                    .load_routes_from_api_or_file(
+                        &reload_client,
+                        &reload_api_url,
+                        &reload_api_key,
+                        &reload_file,
+                    )
+                    .await
+                {
+                    tracing::error!(error = %e, "failed to reload PSAP routes");
+                }
+            }
+        });
+    }
 
     let app = Router::new()
         .route("/locations", post(handlers::create_location))
         .route("/locations", get(handlers::list_locations))
         .route("/locations/{extension}", get(handlers::get_location))
-        .route("/locations/{extension}", delete(handlers::delete_location))
+        .route(
+            "/locations/{extension}",
+            delete(handlers::delete_location),
+        )
         .route("/emergency-call", post(handlers::handle_emergency_call))
         .route("/pidf-lo/{extension}", get(handlers::get_pidf_lo))
         .route("/health", get(handlers::health_check))

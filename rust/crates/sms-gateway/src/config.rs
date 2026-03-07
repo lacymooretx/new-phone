@@ -12,6 +12,10 @@ pub struct Config {
     #[arg(long, env = "NP_SMS_REDIS_URL", default_value = "redis://127.0.0.1:6379")]
     pub redis_url: String,
 
+    /// API URL for forwarding inbound messages to the control plane
+    #[arg(long, env = "API_URL", default_value = "http://api:8000")]
+    pub api_url: String,
+
     /// ClearlyIP API base URL
     #[arg(long, env = "NP_SMS_CLEARLYIP_API_URL", default_value = "https://api.clearlyip.com")]
     pub clearlyip_api_url: String,
@@ -43,4 +47,12 @@ pub struct Config {
     /// Webhook base URL for inbound message callbacks
     #[arg(long, env = "NP_SMS_WEBHOOK_BASE_URL", default_value = "http://localhost:8086")]
     pub webhook_base_url: String,
+
+    /// Provider failure cooldown period in seconds
+    #[arg(long, env = "NP_SMS_PROVIDER_COOLDOWN_SECS", default_value = "60")]
+    pub provider_cooldown_secs: u64,
+
+    /// Number of consecutive failures before a provider enters cooldown
+    #[arg(long, env = "NP_SMS_PROVIDER_FAILURE_THRESHOLD", default_value = "3")]
+    pub provider_failure_threshold: u32,
 }

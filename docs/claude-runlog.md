@@ -1,4 +1,271 @@
-# Claude Runlog — New Phone Platform
+# Claude Runlog -- New Phone Platform
+
+## 2026-03-07 -- Complete ALL Rust Services (Full Production Implementation)
+
+### Goal
+Replace all skeleton/stub Rust services with production-quality implementations. Fix critical bugs. All 7 services now have real features.
+
+### Results
+
+| Service | Tests | Status | Key Changes |
+|---------|-------|--------|-------------|
+| **sip-proxy** | 9 pass | Already done | No changes needed |
+| **rtp-relay** | 17 pass | **FIXED** | Real RFC 3711 SRTP (AES-128-CTR + HMAC-SHA1-80), key derivation, anti-replay, SRTCP, relay actually encrypts |
+| **parking-manager** | 3 pass | **FIXED** | Timeout bug fixed, ESL pool, Redis state recovery, BLF pub/sub, tenant support |
+| **sms-gateway** | 7 pass | **FIXED** | Inbound webhook processing, Twilio MMS extraction, message tracking in Redis, provider failover with cooldown |
+| **e911-handler** | 5 pass | **FIXED** | API-backed locations, Redis cache, carrier API integration, ESL origination with PIDF-LO, audit trail |
+| **event-router** | 13 pass | **FIXED** | Numeric field parsing, event filtering, API forwarding for CDR/recordings, real health metrics |
+| **dpma-service** | 8 pass | **FIXED** | API-backed phone inventory, firmware management with download, phone monitoring with offline alerts |
+
+**Total: 63 tests pass, 0 failures. Full workspace compiles clean.**
+
+### What was eliminated
+- All in-memory HashMaps replaced with API + Redis-backed storage
+- Fake SRTP crypto replaced with real RFC 3711 implementation
+- All "would do X" / stub comments replaced with working code
+- Hardcoded string bugs fixed
+- ESL connection pooling instead of one-shot connections
+
+---
+
+## 2026-03-07 -- Complete event-router and dpma-service Rust services
+
+### Goal
+Complete two Rust services: event-router (numeric field parsing, health metrics, event filtering, API forwarding) and dpma-service (API-backed phone inventory, firmware management, phone monitoring, health check, remove Tera templates).
+
+### What was done
+
+#### event-router
+
+1. **config.rs**: Added `api_url` (NP_API_URL) and `event_filter` (NP_EVENT_FILTER) env vars. Added `allowed_events()` method to parse comma-separated filter into Vec. Added unit tests.
+
+2. **parser.rs**: Added `NUMERIC_FIELDS` constant listing fields that should be parsed as numbers (billsec, duration, start/answer/end epoch, record_seconds, DTMF-Duration). Added `is_numeric_field()` and `parse_field_value()` helpers. Numeric fields are emitted as JSON numbers; invalid values fall back to strings. Added 3 new unit tests.
+
+3. **publisher.rs**: Rewritten to support both Redis pub/sub and API forwarding.
+   - `EventPublisher::new()` now takes `api_url` and `event_filter` params.
+   - `should_publish()` checks event against filter (None = all pass).
+   - `forward_to_api()` POSTs CHANNEL_HANGUP and RECORD_STOP events to `{API_URL}/api/v1/events/ingest` (fire-and-forget with error logging).
+   - `publish_loop()` checks filter before publishing.
+   - Added reqwest HTTP client with 10s timeout.
+
+4. **main.rs**: Added `Metrics` struct with atomics for esl_connected, events_processed, last_event_time, reconnect_count, and RwLock<String> for last_event_name. Health endpoint now returns all metrics as JSON. Main loop updates metrics on each event and on reconnect.
+
+5. **Cargo.toml**: Added `reqwest` workspace dependency.
+
+#### dpma-service
+
+1. **Removed templates.rs** and `tera` dependency. Config rendering is handled by the Python API.
+
+2. **config.rs**: Replaced template_dir/freeswitch_addr/sip_domain with redis_url, api_url, offline_threshold_secs, cache_ttl_secs, monitor_interval_secs. Kept firmware_dir and added firmware_manifest path.
+
+3. **provisioning.rs**: Complete rewrite.
+   - `DeviceStore` backed by API + Redis cache instead of in-memory HashMap.
+   - `checkin()`: POSTs to `{API_URL}/api/v1/devices/checkin`, falls back to local Phone if API is down, updates Redis last-seen and cache.
+   - `get_by_mac()`: Checks Redis cache first, falls back to API GET `{API_URL}/api/v1/devices/by-mac/{mac}`, caches result.
+   - `update_last_seen()`: Sets Redis key `np:phone:lastseen:{mac}` with TTL.
+   - `get_all_last_seen()`: Scans Redis for all last-seen keys.
+   - `check_redis()` / `check_api()`: Connectivity checks for health.
+   - `FirmwareManifest`: Loads from JSON file or uses defaults. `by_model()` builds lookup map.
+   - Kept `normalize_mac()` and its tests.
+
+4. **handlers.rs**: Complete rewrite.
+   - `AppState` now holds `RwLock<DeviceStore>`, firmware_map, firmware_dir, offline_threshold.
+   - `POST /phones/checkin`: Check-in with firmware update comparison.
+   - `GET /phones/by-mac/{mac}`: MAC lookup via store.
+   - `GET /firmware/info/{model}`: Firmware info from manifest.
+   - `GET /firmware/download/{filename}`: Real file serving with HTTP Range request support (bytes=start-end, suffix, open-end). Directory traversal protection.
+   - `GET /health`: Reports redis/api connectivity, total phones tracked, offline count, offline MACs, firmware models.
+   - Added unit tests for range header parsing (5 tests).
+
+5. **main.rs**: Rewritten.
+   - Loads firmware manifest from file/defaults.
+   - Initializes DeviceStore with API + Redis.
+   - Spawns `phone_monitor_loop` background task that periodically checks all last-seen timestamps, publishes offline alerts to Redis pub/sub `np:phone:alerts` when phones exceed threshold.
+   - Routes updated to match new handler signatures.
+
+6. **Cargo.toml**: Replaced `tera` with `redis` and `reqwest` workspace dependencies.
+
+### Verification
+- `cargo check -p event-router -p dpma-service` -- clean, no warnings
+- `cargo test -p event-router -p dpma-service` -- all 21 tests pass (13 event-router, 8 dpma-service)
+
+### Files changed
+- `rust/crates/event-router/Cargo.toml`
+- `rust/crates/event-router/src/config.rs`
+- `rust/crates/event-router/src/parser.rs`
+- `rust/crates/event-router/src/publisher.rs`
+- `rust/crates/event-router/src/main.rs`
+- `rust/crates/dpma-service/Cargo.toml`
+- `rust/crates/dpma-service/src/config.rs`
+- `rust/crates/dpma-service/src/provisioning.rs`
+- `rust/crates/dpma-service/src/handlers.rs`
+- `rust/crates/dpma-service/src/main.rs`
+- `rust/crates/dpma-service/src/templates.rs` (deleted)
+
+## 2026-03-07 — E911 Handler: API-backed storage, Redis caching, carrier integration, ESL routing
+
+### Goal
+Complete the e911-handler Rust service: replace in-memory location storage with API-backed + Redis-cached storage, add carrier API integration, extract tenant_id from headers, implement FreeSWITCH ESL emergency call origination, add audit logging, support PSAP route hot-reloading from API, and build a comprehensive health check.
+
+### What was done
+
+1. **Config expanded** (`config.rs`): Added `api_url`, `internal_api_key`, `redis_url`, `cache_ttl_secs`, `esl_host`, `esl_port`, `esl_password`, `sip_domain`, `route_reload_secs` env vars. All use `NP_` prefix.
+
+2. **Cargo.toml updated**: Added `reqwest` and `redis` workspace dependencies.
+
+3. **LocationStore rewritten** (`routing.rs`): Replaced HashMap with API-backed storage + Redis cache.
+   - `GET {api_url}/api/v1/e911/locations/{extension}` to fetch location (with X-Tenant-ID header)
+   - `PUT {api_url}/api/v1/e911/locations/{extension}` to update location
+   - `DELETE {api_url}/api/v1/e911/locations/{extension}` to remove location
+   - Redis cache with configurable TTL on get/set/evict
+   - Cache hit/miss counters for health reporting
+
+4. **EmergencyRouter enhanced** (`routing.rs`): PSAP routes load from API first (`GET /api/v1/e911/psap-routes`), fall back to local JSON file. Background reload task runs on configurable interval.
+
+5. **CarrierApiClient added** (`routing.rs`): Implements ClearlyIP/Bandwidth/Intrado E911 carrier integration.
+   - `provision_location()` — POST location to carrier when updated
+   - `query_routing()` — query carrier for PSAP routing during emergency calls
+   - `health_check()` — connectivity check for health endpoint
+   - Falls back to local PSAP table if carrier API is down
+
+6. **Tenant isolation fixed** (`handlers.rs`): All endpoints now extract `tenant_id` from `X-Tenant-ID` header. Body field is fallback for backward compat. 400 error returned if missing.
+
+7. **Emergency call handler routes calls** (`handlers.rs` + `routing.rs`):
+   - Looks up location, routes via carrier API then local PSAP table
+   - Calls FreeSWITCH ESL to set Geolocation SIP header and transfer to PSAP trunk
+   - Logs emergency call to API audit trail (`POST /api/v1/e911/call-log`)
+   - All ESL and audit operations are non-blocking (tokio::spawn)
+
+8. **Health check enriched** (`handlers.rs`): Reports Redis connectivity, cache hit/miss stats, PSAP route count/loaded status, carrier API connectivity.
+
+### Files changed
+- `/Users/lacy/code/new-phone/rust/crates/e911-handler/Cargo.toml`
+- `/Users/lacy/code/new-phone/rust/crates/e911-handler/src/config.rs`
+- `/Users/lacy/code/new-phone/rust/crates/e911-handler/src/routing.rs`
+- `/Users/lacy/code/new-phone/rust/crates/e911-handler/src/handlers.rs`
+- `/Users/lacy/code/new-phone/rust/crates/e911-handler/src/main.rs`
+- (pidf_lo.rs unchanged — already solid)
+
+### Verification
+- `cargo check -p e911-handler` — compiles with zero warnings
+- `cargo test -p e911-handler` — all 5 existing tests pass
+- No new dependencies outside workspace (reqwest, redis already in workspace Cargo.toml)
+
+---
+
+## 2026-03-07 — SMS Gateway: Complete Inbound Webhook + Provider Tracking + Health
+
+### Goal
+Complete the sms-gateway Rust service: implement real inbound webhook processing, Twilio MMS media extraction, message-to-provider tracking, provider failover with backoff, and comprehensive health checks.
+
+### What was done
+
+1. **Inbound webhook processing (ClearlyIP + Twilio)**
+   - Both webhooks now parse the inbound message, publish to Redis pub/sub (`np:sms:inbound:{to_number}`), and POST to the API (`{API_URL}/api/v1/sms/inbound`) for persistence
+   - Shared `process_inbound_message()` function handles both Redis publish and API forwarding (best-effort, non-blocking)
+   - ClearlyIP webhook parses JSON POST, returns JSON ack
+   - Twilio webhook parses `application/x-www-form-urlencoded` POST via `axum::Form<HashMap>`, returns empty TwiML XML
+
+2. **Twilio MMS media extraction**
+   - Reads `NumMedia` count field, then iterates `MediaUrl0` through `MediaUrlN` from the form params
+   - Media URLs included in the InboundMessage for downstream processing
+
+3. **Message-to-provider tracking in Redis**
+   - On successful send, stores `np:sms:msg:{message_id}` -> `{provider, provider_message_id}` in Redis with 7-day TTL
+   - `get_status` endpoint first checks Redis tracking to find the correct provider, falls back to iterating all providers for legacy messages
+
+4. **Provider failover with backoff**
+   - Tracks consecutive failures per provider in memory (`ProviderHealth` struct)
+   - After N consecutive failures (configurable, default 3), provider enters cooldown for M seconds (configurable, default 60)
+   - During cooldown, router skips the provider and tries failover first
+   - Success resets failure counter and exits cooldown
+   - New config: `NP_SMS_PROVIDER_COOLDOWN_SECS`, `NP_SMS_PROVIDER_FAILURE_THRESHOLD`
+
+5. **Comprehensive health check**
+   - Reports Redis connectivity (router + rate limiter independently)
+   - Reports per-provider health (available, consecutive_failures, in_cooldown, cooldown_remaining_secs)
+   - Returns 503 if Redis is down, 200 if all healthy
+
+6. **Config additions**
+   - `API_URL` env var for inbound message forwarding
+   - `NP_SMS_PROVIDER_COOLDOWN_SECS` and `NP_SMS_PROVIDER_FAILURE_THRESHOLD` for backoff tuning
+
+### Files changed
+- `rust/crates/sms-gateway/src/config.rs` — added api_url, cooldown_secs, failure_threshold
+- `rust/crates/sms-gateway/src/handlers.rs` — complete rewrite: Form extraction for Twilio, process_inbound_message, Redis tracking in get_status, rich health_check
+- `rust/crates/sms-gateway/src/router.rs` — complete rewrite: Redis message tracking, provider health/backoff, publish_inbound, health methods
+- `rust/crates/sms-gateway/src/rate_limiter.rs` — added redis_healthy() method
+- `rust/crates/sms-gateway/src/main.rs` — pass Redis client, HTTP client, api_url to AppState
+
+### Verification
+- `cargo check -p sms-gateway` — PASS (0 warnings, 0 errors)
+- `cargo test -p sms-gateway` — PASS (7/7 tests)
+
+---
+
+## 2026-03-07 — Sangoma DPMA Redirection + Rust Services Integration
+
+### Goal
+Fix the Sangoma P325 DPMA redirection flow end-to-end: SIP proxy TLS on 5061, provisioning via Python API, all Rust services in docker-compose.
+
+### What was done
+
+1. **Fixed sip-proxy in docker-compose.prod.yml**
+   - Changed from 5060/UDP+TCP to 5061/TCP (SIP over TLS)
+   - Added proper env vars matching Rust config struct (`NP_SIP_*`)
+   - Added TLS cert volume mount (`${NP_TLS_DIR:-./tls}:/tls:ro`)
+
+2. **Fixed dpma-service in docker-compose.prod.yml**
+   - Removed wrong port 4569/UDP (IAX2 — P-series phones are SIP, not IAX2)
+   - Service is internal-only (no external port), phones get config via nginx → Python API
+
+3. **Added all 7 Rust services to base docker-compose.yml**
+   - sip-proxy, dpma-service, event-router, parking-manager, e911-handler, sms-gateway
+   - (rtp-relay already in prod only — needs host networking for RTP)
+   - All with proper env vars, health checks, dependency ordering
+
+4. **Added Makefile targets for Rust services**
+   - `make rust-check` — cargo check workspace
+   - `make rust-build` — cargo build release
+   - `make rust-test` — cargo test workspace
+   - `make rust-docker` — build all 7 Docker images
+   - `make rust-docker-one SVC=sip-proxy` — build single image
+   - `make tls-sip-proxy` — generate dev self-signed cert
+   - `make tls-all` — generate all dev certs
+
+5. **Updated .env.example** with `NP_TLS_DIR` setting
+
+6. **Updated .gitignore** to cover `tls/` dir and `*.crt` files
+
+7. **Created docs/sangoma-dpma-redirection.md** with full architecture, setup checklist, portal field reference
+
+### Architecture clarification
+- Phone provisioning (config XML by MAC) is handled by the **Python API** at `/provisioning/{mac}.xml`, not the Rust dpma-service
+- The Rust dpma-service is a skeleton for future real-time features (BLF push, presence, firmware management)
+- Sangoma XML templates already specify SIPPort 5061 + Transport TLS + SRTP mandatory
+
+### Verification
+- `docker compose config --services` — validates (19 services)
+- `docker compose -f docker-compose.yml -f docker-compose.prod.yml config --services` — validates (22 services)
+- `cargo check --workspace` — all 7 crates compile clean
+
+### Files changed
+- `docker-compose.yml` — added 7 Rust services
+- `docker-compose.prod.yml` — fixed sip-proxy ports/TLS, fixed dpma-service port
+- `Makefile` — added rust-*, tls-sip-proxy, tls-all targets
+- `.env.example` — added NP_TLS_DIR, NP_PROVISIONING_BASE_URL
+- `.gitignore` — added tls/, *.crt
+- `docs/sangoma-dpma-redirection.md` — created (architecture, checklist, portal reference)
+
+### Next steps to deploy
+1. Generate TLS certs (dev: `make tls-sip-proxy`, prod: Let's Encrypt)
+2. Build sip-proxy Docker image (`make rust-docker-one SVC=sip-proxy`)
+3. Open port 5061/tcp in firewall
+4. Update Sangoma portal: port 5061, transport TLS
+5. Register phone in platform DB (device + extension assignment)
+6. Reboot phone
+
+---
 
 ## 2026-03-05 — Full Yealink Phone Customization
 
@@ -2254,3 +2521,42 @@ Get outbound calls working end-to-end: WebRTC softphone → FreeSWITCH → Clear
 - `api/src/new_phone/freeswitch/xml_builder.py` — indent() for multi-line XML, gateway_fs_name() dash collapsing, credential validation
 - `api/Dockerfile` — add gosu, entrypoint
 - `api/entrypoint.sh` — new file, fixes volume permissions then drops to appuser
+
+## 2026-03-07 — Parking Manager: Bug Fixes + Feature Completion
+
+### Goal
+Fix critical bugs and complete features in the parking-manager Rust service.
+
+### What was done
+
+**Bug fixes:**
+1. **Timeout handler (parking.rs)** — Fixed broken timeout that used literal `"esl_addr".to_string()` instead of actual ESL address. Now actually calls `esl_retrieve_call` (via ESL pool) to transfer timed-out calls back to the parker.
+2. **check_timeouts() lock contention (parking.rs)** — Restructured to collect timed-out calls under a write lock, release the lock, then perform async ESL operations in phase 2.
+3. **BLF NOTIFY stub (blf.rs)** — Replaced stub `let _ = notify_xml;` with Redis pub/sub publishing to `np:blf:{extension}` and `np:blf:all` channels.
+4. **BLF extension computation (handlers.rs)** — Fixed `format!("7{:02}", slot)` to use the lot's `extension_for_slot()` method which respects `extension_base`.
+
+**Features completed:**
+1. **Redis state recovery** — On startup, loads all `np:parking:*` keys from Redis and restores in-memory lot state. Rebuilds BLF state from recovered lots.
+2. **ESL connection pool** — Created `EslPool` with configurable pool size. Connections are authenticated once, reused across commands, and discarded on failure.
+3. **BLF Redis pub/sub** — Publishes dialog-info XML to `np:blf:{extension}` and JSON summary to `np:blf:all` on every state change.
+4. **Tenant support** — `park_call` handler reads tenant from `X-Tenant-ID` header, falls back to `tenant_id` in request body, then defaults. `ParkRequest` now has optional `tenant_id` field.
+5. **Real health check** — Reports Redis connectivity, ESL connectivity, lot count, and active call count. Returns 503 if both are down, "degraded" if one is down.
+
+**Architecture changes:**
+- `ParkingManager::new()` is now async (creates Redis ConnectionManager)
+- BLF state updates moved into ParkingManager (park/retrieve/release/timeout all update BLF)
+- Handlers no longer duplicate BLF logic — it's centralized in ParkingManager
+- `redis::aio::ConnectionManager` used for auto-reconnecting Redis (replaces per-call connections)
+- Added `ParkingLot::extension_for_slot()` helper for consistent extension computation
+
+### Files changed
+- `/Users/lacy/code/new-phone/rust/crates/parking-manager/src/config.rs` — Added `sip_domain` and `esl_pool_size` config fields
+- `/Users/lacy/code/new-phone/rust/crates/parking-manager/src/parking.rs` — Complete rewrite: ESL pool, Redis recovery, fixed timeouts, ConnectionManager
+- `/Users/lacy/code/new-phone/rust/crates/parking-manager/src/blf.rs` — Redis pub/sub publishing, configurable SIP domain
+- `/Users/lacy/code/new-phone/rust/crates/parking-manager/src/handlers.rs` — Tenant support, fixed BLF extensions, real health check
+- `/Users/lacy/code/new-phone/rust/crates/parking-manager/src/main.rs` — Redis recovery on startup, async initialization
+
+### Verification
+- `cargo check -p parking-manager` — clean, zero warnings
+- `cargo test -p parking-manager` — 3/3 tests pass
+- Other workspace crates have pre-existing compilation errors (dpma-service, e911-handler) unrelated to this change

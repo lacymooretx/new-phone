@@ -8,10 +8,11 @@ mod router;
 
 use std::sync::Arc;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use axum::routing::{get, post};
 use axum::Router;
 use clap::Parser;
+use reqwest::Client as HttpClient;
 use tokio::signal;
 use tracing::info;
 
@@ -32,11 +33,23 @@ async fn main() -> Result<()> {
         default_provider = %config.default_provider,
         rate_limit_min = config.rate_limit_per_min,
         rate_limit_hour = config.rate_limit_per_hour,
+        api_url = %config.api_url,
+        cooldown_secs = config.provider_cooldown_secs,
+        failure_threshold = config.provider_failure_threshold,
         "starting sms-gateway"
     );
 
+    // Initialize Redis client (shared between router and rate limiter)
+    let redis_client = redis::Client::open(config.redis_url.as_str())
+        .context("failed to create Redis client")?;
+
     // Initialize providers
-    let mut sms_router = SmsRouter::new(config.default_provider.clone());
+    let mut sms_router = SmsRouter::new(
+        config.default_provider.clone(),
+        redis_client,
+        config.provider_cooldown_secs,
+        config.provider_failure_threshold,
+    );
 
     let clearlyip = ClearlyIpProvider::new(
         config.clearlyip_api_url.clone(),
@@ -57,9 +70,17 @@ async fn main() -> Result<()> {
         config.rate_limit_per_hour,
     )?;
 
+    // HTTP client for forwarding inbound messages to the API
+    let http_client = HttpClient::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .context("failed to build HTTP client")?;
+
     let state = Arc::new(AppState {
         router: sms_router,
         rate_limiter,
+        api_url: config.api_url.clone(),
+        http_client,
     });
 
     let app = Router::new()

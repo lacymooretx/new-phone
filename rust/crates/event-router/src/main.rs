@@ -5,8 +5,8 @@ mod esl_client;
 mod parser;
 mod publisher;
 
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
 
 use anyhow::Result;
 use axum::routing::get;
@@ -14,11 +14,38 @@ use axum::Json;
 use axum::Router;
 use clap::Parser;
 use tokio::signal;
+use tokio::sync::RwLock;
 use tracing::{error, info, warn};
 
 use crate::config::Config;
 use crate::esl_client::{connect_with_retry, EslClient};
 use crate::publisher::EventPublisher;
+
+/// Shared metrics for health reporting.
+struct Metrics {
+    /// Whether ESL is currently connected.
+    esl_connected: AtomicBool,
+    /// Total number of events processed (parsed successfully).
+    events_processed: AtomicU64,
+    /// Timestamp (unix millis) of last event received.
+    last_event_time: AtomicU64,
+    /// Number of reconnect attempts since startup.
+    reconnect_count: AtomicU64,
+    /// Last event name received (for debugging).
+    last_event_name: RwLock<String>,
+}
+
+impl Metrics {
+    fn new() -> Self {
+        Metrics {
+            esl_connected: AtomicBool::new(false),
+            events_processed: AtomicU64::new(0),
+            last_event_time: AtomicU64::new(0),
+            reconnect_count: AtomicU64::new(0),
+            last_event_name: RwLock::new(String::new()),
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -29,26 +56,38 @@ async fn main() -> Result<()> {
         esl_host = %config.esl_host,
         esl_port = config.esl_port,
         redis_url = %config.redis_url,
+        api_url = %config.api_url,
         health_addr = %config.health_addr,
         "starting event-router"
     );
 
-    let connected = Arc::new(AtomicBool::new(false));
+    let metrics = Arc::new(Metrics::new());
 
     // Start health endpoint
-    let health_connected = connected.clone();
+    let health_metrics = metrics.clone();
     let health_addr = config.health_addr.clone();
     tokio::spawn(async move {
         let app = Router::new().route(
             "/health",
             get(move || {
-                let c = health_connected.clone();
+                let m = health_metrics.clone();
                 async move {
-                    let is_connected = c.load(Ordering::Relaxed);
+                    let is_connected = m.esl_connected.load(Ordering::Relaxed);
+                    let events_processed = m.events_processed.load(Ordering::Relaxed);
+                    let last_event_time = m.last_event_time.load(Ordering::Relaxed);
+                    let reconnect_count = m.reconnect_count.load(Ordering::Relaxed);
+                    let last_event_name = m.last_event_name.read().await.clone();
+
+                    let status = if is_connected { "healthy" } else { "degraded" };
+
                     Json(serde_json::json!({
-                        "status": if is_connected { "healthy" } else { "degraded" },
+                        "status": status,
                         "service": "event-router",
                         "esl_connected": is_connected,
+                        "events_processed": events_processed,
+                        "last_event_time_ms": last_event_time,
+                        "last_event_name": last_event_name,
+                        "reconnect_count": reconnect_count,
                     }))
                 }
             }),
@@ -61,6 +100,9 @@ async fn main() -> Result<()> {
         axum::serve(listener, app).await.expect("health server error");
     });
 
+    // Parse event filter
+    let event_filter = config.allowed_events();
+
     // Main event routing loop with reconnection
     let esl_client = EslClient::new(
         config.esl_host.clone(),
@@ -68,7 +110,8 @@ async fn main() -> Result<()> {
         config.esl_password.clone(),
     );
 
-    let mut publisher = EventPublisher::new(&config.redis_url).await?;
+    let mut publisher =
+        EventPublisher::new(&config.redis_url, &config.api_url, event_filter).await?;
 
     // Outer loop: reconnect on disconnect
     loop {
@@ -79,24 +122,37 @@ async fn main() -> Result<()> {
         )
         .await;
 
-        connected.store(true, Ordering::Relaxed);
+        metrics.esl_connected.store(true, Ordering::Relaxed);
 
         // Inner loop: read and process events
         loop {
             match conn.next_event().await {
                 Ok(event) => {
                     if let Some(parsed) = parser::parse_event(&event) {
+                        // Update metrics
+                        metrics.events_processed.fetch_add(1, Ordering::Relaxed);
+                        let now = std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap_or_default()
+                            .as_millis() as u64;
+                        metrics.last_event_time.store(now, Ordering::Relaxed);
+                        {
+                            let mut name = metrics.last_event_name.write().await;
+                            *name = parsed.event_name.clone();
+                        }
+
                         publisher::publish_loop(&mut publisher, &parsed).await;
                     }
                 }
                 Err(e) => {
                     error!(error = %e, "ESL connection error");
-                    connected.store(false, Ordering::Relaxed);
+                    metrics.esl_connected.store(false, Ordering::Relaxed);
                     break; // Break to outer loop for reconnection
                 }
             }
         }
 
+        metrics.reconnect_count.fetch_add(1, Ordering::Relaxed);
         warn!("ESL disconnected, will reconnect");
     }
 }

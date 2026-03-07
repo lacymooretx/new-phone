@@ -50,6 +50,32 @@ const KEY_FIELDS: &[&str] = &[
     "Other-Leg-Destination-Number",
 ];
 
+/// Fields that should be parsed as numeric values (integers) in JSON output.
+const NUMERIC_FIELDS: &[&str] = &[
+    "variable_record_seconds",
+    "variable_billsec",
+    "variable_duration",
+    "variable_start_epoch",
+    "variable_answer_epoch",
+    "variable_end_epoch",
+    "DTMF-Duration",
+];
+
+/// Check if a field name should be parsed as a number.
+fn is_numeric_field(field: &str) -> bool {
+    NUMERIC_FIELDS.contains(&field)
+}
+
+/// Try to parse a string as an integer, falling back to string if it fails.
+fn parse_field_value(field: &str, value: &str) -> Value {
+    if is_numeric_field(field) {
+        if let Ok(n) = value.parse::<i64>() {
+            return Value::Number(n.into());
+        }
+    }
+    Value::String(value.to_string())
+}
+
 /// Parse an ESL event into a structured format.
 pub fn parse_event(event: &EslEvent) -> Option<ParsedEvent> {
     let event_name = event.event_name()?.to_string();
@@ -62,7 +88,7 @@ pub fn parse_event(event: &EslEvent) -> Option<ParsedEvent> {
             if !value.is_empty() {
                 // Convert header names to snake_case for JSON
                 let json_key = header_to_snake_case(field);
-                payload.insert(json_key, Value::String(value.to_string()));
+                payload.insert(json_key, parse_field_value(field, value));
             }
         }
     }
@@ -208,9 +234,76 @@ mod tests {
     }
 
     #[test]
+    fn test_numeric_fields_parsed_as_numbers() {
+        let event = EslEvent {
+            headers: vec![
+                ("Event-Name".to_string(), "CHANNEL_HANGUP".to_string()),
+                ("Channel-UUID".to_string(), "uuid-hangup".to_string()),
+                ("variable_billsec".to_string(), "142".to_string()),
+                ("variable_duration".to_string(), "150".to_string()),
+                ("variable_start_epoch".to_string(), "1709827200".to_string()),
+                ("variable_answer_epoch".to_string(), "1709827208".to_string()),
+                ("variable_end_epoch".to_string(), "1709827350".to_string()),
+                ("variable_record_seconds".to_string(), "140".to_string()),
+                ("DTMF-Duration".to_string(), "2000".to_string()),
+            ],
+            body: None,
+        };
+
+        let parsed = parse_event(&event).unwrap();
+        let payload = parsed.payload.as_object().unwrap();
+
+        // All numeric fields should be numbers, not strings
+        assert_eq!(payload.get("variable_billsec").unwrap().as_i64().unwrap(), 142);
+        assert_eq!(payload.get("variable_duration").unwrap().as_i64().unwrap(), 150);
+        assert_eq!(payload.get("variable_start_epoch").unwrap().as_i64().unwrap(), 1709827200);
+        assert_eq!(payload.get("variable_answer_epoch").unwrap().as_i64().unwrap(), 1709827208);
+        assert_eq!(payload.get("variable_end_epoch").unwrap().as_i64().unwrap(), 1709827350);
+        assert_eq!(payload.get("variable_record_seconds").unwrap().as_i64().unwrap(), 140);
+        assert_eq!(payload.get("dtmf_duration").unwrap().as_i64().unwrap(), 2000);
+    }
+
+    #[test]
+    fn test_non_numeric_field_stays_string() {
+        let event = EslEvent {
+            headers: vec![
+                ("Event-Name".to_string(), "CHANNEL_CREATE".to_string()),
+                ("Channel-UUID".to_string(), "uuid-str".to_string()),
+                ("Caller-Caller-ID-Number".to_string(), "1001".to_string()),
+            ],
+            body: None,
+        };
+
+        let parsed = parse_event(&event).unwrap();
+        let payload = parsed.payload.as_object().unwrap();
+
+        // Caller-Caller-ID-Number is NOT in NUMERIC_FIELDS, so stays string
+        assert!(payload.get("caller_caller_id_number").unwrap().is_string());
+    }
+
+    #[test]
+    fn test_numeric_field_with_invalid_value_stays_string() {
+        let event = EslEvent {
+            headers: vec![
+                ("Event-Name".to_string(), "CHANNEL_HANGUP".to_string()),
+                ("Channel-UUID".to_string(), "uuid-bad".to_string()),
+                ("variable_billsec".to_string(), "not-a-number".to_string()),
+            ],
+            body: None,
+        };
+
+        let parsed = parse_event(&event).unwrap();
+        let payload = parsed.payload.as_object().unwrap();
+
+        // Falls back to string if parsing fails
+        assert_eq!(
+            payload.get("variable_billsec").unwrap().as_str().unwrap(),
+            "not-a-number"
+        );
+    }
+
+    #[test]
     fn test_handle_url_encoded_header_values() {
-        // FreeSWITCH URL-encodes some header values; our parser currently
-        // stores them as-is.  Verify no panic on encoded values.
         let event = EslEvent {
             headers: vec![
                 ("Event-Name".to_string(), "CHANNEL_CREATE".to_string()),
@@ -225,7 +318,6 @@ mod tests {
 
         let parsed = parse_event(&event).unwrap();
         let payload = parsed.payload.as_object().unwrap();
-        // The raw URL-encoded value should be stored without panic
         assert_eq!(
             payload.get("variable_sip_from_uri").unwrap().as_str().unwrap(),
             "sip%3Aalice%40example.com"

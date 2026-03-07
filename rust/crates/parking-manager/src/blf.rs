@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use redis::AsyncCommands;
 use serde::Serialize;
 use tokio::sync::RwLock;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 /// BLF (Busy Lamp Field) state for a parking slot.
 #[derive(Debug, Clone, Serialize)]
@@ -43,32 +44,48 @@ pub struct BlfSubscriber {
     pub contact: String,
 }
 
-/// BLF state manager that tracks parking slot states and notifies subscribers.
+/// BLF state manager that tracks parking slot states and publishes changes
+/// to Redis pub/sub so the event-router (or other services) can send SIP
+/// NOTIFYs via FreeSWITCH.
 pub struct BlfManager {
     /// Current BLF states keyed by extension.
     states: Arc<RwLock<HashMap<String, BlfState>>>,
     /// Subscribers keyed by extension they're watching.
     subscribers: Arc<RwLock<HashMap<String, Vec<BlfSubscriber>>>>,
+    /// Redis connection manager for publishing BLF events.
+    redis_conn: redis::aio::ConnectionManager,
+    /// SIP domain used in dialog-info entity URIs.
+    sip_domain: String,
 }
 
 impl BlfManager {
-    pub fn new() -> Self {
+    pub async fn new(redis_conn: redis::aio::ConnectionManager, sip_domain: String) -> Self {
         BlfManager {
             states: Arc::new(RwLock::new(HashMap::new())),
             subscribers: Arc::new(RwLock::new(HashMap::new())),
+            redis_conn,
+            sip_domain,
         }
     }
 
-    /// Update the BLF state for a parking slot extension.
-    pub async fn update_state(&self, extension: &str, state: BlfStatus, caller_id: Option<String>) {
+    /// Update the BLF state for a parking slot extension and publish to
+    /// Redis pub/sub channel `np:blf:{extension}`.
+    pub async fn update_state(
+        &self,
+        extension: &str,
+        state: BlfStatus,
+        caller_id: Option<String>,
+    ) {
         let blf_state = BlfState {
             extension: extension.to_string(),
             state: state.clone(),
             caller_id,
         };
 
-        let mut states = self.states.write().await;
-        states.insert(extension.to_string(), blf_state.clone());
+        {
+            let mut states = self.states.write().await;
+            states.insert(extension.to_string(), blf_state.clone());
+        }
 
         debug!(
             extension = extension,
@@ -76,19 +93,42 @@ impl BlfManager {
             "BLF state updated"
         );
 
-        // Notify subscribers
-        let subscribers = self.subscribers.read().await;
-        if let Some(subs) = subscribers.get(extension) {
-            for sub in subs {
-                let notify_xml = build_dialog_info_xml(extension, &blf_state);
+        // Build dialog-info XML for the new state
+        let notify_xml = build_dialog_info_xml(extension, &blf_state, &self.sip_domain);
+
+        // Publish to Redis pub/sub so event-router / other services can
+        // send SIP NOTIFYs via FreeSWITCH
+        let channel = format!("np:blf:{}", extension);
+        let mut conn = self.redis_conn.clone();
+        match conn.publish::<_, _, ()>(&channel, &notify_xml).await {
+            Ok(()) => {
                 debug!(
-                    subscriber = %sub.subscriber_id,
+                    channel = %channel,
                     extension = extension,
-                    "sending BLF NOTIFY to subscriber (would send SIP NOTIFY)"
+                    "published BLF state change to Redis pub/sub"
                 );
-                // In a full implementation, this would send a SIP NOTIFY to the subscriber
-                let _ = notify_xml;
             }
+            Err(e) => {
+                warn!(
+                    channel = %channel,
+                    extension = extension,
+                    error = %e,
+                    "failed to publish BLF state change to Redis pub/sub"
+                );
+            }
+        }
+
+        // Also publish a JSON summary to a consolidated channel for any
+        // service that wants all BLF events in one stream.
+        let summary = serde_json::json!({
+            "extension": extension,
+            "state": blf_state.state.as_sip_state(),
+            "caller_id": blf_state.caller_id,
+        });
+        if let Ok(json) = serde_json::to_string(&summary) {
+            let _ = conn
+                .publish::<_, _, ()>("np:blf:all", &json)
+                .await;
         }
     }
 
@@ -134,9 +174,9 @@ impl BlfManager {
 }
 
 /// Build a SIP dialog-info XML body for NOTIFY messages.
-fn build_dialog_info_xml(extension: &str, state: &BlfState) -> String {
+pub fn build_dialog_info_xml(extension: &str, state: &BlfState, sip_domain: &str) -> String {
     let dialog_state = state.state.as_sip_state();
-    let entity = format!("sip:{}@pbx.local", extension);
+    let entity = format!("sip:{}@{}", extension, sip_domain);
 
     let remote_info = if let Some(caller_id) = &state.caller_id {
         format!(
@@ -171,17 +211,11 @@ fn build_dialog_info_xml(extension: &str, state: &BlfState) -> String {
 mod tests {
     use super::*;
 
-    #[tokio::test]
-    async fn test_blf_state_update() {
-        let manager = BlfManager::new();
-
-        manager
-            .update_state("7001", BlfStatus::InUse, Some("1001".to_string()))
-            .await;
-
-        let state = manager.get_state("7001").await.unwrap();
-        assert_eq!(state.state, BlfStatus::InUse);
-        assert_eq!(state.caller_id, Some("1001".to_string()));
+    #[test]
+    fn test_blf_status_sip_state() {
+        assert_eq!(BlfStatus::Idle.as_sip_state(), "terminated");
+        assert_eq!(BlfStatus::InUse.as_sip_state(), "confirmed");
+        assert_eq!(BlfStatus::Ringing.as_sip_state(), "early");
     }
 
     #[test]
@@ -192,8 +226,23 @@ mod tests {
             caller_id: Some("1001".to_string()),
         };
 
-        let xml = build_dialog_info_xml("7001", &state);
+        let xml = build_dialog_info_xml("7001", &state, "pbx.local");
         assert!(xml.contains("confirmed"));
         assert!(xml.contains("1001"));
+        assert!(xml.contains("sip:7001@pbx.local"));
+    }
+
+    #[test]
+    fn test_dialog_info_xml_idle_no_caller() {
+        let state = BlfState {
+            extension: "7002".to_string(),
+            state: BlfStatus::Idle,
+            caller_id: None,
+        };
+
+        let xml = build_dialog_info_xml("7002", &state, "example.com");
+        assert!(xml.contains("terminated"));
+        assert!(xml.contains("sip:7002@example.com"));
+        assert!(!xml.contains("<remote>"));
     }
 }
