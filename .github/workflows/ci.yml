@@ -24,7 +24,7 @@ jobs:
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Cache uv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/uv
           key: uv-api-${{ runner.os }}-${{ hashFiles('api/pyproject.toml') }}
@@ -54,7 +54,7 @@ jobs:
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Cache uv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/uv
           key: uv-api-${{ runner.os }}-${{ hashFiles('api/pyproject.toml') }}
